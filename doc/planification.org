@@ -1,0 +1,80 @@
+* IFT3065 - Projet
+** Langage source
+*** Scheme [NOTRE CHOIX]
+Avantages:
+- Langage de haut niveau
+- Langage simple, donc facile d'implémenter une large portion
+- Professeur est une sommité sur ce langage
+- Langage (surtout) fonctionnel
+
+Désavantages:
+- Typé dynamiquement (donc pas d'occasion de faire de la vérification
+  statique de types)
+- Syntaxe très simple, donne moins l'occasion de pratiquer
+  l'implantation d'une grammaire
+
+** Langage hôte
+*** OCaml (ou SML)
+Avantages:
+- Très haut niveau et fonctionnel
+- Typé statiquement: le compilateur peut donner des avertissements
+  et/ou des erreurs lorsque des cas sont oubliés
+- Les types sommes semblent être de très bons candidats pour
+  l'implémentation de différents types de données
+- Le livre de Appel utilise le langage ML
+
+Désavantages:
+- Connu par un seul des membres de l'équipe
+- Possibilité d'obtenir du support (du professeur ou d'un autre membre
+  du DIRO) limitée
+
+*** Scheme
+Avantages:
+- Très haut niveau et fonctionnel
+- Connu par les deux membres de l'équipe
+- Spécialité du professeur
+- Possibilité de créer un compilateur autogène
+- Le plus proche possible du langage cible
+
+Désavantages:
+- Typé dynamiquement: le compilateur ne peut pas aider au
+  développement du compilateur
+
+** Langage cible
+*** Assembleur x86
+Avantages:
+- L'exécution se ferait sur la machine de développement
+- Les outils sont déjà présents dans la plupart des installations de
+  Linux
+- Sujet du cours
+
+Désavantages:
+- Connu par un seul membre de l'équipe
+- Jeu d'instructions complexe
+*** Assembleur MIPS
+Avantages:
+- Jeu d'instructions simple
+- Connu des deux membres de l'équipe
+
+Désavantages:
+- L'exécution se ferait dans un émulateur
+*** C
+Avantages:
+- Très portable
+- Langage connu par les deux membres de l'équipe
+- Le professeur connaît bien cette technique de compilation
+
+Désavantages:
+- Plus compliqué que l'assembleur
+- Phase de compilation supplémentaire
+- On doit faire attention aux "undefined behaviours" de C
+*** JVM
+Avantages:
+- Très portable
+- Intérêt de voir et connaître le byte code de Java
+- Possibilité d'appeler du code Java (pas applicable dans le cadre du
+  cours)
+
+Désavantages:
+- Connu par aucun des membres de l'équipe
+
