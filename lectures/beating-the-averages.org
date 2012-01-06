@@ -1,0 +1,50 @@
+* Viaweb
+- Startup
+- Paul Graham, Robert Morris
+- Application web pour créer des magasins en ligne
+- Écrite en Lisp
+- Acheté par Yahoo! pour plusieurs millions
+
+* The Secret Weapon
+- Dans "How to become a hacker": apprendre Java, Python, C, Perl et
+  Lisp
+- Lisp pour "l'illumination qu'il amène", fait de nous des meilleurs
+  programmeurs dans les autres langages, même si on utilise pas Lisp
+- Pourquoi ne pas utiliser Lisp s'il est bon?  Les ordinateurs
+  comprennent n'importe quel langage.
+- Viaweb utilisait Lisp pour avoir un avantage sur ses compétiteurs,
+  car sur un serveur on peut utiliser le langage qu'on veut (sur une
+  plateforme, on doit souvent utiliser le langage hôte, ex.: ObjC sur
+  iOS, Java sur Android)
+- Si une startup grandit comme la médiane, elle meurt: doit faire
+  quelque chose de différent.
+- Viaweb était capable d'écrire des nouvelles fonctionnalités plus
+  vite que sa compétition: plus de fonctionnalités => plus de clients
+  pour Viaweb et moins pour la compétition
+
+* The Blub paradox
+- Tous les langages ne sont pas égaux
+- Les langages de haut niveau sont plus puissants que l'assembleur,
+  Python est plus puissant que Cobol, Perl 5 plus puissant que Perl 4
+- "All other things being equal, pick the most powerful language"
+- Lisp > *
+- Continuum de puissance des langages
+- Si un programmeur Blub regarde vers le bas, il se demande comment
+  les programmeurs de ces langages font pour travailler sans "X" (une
+  fonctionnalité qui existe dans Blub)
+- S'il regarde vers le haut, il ne le réalise pas et trouve que ce
+  sont des langages différents pour rien (est-ce le cas avec Paul
+  Graham et d'autres langages de haut niveau tels que Haskell?)
+- Fonctionnalité puissant de Lisp: *MACROS*
+- Macros permettent de manipuler le code Lisp
+- Macros plus difficile à écrire que des fonctions, donc on les
+  utilise uniquement quand ils sont nécessaires
+- Viaweb = 20-25% de macros => 20-25% des fonctionnalités difficiles à
+  faire dans d'autres langages
+
+* Aikido for Startups
+- Lisp donne un avantage à une startup
+- Son manque de popularité devient un avantage
+- Compagnie demandant Oracle ou C++: pas dangeureuse
+- Compagnie demandant Python: plus épeurante
+- Compagnie demandant Lisp: problème
