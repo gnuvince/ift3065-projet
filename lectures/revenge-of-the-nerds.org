@@ -1,0 +1,51 @@
+* Revenge of the nerds
+- Pointy-Haired Boss (PHB): connaît rien à la technologie, mais a de
+  très fortes opinions.
+- En quel langage est-ce que PHB croit qu'on devrait écrire un
+  logiciel?  Java, bien sûr.
+- Pourquoi Java?  Parce qu'il en entend parler partout, donc ça doit
+  être un standard et je me mettrai pas dans le trouble pour utiliser
+  ça.  De plus, beaucoup de main d'oeuvre facilement remplaçable.
+- Argument basé sur une supposition erronée: tous les langages de
+  programmation sont égaux.
+- S'ils étaient tous égaux, pourquoi a-t-on passé de C++ à Java en
+  entreprise?
+- Si on crée un nouveau langage, c'est pour améliorer des défaillances
+  que l'on voit dans les autres.
+- Si PHB devait penser au problème vs. le choix de langage, son
+  cerveau exploserait.
+- Java -> Perl -> Python. Pattern: de plus en plus similaire à Lisp
+
+* Catching up with math
+- Lisp: découvert en 1958
+- Exercice théorique par John McCarthy; implémenté en langage machine
+  par Steve Russell.
+- Était pas supposé être implanté sur un ordinateur, juste une
+  modèle plus convénient que Turing.
+- C'est pourquoi Lisp n'est pas désuet: c'est un modèle mathématique,
+  et les maths se démodent pas (pas plus que QuickSort)
+
+* What made Lisp different
+1. Conditionals: avant, c'était que des JEQ, JNE, etc.  Lisp a
+   introduit le if-then-else.
+2. Type fonction: les fonctions sont objets au même titre que les
+   entiers et peuvent être passées ou retournées par des fonctions,
+   stockées dans des structures de données, etc.
+3. Récursivité: Lisp a été le premier langage a la supporter.
+4. Typage dynamique: les valeurs ont des types, pas les variables.
+5. GC
+6. Programmes d'expressions: pas de statements comme en C, tout en Lisp
+   a une valeur.
+7. Type symbol: des "chaînes" qui se comparent par des pointeurs.
+   Facile à lire et efficace.
+8. Code écrit sous forme d'arbres de symboles et de constantes
+9. Le langage entier toujours présent
+
+==
+
+- 1-5 sont rendus omni-présents
+- 6 commence à apparaître de plus en plus
+- 7 existe dans certains langages comme Ruby ou Smalltalk
+- 8 et 9 sont encore fortement associés à Lisp et permettent les
+  macros.
+
