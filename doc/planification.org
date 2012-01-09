@@ -78,3 +78,30 @@ Avantages:
 Désavantages:
 - Connu par aucun des membres de l'équipe
 
+* Notre plan
+- Ls: scheme
+- Lh: scheme
+- Lc: assembler x86
+
+** Parser/Lexer
+- a la main
+
+** Analyse
+*** Lexicale
+- a la main
+- support les caracteres ascii seulement
+- token = (type+val, ligne, colonne)
+- [char] -> [token]
+- erreurs
+  - invalid char
+  - invalid number (123.0)
+  - (+ x 3) === ((LPAREN,0,0) (PLUS,0,1) (VAR(X),0,3) (NUM(3),0,5) (RPAREN,0,6))
+  - trace no ligne et colonne
+*** Syntaxique
+- descente recursive (LL1)
+- a la main
+- [token] -> AST
+- validation/erreur
+*** Semantique
+
+** Synthese
