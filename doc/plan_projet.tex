@@ -1,0 +1,141 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{multicol}
+
+\begin{document}
+
+
+\title{IFT3065 - Proposition de projet}
+\date{Janvier 2012}
+\author{Vincent Foley-Bourgon (FOLV08078309) \\
+Eric Thivierge (THIE09016601)}
+\maketitle
+
+\abstract
+
+Nous proposons d'écrire un compilateur Scheme en Scheme qui générera
+du code pour une machine x86.  Ce compilateur sera une exploration
+``en largeur'' du domaine de la compilation; plutôt que d'implanter
+quelques fonctionnalités et de les développer en profondeur, nous
+allons tenter d'implémenter plus de fonctionnalités, même si cela veut
+implique de diminuer le degré de sophistication de notre compilateur.
+Les deux membres de l'équipe pensent que cela aidera à obtenir une
+bonne vision d'ensemble du fonctionnement d'un compilateur.
+
+\section{Choix des langages}
+
+\subsection{Langage source (Scheme)}
+
+Nous avons décidé d'utiliser Scheme comme langage source.  La raison
+principale est que Scheme est un des langages de haut niveau les plus
+simple qui soit, ce qui permet d'implanter une grande partie du
+langage dans un court lapse de temps.  De plus, il possède de
+fonctionnalités qui sont intéressantes à implanter qu'un langage comme
+Pascal ne possède pas, par exemple:
+
+
+\begin{itemize}
+\item Fermetures
+\item Récursivité terminale
+\item Continuations
+\item Macros
+\end{itemize}
+
+
+\subsection{Langage hôte (Scheme)}
+
+Nous voulions un langage fonctionnel de haut niveau pour notre
+compilateur.  Le langage OCaml était une option intéressante, étant
+donné qu'il est similaire au langage SML utilisé dans le livre
+``Modern Compiler Implementation in ML'' par Appel.  Son système de
+typage statique aurait certainement été fort utile tout au long du
+développement.
+
+Comme un membre de l'équipe ne connaissait pas OCaml, nous avons
+décidé d'utiliser Scheme comme langage hôte.  Scheme est également un
+langage de fonctionnel de haut niveau.  De plus, comme il s'agit du
+même langage que le langage source, nous avons la possibilité d'écrire
+un compilateur autogène.  Aussi, les connaissances apprises par
+l'utilisation de Scheme aideront directement à la création du
+compilateur.
+
+
+\subsection{Langage cible (assembleur x86)}
+
+Nous avons décidé de cibler le langage x86 pour notre compilateur.
+Malgré que les deux membres de l'équipe ne soient pas familiers avec
+cet assembleur, la popularité des machines x86 font de ce langage un
+choix pratique.
+
+
+\section{Choix des fonctionalités}
+
+\subsection{Grammaire, parseur et messages d'erreurs (niv-2)}
+
+Comme nous implémentons notre propre compilateur, nous avons besoin
+d'un analayseur lexical et syntaxique.  Nous avons décidé de les
+implanter manuellement plutôt que d'utililiser des outils comme lex ou
+bison, car nous aimerons connaître les détails de plus bas niveau de
+ces outils.
+
+Notre analyseur lexical aura les propriétés suivantes:
+
+
+\begin{itemize}
+\item Support pour ASCII seulement: il serait trop long et difficile
+  de supporter correctement l'ensemble de Unicode, et nous nous
+  limiterons donc à l'ensemble ASCII.
+\item Le ``type'' de notre analyseur lexical sera \texttt{[char] ->
+    [symbol]}; on prendra en paramètre une liste de caractères et on
+  retournera une liste de symboles.  L'analyse lexicale ne sera pas
+  concurrente avec l'analyse syntaxique.
+\item Un symbole sera un triplet de la forme: \texttt{(type+valeur,
+    ligne, colonne)}.  La ligne et la colonne seront utiliser pour
+  donner des messages d'erreurs plus détaillés.
+\end{itemize}
+
+Notre analyseur syntaxique aura les propriétés suivantes:
+
+\begin{itemize}
+\item Ce sera un parseur LL(1) écrit par un algorithme de descente
+  récursive, car c'est sans doute l'algorithme le plus simple à
+  implanter manuellement.
+\item Le parseur prendra en paramètre la liste de symboles générée par
+  l'analyseur lexical et retournera un arbre de syntaxe abstraite.
+\end{itemize}
+
+
+
+\subsection{Fermetures (niv-2)}
+
+Les fermetures sont l'une des fonctionnalités les plus importantes du
+langage Scheme, et nous allons donc les implanter.
+
+\subsection{Récupérateur de mémoire automatique (niv-2)}
+
+Tout comme les fermetures, la gestion automatique de la mémoire est
+une fonctionnalité importante de Scheme.  Nous allons donc implanter
+un récupérateur simple.
+
+\subsection{Types (niv-1)}
+
+Scheme est un langage typé dynamiquement, donc les variables ne
+possèdent pas de types, mais il est fortement typé, ce qui veut dire
+qu'une expression tel que \texttt{(+ 3 'foo)} est sémantiquement
+incorrecte.  Nous traiterons ces erreurs de type.
+
+\subsection{Vivacité des variables (niv-1)}
+
+\subsection{Propagation de constantes (niv-2)}
+
+\subsection{Génération simple avec optimisation ``peephole''}
+
+
+\end{document}
