@@ -1,3 +1,4 @@
+
 * IFT3065 - Projet
 ** Langage source
 *** Scheme [NOTRE CHOIX]
@@ -103,5 +104,59 @@ Désavantages:
 - [token] -> AST
 - validation/erreur
 *** Semantique
+- Semantic validation, type checking
+- AST -> AST+semantic info -> IR
+- exprimer structures en fonction de primitives (p.ex. if -> cond)
 
 ** Synthese
+*** Analysis
+- call graph
+- control flow graph
+*** Optimisations, subset of:
+- peephole
+- dead code elimination
+- register allocation
+- tail calls
+*** Code generation
+- IR -> asm code
+- asm code | gcc -o 
+
+** Utilitaires
+*** Logs
+*** prettyprint AST
+*** prettyprint IR
+
+** Minimum subset:
+*** predicates
+- null?
+- boolean?
+- integer?
+- char?
+- string?
+- pair?
+- symbol?
+- procedure?
+- eq?
+- eqv?
+
+*** conversions
+- string->number
+- number->string
+- char->integer
+- integer->char
+- symbol->string
+- string->symbol
+
+*** arithmetics
+- +, -, /, quotient, remainder , *
+- abs, ...
+- =
+
+*** procedures
+- cons
+- car
+- cdr
+- set-car!
+- set-cdr!
+- list
+- 
