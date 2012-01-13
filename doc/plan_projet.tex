@@ -54,23 +54,27 @@ Nous voulions un langage fonctionnel de haut niveau pour notre
 compilateur.  Le langage OCaml était une option intéressante, étant
 donné qu'il est similaire au langage SML utilisé dans le livre
 ``Modern Compiler Implementation in ML'' par Appel.  Son système de
-typage statique aurait certainement été fort utile tout au long du
-développement.
+typage statique et sa facilité à manipuler des données symboliques
+auraient certainement étés forts utiles tout au long du développement.
 
 Comme un membre de l'équipe ne connaît pas OCaml, nous avons décidé
 d'utiliser Scheme comme langage hôte.  Scheme est également un langage
-de fonctionnel de haut niveau.  De plus, comme il s'agit du même
-langage que le langage source, nous avons la possibilité d'écrire un
-compilateur autogène.
+de fonctionnel de haut niveau qui permet des manipulations faciles de
+données symboliques.  De plus, comme il s'agit du même langage que le
+langage source, nous avons la possibilité d'écrire un compilateur
+autogène.
 
 
 \subsection{Langage cible (assembleur x86)}
 
-Nous avons décidé de cibler le langage x86 pour notre compilateur.
-Malgré que les deux membres de l'équipe ne soient pas familiers avec
-cet assembleur, la popularité des machines x86 font de ce langage un
-choix pratique.  Cela nous évite également de passer par un émulateur
-pour un autre assembleur.
+Nous avons décidé de cibler le langage assembleur x86 pour notre
+compilateur.  Malgré que les deux membres de l'équipe ne soient pas
+familiers avec cet assembleur, la popularité des machines x86 font de
+ce langage un choix pratique.  Cela nous évite également de passer par
+un émulateur pour un autre assembleur.
+
+De plus, ça sera pour les deux membres de l'équipe une introduction à
+l'assembleur x86.
 
 
 \section{Choix des fonctionnalités}
@@ -114,10 +118,22 @@ fonctionnalités suivantes:
 \begin{itemize}
 \item Les continuations
 \item Les macros
+\item Les nombres rationnels
 \end{itemize}
 
 
+\section{Design du compilateur}
 
+Nous avons décidé d'écrire un compilateur en pipeline très modulaire.
+On tentera de donner à chaque phase de la compilation son propre
+module et que ce module soit complètement indépendant.  Cela affectera
+certainement la vitesse de compilation, mais nous sommes d'avis que la
+modularité du compilateur sera plus utile pour notre apprentissage et
+pour l'aboutissement du projet.
+
+Nous metterons peu d'efforts pour développer en grande profondeur une
+fonctionnalité de notre compilateur, et nous préfèrerons explorer un
+plus grand nombre de fonctionnalités
 
 
 \section{Choix des tâches}
@@ -180,7 +196,17 @@ incorrecte.  Nous traiterons ces erreurs de type.
 
 \subsection{Propagation de constantes (niv-2)}
 
+On ajoutera une phase simple d'optimisation où les expressions
+constantes seront remplacées par leur valeur numérique.
+
+Par exemple: transformer \texttt{(* 3 (+ 2 4))} par \texttt{18}.
+
+
 \subsection{Génération simple avec optimisation ``peephole'' (niv-2)}
 
+On écrira dans un fichier texte les lignes de code d'assembleur du
+programme source.  On appliquera des optimisations simples sur le code
+assembleur.  Par exemple, \texttt{mov \$0, \%ebx} sera transformé en
+\texttt{xor \%ebx, \%ebx}.
 
 \end{document}
