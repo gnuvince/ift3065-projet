@@ -215,6 +215,11 @@ incorrecte.  Nous traiterons ces erreurs de type.
 
 \subsection{Vivacité des variables (niv-1)}
 
+L'analyse de vivacité des variable permettra d'identifier les
+variables mortes (dont la valeur ne sera pas lue dans le future) et
+d'en retirer le code dans le programme cible.
+
+
 \subsection{Propagation de constantes (niv-2)}
 
 On ajoutera une phase simple d'optimisation où les expressions
