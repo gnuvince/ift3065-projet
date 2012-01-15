@@ -24,10 +24,11 @@ Nous proposons d'écrire un compilateur Scheme en Scheme qui générera
 du code pour une machine x86.  Ce compilateur sera une exploration
 ``en largeur'' du domaine de la compilation; plutôt que d'implanter
 quelques fonctionnalités et de les développer en profondeur, nous
-allons tenter d'implémenter plus de fonctionnalités, même si cela
+allons tenter d'implanter plus de fonctionnalités, même si cela
 implique de diminuer le degré de sophistication de notre compilateur.
 Les deux membres de l'équipe pensent que cela aidera à obtenir une
-bonne vision d'ensemble du fonctionnement d'un compilateur.
+bonne vision d'ensemble du fonctionnement et des défis d'un
+compilateur.
 
 \section{Choix des langages}
 
@@ -37,11 +38,12 @@ Nous avons décidé d'utiliser Scheme comme langage source.  La raison
 principale est que Scheme est un des langages de haut niveau les plus
 simple qui soit, ce qui permet d'implanter une grande partie du
 langage dans un court lapse de temps.  De plus, il possède des
-fonctionnalités que d'autres langages, comme Pascal, ne possèdent
-pas. Par exemple:
+fonctionnalités que d'autres langages, comme C ou Pascal, ne possèdent
+pas:
 
 \begin{itemize}
 \item Fermetures
+\item Symboles
 \item Récursivité terminale
 \item Continuations
 \item Macros
@@ -51,18 +53,21 @@ pas. Par exemple:
 \subsection{Langage hôte (Scheme)}
 
 Nous voulions un langage fonctionnel de haut niveau pour notre
-compilateur.  Le langage OCaml était une option intéressante, étant
-donné qu'il est similaire au langage SML utilisé dans le livre
+compilateur.  Le langage OCaml était une option très intéressante,
+étant donné qu'il est similaire au langage SML utilisé dans le livre
 ``Modern Compiler Implementation in ML'' par Appel.  Son système de
 typage statique et sa facilité à manipuler des données symboliques
 auraient certainement étés forts utiles tout au long du développement.
+De plus, il possède des outils d'analyse lexicale (ocamllex) et
+syntaxique (ocamlyacc) si ceux-ci s'avèrent nécessaires. Comme un seul
+membre de l'équipe connaît OCaml, nous avons décidé de ne pas
+l'utiliser et avons donc choisit Scheme comme langage hôte.
 
-Comme un membre de l'équipe ne connaît pas OCaml, nous avons décidé
-d'utiliser Scheme comme langage hôte.  Scheme est également un langage
-de fonctionnel de haut niveau qui permet des manipulations faciles de
-données symboliques.  De plus, comme il s'agit du même langage que le
-langage source, nous avons la possibilité d'écrire un compilateur
-autogène.
+Scheme est également un langage de fonctionnel de haut niveau qui
+permet des manipulations faciles de données symboliques.  Écrire le
+compilateur dans le langage source crée un ``cercle virtueux''
+d'apprentissage.  De plus, nous avons la possibilité d'écrire un
+compilateur autogène.
 
 
 \subsection{Langage cible (assembleur x86)}
@@ -70,11 +75,9 @@ autogène.
 Nous avons décidé de cibler le langage assembleur x86 pour notre
 compilateur.  Malgré que les deux membres de l'équipe ne soient pas
 familiers avec cet assembleur, la popularité des machines x86 font de
-ce langage un choix pratique.  Cela nous évite également de passer par
-un émulateur pour un autre assembleur.
-
-De plus, ça sera pour les deux membres de l'équipe une introduction à
-l'assembleur x86.
+ce langage un choix pratique et la connaissance de l'assembleur x86
+est un atout important.  Le choix de x86 nous évite également de
+passer par un émulateur pour un autre assembleur (ex.: MIPS).
 
 
 \section{Choix des fonctionnalités}
@@ -88,8 +91,8 @@ fonctionnalités suivantes ne se trouveront pas dans notre langage:
 \item Les nombres à virgule flottante
 \item Les entiers à précision arbitraire
 \item Unicode
-\item L'instruction \emph{do}
 \item \texttt{define-syntax}
+\item Les commentaires multi-lignes (\texttt{\#| |\#})
 \end{itemize}
 
 Les fonctionnalités suivantes seront dans notre langage:
@@ -110,6 +113,7 @@ Les fonctionnalités suivantes seront dans notre langage:
 \item Les booléens
 \item Le mot clé \emph{begin}
 \item Le mot clé \emph{set!}
+\item L'instruction \emph{do}
 \end{itemize}
 
 Nous ne sommes pas certains si nous pourront inclure les
@@ -119,6 +123,7 @@ fonctionnalités suivantes:
 \item Les continuations
 \item Les macros
 \item Les nombres rationnels
+\item Les vecteurs
 \end{itemize}
 
 
@@ -131,10 +136,18 @@ certainement la vitesse de compilation, mais nous sommes d'avis que la
 modularité du compilateur sera plus utile pour notre apprentissage et
 pour l'aboutissement du projet.
 
-Nous metterons peu d'efforts pour développer en grande profondeur une
-fonctionnalité de notre compilateur, et nous préfèrerons explorer un
-plus grand nombre de fonctionnalités
+Cette approche est similaire à celle proposée par Sarkar, Waddell et
+Dybvig dans leur article \emph{A Nanopass Framework for Compiler
+  Education} \footnote{http://www.cs.indiana.edu/~dyb/pubs/nano-jfp.pdf}
 
+Nous metterons peu d'efforts pour développer en grande profondeur une
+fonctionnalité particulière de notre compilateur, et nous préfèrerons
+explorer un plus grand nombre de fonctionnalités
+
+A priori, notre compilateur ne sera pas autogène.  Si le temps le
+permet, nous pourrons voir à la fin du projet s'il serait possible
+d'être auto-suffisant, mais ce n'est pas un objectif principal de
+notre projet.
 
 \section{Choix des tâches}
 
@@ -143,11 +156,19 @@ plus grand nombre de fonctionnalités
 Comme nous implémentons notre propre compilateur, nous avons besoin
 d'un analyseur lexical et syntaxique.  Nous avons décidé de les
 implanter manuellement plutôt que d'utililiser des outils comme lex ou
-bison, car nous aimerons connaître les détails de plus bas niveau de
-ces outils.
+bison, car nous aimerions connaître les détails et défis de plus bas
+niveau de ces phases.  Par contre, nous réalisons que le gros morceau
+de la compilation se trouve dans le back-end plutôt que dans le
+front-end et que ce serait une erreur de dépenser trop d'efforts sur
+l'analyse lexicale et syntaxique.  Nous procéderons donc de la façon
+suivante: nous tenterons d'implémenter notre propre lexer et parser à
+la main.  Si une semaine après le début des travaux nous voyons que
+nous avons pris du retard et que nos lexer et parser ne sont pas
+fonctionnels, nous utiliserons des outils automatisés pour faire
+l'analyse pour nous.
 
-Notre analyseur lexical aura les propriétés suivantes:
-
+Dans le cas où notre analyseur lexical est fait manuellement, il aura
+les propriétés suivantes:
 
 \begin{itemize}
 \item Support pour ASCII seulement: il serait trop long et difficile
@@ -158,7 +179,7 @@ Notre analyseur lexical aura les propriétés suivantes:
   retournera une liste de symboles.  L'analyse lexicale ne sera pas
   concurrente avec l'analyse syntaxique.
 \item Un symbole sera un triplet de la forme: \texttt{(type+valeur,
-    ligne, colonne)}.  La ligne et la colonne seront utiliser pour
+    ligne, colonne)}.  La ligne et la colonne seront utilisés pour
   donner des messages d'erreurs plus détaillés.
 \end{itemize}
 
@@ -189,7 +210,7 @@ un récupérateur simple.
 
 Scheme est un langage typé dynamiquement, donc les variables ne
 possèdent pas de types, mais il est fortement typé, ce qui veut dire
-qu'une expression tel que \texttt{(+ 3 'foo)} est sémantiquement
+qu'une expression telle que \texttt{(+ 3 'foo)} est sémantiquement
 incorrecte.  Nous traiterons ces erreurs de type.
 
 \subsection{Vivacité des variables (niv-1)}
