@@ -29,15 +29,22 @@
 
            ((char=? (stream 'next) #\))   (consume-close-paren stream))
 
+           ((char=? (stream 'next) #\')   (consume-quote stream))
+
            ((char-identifier? (stream 'next))
-            (consume-identifier stream))
+            (let ((ident (consume-identifier stream)))
+               (or (lexeme-keyword ident)
+                   (lexeme-numeric ident)
+                   (cons 'ident ident))))
+
 
            ((char-whitespace? (stream 'next))
             (begin
               (consume-whitespace stream)
               (tokenize stream)))
 
-           (else 'unknown))))
+           (else (error
+                  (string-append "unknown character: " (make-string 1 (stream 'next))))))))
     token))
 
 
@@ -53,12 +60,9 @@
   (stream 'advance)
   'close-paren)
 
-
-(define (consume-whitespace stream)
-  (if (char-whitespace? (stream 'next))
-      (begin
-        (stream 'advance)
-        (consume-whitespace stream))))
+(define (consume-quote stream)
+  (stream 'advance)
+  'quote-symbol)
 
 (define (consume-identifier stream)
   (define (loop acc)
@@ -67,10 +71,7 @@
              (stream 'advance)
              (loop (string-append acc c))))
           (else acc)))
-  (let ((lexeme (loop "")))
-    (or (lexeme-keyword lexeme)
-        (lexeme-numeric lexeme)
-        (cons 'ident lexeme))))
+   (loop ""))
 
 (define (lexeme-keyword lexeme)
   (cond
