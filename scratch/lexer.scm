@@ -31,6 +31,8 @@
 
            ((char=? (stream 'next) #\')   (consume-quote stream))
 
+           ((char=? (stream 'next) #\")   (consume-string stream))
+
            ((char-identifier? (stream 'next))
             (let ((ident (consume-identifier stream)))
                (or (lexeme-keyword ident)
@@ -76,13 +78,13 @@
 (define (lexeme-keyword lexeme)
   (cond
    ((string=? lexeme "define") 'define)
-   ((string=? lexeme "let") 'let)
+   ((string=? lexeme "let")    'let)
    ((string=? lexeme "lambda") 'lambda)
-   ((string=? lexeme "set!") 'set!)
-   ((string=? lexeme "do") 'do)
-   ((string=? lexeme "cond") 'cond)
-   ((string=? lexeme "if") 'if)
-   ((string=? lexeme "quote") 'quote)
+   ((string=? lexeme "set!")   'set!)
+   ((string=? lexeme "do")     'do)
+   ((string=? lexeme "cond")   'cond)
+   ((string=? lexeme "if")     'if)
+   ((string=? lexeme "quote")  'quote)
    (else #f)))
 
 
@@ -99,3 +101,46 @@
          ((eq? token 'eof) '())
          (else (cons token (loop))))))
     (loop)))
+
+
+(define (consume-string stream)
+  (define (loop escaped? acc)
+    (cond
+     ((and (not escaped?) (char=? (stream 'next) #\"))
+      (begin
+        (stream 'advance) ; consume closing double-quote
+        (cons 'string acc)))
+
+     ((and (not escaped?) (char=? (stream 'next) #\\))
+      (begin
+        (stream 'advance)
+        (loop #t acc)))
+
+     ((not escaped?)
+      (let ((c (stream 'next)))
+        (stream 'advance)
+        (loop #f (string-append acc (make-string 1 c)))))
+
+     (escaped?
+      (let ((c (stream 'next)))
+        (stream 'advance)
+        (cond
+          ((char=? c #\") (loop #f (string-append acc (make-string 1 c))))
+          ((char=? c #\n) (loop #f (string-append acc (make-string 1 #\newline))))
+          ((char=? c #\t) (loop #f (string-append acc (make-string 1 #\tab))))
+          ((char=? c #\\) (loop #f (string-append acc (make-string 1 #\\))))
+
+          )))))
+
+  (stream 'advance) ; consume opening double-quote.
+  (loop #f ""))
+
+
+
+(define (consume-whitespace stream)
+  (define (loop)
+    (cond ((char-whitespace? (stream 'next))
+           (begin
+             (stream 'advance)
+             (loop)))))
+  (loop))
