@@ -138,9 +138,7 @@
 
 
 (define (consume-whitespace stream)
-  (define (loop)
-    (cond ((char-whitespace? (stream 'next))
-           (begin
-             (stream 'advance)
-             (loop)))))
-  (loop))
+  (if (char-whitespace? (stream 'next))
+      (begin
+        (stream 'advance)
+        (consume-whitespace stream))))
