@@ -64,12 +64,11 @@
 ;; consume-comma : stream -> token
 (define (consume-comma stream)
   (stream 'advance)
-  'comma)
-
-;; consume-comma : stream -> token
-(define (consume-arobas stream)
-  (stream 'advance)
-  'arobas)
+  (if (char=? (stream 'next) #\@)
+      (begin
+        (stream 'advance)
+        'comma-at)
+      'comma))
 
 ;; consume-identifier : stream -> token
 ;;
@@ -214,8 +213,6 @@
 
            ((char=? (stream 'next) #\,)   (consume-comma stream))
 
-           ((char=? (stream 'next) #\@)   (consume-arobas stream))
-
            ((char=? (stream 'next) #\")   (consume-string stream))
 
            ((char=? (stream 'next) #\#)   (consume-hash stream))
@@ -294,8 +291,8 @@
 
 (define (test-arobas)
   (and
-   (equal? (lex "@") '(arobas))
-   (equal? (lex ",@") '(comma arobas))))
+   (equal? (lex "@") '((ident . "@")))
+   (equal? (lex ",@") '(comma-at))))
 
 (define (test-true)
   (equal? (lex "#t") '(true)))
