@@ -137,9 +137,18 @@
 
 
 
-(define (consume-character stream)
-  (stream 'advance)
-  )
+;; consume-comment : stream -> ()
+;;
+;; Starting with the semi-colon, discard characters until the
+;; newline character or the end of the stream.
+(define (consume-comment stream)
+  (cond
+   ((or (char=? #\newline (stream 'next))
+        (char=? #\nul (stream 'next)))
+    (stream 'advance))
+   (else (begin
+           (stream 'advance)
+           (consume-comment stream)))))
 
 
 ;; tokenize : stream -> token
@@ -160,6 +169,11 @@
            ((char=? (stream 'next) #\")   (consume-string stream))
 
            ((char=? (stream 'next) #\#)   (consume-character stream))
+
+           ((char=? (stream 'next) #\;)
+            (begin
+              (consume-comment stream)
+              (tokenize stream)))
 
            ;; We'll skip all white space, then call `tokenize`
            ;; recursively to return the next token.
@@ -230,6 +244,37 @@
     (equal? (lex "quote")  '(quote))
     ))
 
+(define (test-whitespace)
+  (and
+   (equal? (lex "") '())
+   (equal? (lex "  x  ") '((ident . "x")))
+   (equal? (lex "\tx\n\ny ") '((ident . "x") (ident . "y")))
+   ))
+
+(define (test-comment)
+  (and
+   (equal? (lex "; hello") '())
+   (equal? (lex "x ; comment \n y") '((ident . "x") (ident . "y")))))
+
+(define (test-lex)
+  (and
+   (equal? (lex "(let ((x 10)) (* x 2)) ; 10 * 2")
+           '(open-paren
+             let
+             open-paren
+             open-paren
+             (ident . "x")
+             (number . 10)
+             close-paren
+             close-paren
+             open-paren
+             (ident . "*")
+             (ident . "x")
+             (number . 2)
+             close-paren
+             close-paren))
+   ))
+
 
 (define (run-tests)
   (and (test-null)
@@ -237,4 +282,6 @@
        (test-close-paren)
        (test-quote)
        (test-keywords)
+       (test-whitespace)
+       (test-lex)
        ))
