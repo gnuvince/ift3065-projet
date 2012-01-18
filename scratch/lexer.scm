@@ -257,6 +257,23 @@
     (loop)))
 
 
+;; token-type : token -> type
+;;
+;; Accessor used to get the type of a token
+(define (token-type t)
+  (cond ((pair? t) (car t))
+        (else t)))
+
+;; token-value : token -> value|#f
+;;
+;; Accesor used to get the value of a token.
+;; If the token has no associated value (e.g. keywords),
+;; #f is returned.
+(define (token-value t)
+  (cond ((pair? t) (cdr t))
+        (else #f)))
+
+
 
 
 
