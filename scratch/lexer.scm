@@ -201,12 +201,11 @@
 
 
 ;;;; Tests
-(define (all? list)
-  (cond ((null? list) #t)
-        (else (and (car list) (all? (cdr list))))))
 
 (define (test-null)
-  (eq? 'eof (tokenize (make-stream ""))))
+  (and
+   (eq? 'eof (tokenize (make-stream "")))
+   (null? (lex ""))))
 
 (define (test-open-paren)
   (equal? (lex "(") '(open-paren)))
@@ -215,14 +214,12 @@
   (equal? (lex ")") '(close-paren)))
 
 (define (test-quote)
-  (all?
-   (list
-    (equal? (lex "'") '(quote-symbol))
-    (equal? (lex "'x") '(quote-symbol (ident . "x"))))))
+  (and
+   (equal? (lex "'") '(quote-symbol))
+   (equal? (lex "'x") '(quote-symbol (ident . "x")))))
 
 (define (test-keywords)
-  (all?
-   (list
+  (and
     (equal? (lex "define") '(define))
     (equal? (lex "lambda") '(lambda))
     (equal? (lex "let")    '(let))
@@ -231,14 +228,13 @@
     (equal? (lex "cond")   '(cond))
     (equal? (lex "if")     '(if))
     (equal? (lex "quote")  '(quote))
-    )))
+    ))
 
 
 (define (run-tests)
-  (all?
-   (list (test-null)
-         (test-open-paren)
-         (test-close-paren)
-         (test-quote)
-         (test-keywords)
-         )))
+  (and (test-null)
+       (test-open-paren)
+       (test-close-paren)
+       (test-quote)
+       (test-keywords)
+       ))
