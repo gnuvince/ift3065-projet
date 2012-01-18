@@ -145,7 +145,7 @@
 ;; tokenize : stream -> token
 ;;
 ;; Consume characters from the stream and return the next token.
-;; Invalid characters raise an error.
+;; Invalid characters return #f.
 (define (tokenize stream)
   (let ((token
          (cond
@@ -179,9 +179,7 @@
                    (lexeme-numeric ident)
                    (cons 'ident ident))))
 
-           (else (error
-                  (string-append "unknown character: "
-                                 (make-string 1 (stream 'next))))))))
+           (else #f))))
     token))
 
 
@@ -196,3 +194,51 @@
          ((eq? token 'eof) '())
          (else (cons token (loop))))))
     (loop)))
+
+
+
+
+
+
+;;;; Tests
+(define (all? list)
+  (cond ((null? list) #t)
+        (else (and (car list) (all? (cdr list))))))
+
+(define (test-null)
+  (eq? 'eof (tokenize (make-stream ""))))
+
+(define (test-open-paren)
+  (equal? (lex "(") '(open-paren)))
+
+(define (test-close-paren)
+  (equal? (lex ")") '(close-paren)))
+
+(define (test-quote)
+  (all?
+   (list
+    (equal? (lex "'") '(quote-symbol))
+    (equal? (lex "'x") '(quote-symbol (ident . "x"))))))
+
+(define (test-keywords)
+  (all?
+   (list
+    (equal? (lex "define") '(define))
+    (equal? (lex "lambda") '(lambda))
+    (equal? (lex "let")    '(let))
+    (equal? (lex "set!")   '(set!))
+    (equal? (lex "do")   '(do))
+    (equal? (lex "cond")   '(cond))
+    (equal? (lex "if")     '(if))
+    (equal? (lex "quote")  '(quote))
+    )))
+
+
+(define (run-tests)
+  (all?
+   (list (test-null)
+         (test-open-paren)
+         (test-close-paren)
+         (test-quote)
+         (test-keywords)
+         )))
