@@ -66,6 +66,11 @@
   (stream 'advance)
   'comma)
 
+;; consume-comma : stream -> token
+(define (consume-arobas stream)
+  (stream 'advance)
+  'arobas)
+
 ;; consume-identifier : stream -> token
 ;;
 ;; Read characters, concatenating them into a string, until a
@@ -209,6 +214,8 @@
 
            ((char=? (stream 'next) #\,)   (consume-comma stream))
 
+           ((char=? (stream 'next) #\@)   (consume-arobas stream))
+
            ((char=? (stream 'next) #\")   (consume-string stream))
 
            ((char=? (stream 'next) #\#)   (consume-hash stream))
@@ -285,6 +292,11 @@
    (equal? (lex ",") '(comma))
    (equal? (lex ",x") '(comma (ident . "x")))))
 
+(define (test-arobas)
+  (and
+   (equal? (lex "@") '(arobas))
+   (equal? (lex ",@") '(comma arobas))))
+
 (define (test-true)
   (equal? (lex "#t") '(true)))
 
@@ -353,6 +365,7 @@
        (test-quote)
        (test-backquote)
        (test-comma)
+       (test-arobas)
        (test-true)
        (test-false)
        (test-keywords)
