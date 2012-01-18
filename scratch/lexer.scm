@@ -92,18 +92,29 @@
 
 
 ;; lexeme-keyword : string -> token|bool
+;;
+;; Keywords taken from R5RS, Section 7.1.1
 (define (lexeme-keyword lexeme)
-  (cond
-   ((string=? lexeme "define") 'define)
-   ((string=? lexeme "let")    'let)
-   ((string=? lexeme "lambda") 'lambda)
-   ((string=? lexeme "set!")   'set!)
-   ((string=? lexeme "do")     'do)
-   ((string=? lexeme "cond")   'cond)
-   ((string=? lexeme "if")     'if)
-   ((string=? lexeme "quote")  'quote)
-   (else #f)))
-
+  (let ((p (assoc lexeme '(("define" . define)
+                           ("else" . else)
+                           ("unquote" . unquote)
+                           ("unquote-splicing" . unquote-splicing)
+                           ("quote" . quote)
+                           ("lambda" . lambda)
+                           ("if" . if)
+                           ("set!" . set!)
+                           ("begin" . begin)
+                           ("cond" . cond)
+                           ("and" . and)
+                           ("or" . or)
+                           ("case" . case)
+                           ("let" . let)
+                           ("let*" . let-star)
+                           ("letrec" . letrec)
+                           ("do" . do)
+                           ("delay" . delay)
+                           ("quasiquote" . quasiquote)))))
+    (if p (cdr p) #f)))
 
 ;; lexeme-numeric : string -> token|bool
 (define (lexeme-numeric lexeme)
@@ -282,15 +293,26 @@
 
 (define (test-keywords)
   (and
-    (equal? (lex "define") '(define))
-    (equal? (lex "lambda") '(lambda))
-    (equal? (lex "let")    '(let))
-    (equal? (lex "set!")   '(set!))
-    (equal? (lex "do")   '(do))
-    (equal? (lex "cond")   '(cond))
-    (equal? (lex "if")     '(if))
-    (equal? (lex "quote")  '(quote))
-    ))
+   (equal? (lex "define") '(define))
+   (equal? (lex "else") '(else))
+   (equal? (lex "unquote") '(unquote))
+   (equal? (lex "unquote-splicing") '(unquote-splicing))
+   (equal? (lex "quote") '(quote))
+   (equal? (lex "lambda") '(lambda))
+   (equal? (lex "if") '(if))
+   (equal? (lex "set!") '(set!))
+   (equal? (lex "begin") '(begin))
+   (equal? (lex "cond") '(cond))
+   (equal? (lex "and") '(and))
+   (equal? (lex "or") '(or))
+   (equal? (lex "case") '(case))
+   (equal? (lex "let") '(let))
+   (equal? (lex "let*") '(let-star))
+   (equal? (lex "letrec") '(letrec))
+   (equal? (lex "do") '(do))
+   (equal? (lex "delay") '(delay))
+   (equal? (lex "quasiquote") '(quasiquote))
+   ))
 
 (define (test-whitespace)
   (and
