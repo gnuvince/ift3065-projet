@@ -54,6 +54,18 @@
   (stream 'advance)
   'quote-symbol)
 
+
+;; consume-backquote : stream -> token
+(define (consume-backquote stream)
+  (stream 'advance)
+  'backquote)
+
+
+;; consume-comma : stream -> token
+(define (consume-comma stream)
+  (stream 'advance)
+  'comma)
+
 ;; consume-identifier : stream -> token
 ;;
 ;; Read characters, concatenating them into a string, until a
@@ -151,6 +163,22 @@
            (consume-comment stream)))))
 
 
+
+
+(define (consume-hash stream)
+  (stream 'advance)                     ; consume the #
+  (let ((token (cond
+                ((char=? (stream 'next) #\t) 'true)
+                ((char=? (stream 'next) #\f) 'false)
+                ((char=? (stream 'next) #\\) (consume-char stream))
+                (else #f))))
+    (stream 'advance)
+    token))
+
+
+
+
+
 ;; tokenize : stream -> token
 ;;
 ;; Consume characters from the stream and return the next token.
@@ -166,9 +194,13 @@
 
            ((char=? (stream 'next) #\')   (consume-quote stream))
 
+           ((char=? (stream 'next) #\`)   (consume-backquote stream))
+
+           ((char=? (stream 'next) #\,)   (consume-comma stream))
+
            ((char=? (stream 'next) #\")   (consume-string stream))
 
-           ((char=? (stream 'next) #\#)   (consume-character stream))
+           ((char=? (stream 'next) #\#)   (consume-hash stream))
 
            ((char=? (stream 'next) #\;)
             (begin
@@ -232,6 +264,22 @@
    (equal? (lex "'") '(quote-symbol))
    (equal? (lex "'x") '(quote-symbol (ident . "x")))))
 
+(define (test-backquote)
+  (and
+   (equal? (lex "`") '(backquote))
+   (equal? (lex "`x") '(backquote (ident . "x")))))
+
+(define (test-comma)
+  (and
+   (equal? (lex ",") '(comma))
+   (equal? (lex ",x") '(comma (ident . "x")))))
+
+(define (test-true)
+  (equal? (lex "#t") '(true)))
+
+(define (test-false)
+  (equal? (lex "#f") '(false)))
+
 (define (test-keywords)
   (and
     (equal? (lex "define") '(define))
@@ -281,6 +329,10 @@
        (test-open-paren)
        (test-close-paren)
        (test-quote)
+       (test-backquote)
+       (test-comma)
+       (test-true)
+       (test-false)
        (test-keywords)
        (test-whitespace)
        (test-lex)
