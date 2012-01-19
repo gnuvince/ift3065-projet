@@ -7,13 +7,26 @@
 ;; - advance: moves to the cursor to the next character.
 (define (make-stream str)
   (let ((current 0)
+        (line 1)
+        (col 1)
         (size (string-length str)))
-    (lambda (msg)
+    (define (dispatch msg)
       (case msg
         ((next) (if (>= current size)
                     #\nul
                     (string-ref str current)))
-        ((advance) (set! current (+ current 1)))))))
+        ((advance)
+         (begin
+           (if (char=? (dispatch 'next) #\newline)
+               (begin
+                 (set! col 1)
+                 (set! line (+ line 1)))
+               (set! col (+ col 1)))
+           (set! current (+ current 1))))
+        ((col) col)
+        ((line) line)))
+    dispatch))
+
 
 
 ;; Definition of lexical elements used in Scheme.  The extended
@@ -99,25 +112,25 @@
 ;;
 ;; Keywords taken from R5RS, Section 7.1.1
 (define (lexeme-keyword lexeme)
-  (let ((p (assoc lexeme '(("define" . define)
-                           ("else" . else)
-                           ("unquote" . unquote)
+  (let ((p (assoc lexeme '(("define"           . define)
+                           ("else"             . else)
+                           ("unquote"          . unquote)
                            ("unquote-splicing" . unquote-splicing)
-                           ("quote" . quote)
-                           ("lambda" . lambda)
-                           ("if" . if)
-                           ("set!" . set!)
-                           ("begin" . begin)
-                           ("cond" . cond)
-                           ("and" . and)
-                           ("or" . or)
-                           ("case" . case)
-                           ("let" . let)
-                           ("let*" . let-star)
-                           ("letrec" . letrec)
-                           ("do" . do)
-                           ("delay" . delay)
-                           ("quasiquote" . quasiquote)))))
+                           ("quote"            . quote)
+                           ("lambda"           . lambda)
+                           ("if"               . if)
+                           ("set!"             . set!)
+                           ("begin"            . begin)
+                           ("cond"             . cond)
+                           ("and"              . and)
+                           ("or"               . or)
+                           ("case"             . case)
+                           ("let"              . let)
+                           ("let*"             . let-star)
+                           ("letrec"           . letrec)
+                           ("do"               . do)
+                           ("delay"            . delay)
+                           ("quasiquote"       . quasiquote)))))
     (if p (cdr p) #f)))
 
 ;; lexeme-numeric : string -> token|bool
@@ -193,55 +206,59 @@
 
 
 
-
 ;; tokenize : stream -> token
 ;;
 ;; Consume characters from the stream and return the next token.
 ;; Invalid characters return #f.
 (define (tokenize stream)
-  (let ((token
+  (let ((line (stream 'line))
+        (col (stream 'col))
+        (token
          (cond
-           ((char=? (stream 'next) #\nul) (consume-eof stream))
+          ((char=? (stream 'next) #\nul) (consume-eof stream))
 
-           ((char=? (stream 'next) #\()   (consume-open-paren stream))
+          ((char=? (stream 'next) #\()   (consume-open-paren stream))
 
-           ((char=? (stream 'next) #\))   (consume-close-paren stream))
+          ((char=? (stream 'next) #\))   (consume-close-paren stream))
 
-           ((char=? (stream 'next) #\')   (consume-quote stream))
+          ((char=? (stream 'next) #\')   (consume-quote stream))
 
-           ((char=? (stream 'next) #\`)   (consume-backquote stream))
+          ((char=? (stream 'next) #\`)   (consume-backquote stream))
 
-           ((char=? (stream 'next) #\,)   (consume-comma stream))
+          ((char=? (stream 'next) #\,)   (consume-comma stream))
 
-           ((char=? (stream 'next) #\")   (consume-string stream))
+          ((char=? (stream 'next) #\")   (consume-string stream))
 
-           ((char=? (stream 'next) #\#)   (consume-hash stream))
+          ((char=? (stream 'next) #\#)   (consume-hash stream))
 
-           ((char=? (stream 'next) #\;)
-            (begin
-              (consume-comment stream)
-              (tokenize stream)))
+          ((char=? (stream 'next) #\;)
+           (begin
+             (consume-comment stream)
+             (tokenize stream)))
 
-           ;; We'll skip all white space, then call `tokenize`
-           ;; recursively to return the next token.
-           ((char-whitespace? (stream 'next))
-            (begin
-              (consume-whitespace stream)
-              (tokenize stream)))
+          ;; We'll skip all white space, then call `tokenize`
+          ;; recursively to return the next token.
+          ((char-whitespace? (stream 'next))
+           (begin
+             (consume-whitespace stream)
+             (tokenize stream)))
 
-           ;; Keywords, numbers and identifiers are all read the same way:
-           ;; 1. Characters are read until we no longer have a char-identifier;
-           ;; 2. If the characters read represent a keyword, return a keyword token;
-           ;; 3. If the characters read represent a number, return a number token;
-           ;; 4. Otherwise, return an identifier token.
-           ((char-identifier? (stream 'next))
-            (let ((ident (consume-identifier stream)))
-               (or (lexeme-keyword ident)
-                   (lexeme-numeric ident)
-                   (cons 'ident ident))))
+          ;; Keywords, numbers and identifiers are all read the same way:
+          ;; 1. Characters are read until we no longer have a char-identifier;
+          ;; 2. If the characters read represent a keyword, return a keyword token;
+          ;; 3. If the characters read represent a number, return a number token;
+          ;; 4. Otherwise, return an identifier token.
+          ((char-identifier? (stream 'next))
+           (let ((ident (consume-identifier stream)))
+             (or (lexeme-keyword ident)
+                 (lexeme-numeric ident)
+                 (cons 'ident ident))))
 
-           (else #f))))
-    token))
+          (else #f))))
+    (if (token? token)
+        token
+        (make-token token line col))))
+
 
 
 ;; lex : string -> [token]
@@ -252,17 +269,30 @@
     (define (loop)
       (let ((token (tokenize stream)))
         (cond
-         ((eq? token 'eof) '())
+         ((eq? (token-type token) 'eof) '())
          (else (cons token (loop))))))
     (loop)))
 
+
+
+
+(define (make-token t line col)
+  (list 'token t line col))
+
+
+(define (token? t)
+  (and (list? t)
+       (= (length t) 4)
+       (eq? (car t) 'token)))
 
 ;; token-type : token -> type
 ;;
 ;; Accessor used to get the type of a token
 (define (token-type t)
-  (cond ((pair? t) (car t))
-        (else t)))
+  (let ((type-value (list-ref t 1)))
+    (if (pair? type-value)
+        (car type-value)
+        type-value)))
 
 ;; token-value : token -> value|#f
 ;;
@@ -270,8 +300,10 @@
 ;; If the token has no associated value (e.g. keywords),
 ;; #f is returned.
 (define (token-value t)
-  (cond ((pair? t) (cdr t))
-        (else #f)))
+  (let ((type-value (list-ref t 1)))
+    (if (pair? type-value)
+        (cdr type-value)
+        type-value)))
 
 
 
