@@ -255,6 +255,11 @@
                  (cons 'ident ident))))
 
           (else #f))))
+
+    ;; This is a little hackish; because token will be a full-fledged
+    ;; token instead of just the symbol if we were called recursively
+    ;; in the case of whitespace or comments, we don't want to wrap
+    ;; the token inside a token.
     (if (token? token)
         token
         (make-token token line col))))
@@ -306,87 +311,100 @@
         type-value)))
 
 
+;; token-symbol : token -> type+value
+(define (token-symbol t)
+  (list-ref t 1))
+
+;; token-line : token -> int
+(define (token-line t)
+  (list-ref t 2))
+
+;; token-col : token -> int
+(define (token-col t)
+  (list-ref t 3))
+
 
 
 
 
 ;;;; Tests
+(define (symbols string) (map token-symbol (lex string)))
 
-(define (test-null)
+(define (test-eof)
   (and
-   (eq? 'eof (tokenize (make-stream "")))
+   (eq? (token-type (tokenize (make-stream ""))) 'eof)
    (null? (lex ""))))
 
 (define (test-open-paren)
-  (equal? (lex "(") '(open-paren)))
+  (equal? (symbols "(") '(open-paren)))
 
 (define (test-close-paren)
-  (equal? (lex ")") '(close-paren)))
+  (equal? (symbols ")") '(close-paren)))
 
 (define (test-quote)
   (and
-   (equal? (lex "'") '(quote-symbol))
-   (equal? (lex "'x") '(quote-symbol (ident . "x")))))
+   (equal? (symbols "'") '(quote-symbol))
+   (equal? (symbols "'x") '(quote-symbol (ident . "x")))))
 
 (define (test-backquote)
   (and
-   (equal? (lex "`") '(backquote))
-   (equal? (lex "`x") '(backquote (ident . "x")))))
+   (equal? (symbols "`") '(backquote))
+   (equal? (symbols "`x") '(backquote (ident . "x")))))
 
 (define (test-comma)
   (and
-   (equal? (lex ",") '(comma))
-   (equal? (lex ",x") '(comma (ident . "x")))))
+   (equal? (symbols ",") '(comma))
+   (equal? (symbols ",x") '(comma (ident . "x")))))
 
 (define (test-arobas)
   (and
-   (equal? (lex "@") '((ident . "@")))
-   (equal? (lex ",@") '(comma-at))))
+   (equal? (symbols "@") '((ident . "@")))
+   (equal? (symbols ",@") '(comma-at))))
 
 (define (test-true)
-  (equal? (lex "#t") '(true)))
+  (equal? (symbols "#t") '(true)))
 
 (define (test-false)
-  (equal? (lex "#f") '(false)))
+  (equal? (symbols "#f") '(false)))
 
 (define (test-keywords)
   (and
-   (equal? (lex "define") '(define))
-   (equal? (lex "else") '(else))
-   (equal? (lex "unquote") '(unquote))
-   (equal? (lex "unquote-splicing") '(unquote-splicing))
-   (equal? (lex "quote") '(quote))
-   (equal? (lex "lambda") '(lambda))
-   (equal? (lex "if") '(if))
-   (equal? (lex "set!") '(set!))
-   (equal? (lex "begin") '(begin))
-   (equal? (lex "cond") '(cond))
-   (equal? (lex "and") '(and))
-   (equal? (lex "or") '(or))
-   (equal? (lex "case") '(case))
-   (equal? (lex "let") '(let))
-   (equal? (lex "let*") '(let-star))
-   (equal? (lex "letrec") '(letrec))
-   (equal? (lex "do") '(do))
-   (equal? (lex "delay") '(delay))
-   (equal? (lex "quasiquote") '(quasiquote))
+   (equal? (symbols "define") '(define))
+   (equal? (symbols "else") '(else))
+   (equal? (symbols "unquote") '(unquote))
+   (equal? (symbols "unquote-splicing") '(unquote-splicing))
+   (equal? (symbols "quote") '(quote))
+   (equal? (symbols "lambda") '(lambda))
+   (equal? (symbols "if") '(if))
+   (equal? (symbols "set!") '(set!))
+   (equal? (symbols "begin") '(begin))
+   (equal? (symbols "cond") '(cond))
+   (equal? (symbols "and") '(and))
+   (equal? (symbols "or") '(or))
+   (equal? (symbols "case") '(case))
+   (equal? (symbols "let") '(let))
+   (equal? (symbols "let*") '(let-star))
+   (equal? (symbols "letrec") '(letrec))
+   (equal? (symbols "do") '(do))
+   (equal? (symbols "delay") '(delay))
+   (equal? (symbols "quasiquote") '(quasiquote))
    ))
 
 (define (test-whitespace)
   (and
-   (equal? (lex "") '())
-   (equal? (lex "  x  ") '((ident . "x")))
-   (equal? (lex "\tx\n\ny ") '((ident . "x") (ident . "y")))
+   (equal? (symbols "") '())
+   (equal? (symbols "  x  ") '((ident . "x")))
+   (equal? (symbols "\tx\n\ny ") '((ident . "x") (ident . "y")))
    ))
 
 (define (test-comment)
   (and
-   (equal? (lex "; hello") '())
-   (equal? (lex "x ; comment \n y") '((ident . "x") (ident . "y")))))
+   (equal? (symbols "; hello") '())
+   (equal? (symbols "x ; comment \n y") '((ident . "x") (ident . "y")))))
 
 (define (test-lex)
   (and
-   (equal? (lex "(let ((x 10)) (* x 2)) ; 10 * 2")
+   (equal? (symbols "(let ((x 10)) (* x 2)) ; 10 * 2")
            '(open-paren
              let
              open-paren
@@ -405,7 +423,7 @@
 
 
 (define (run-tests)
-  (and (test-null)
+  (and (test-eof)
        (test-open-paren)
        (test-close-paren)
        (test-quote)
