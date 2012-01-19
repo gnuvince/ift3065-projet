@@ -273,11 +273,12 @@
 
 
 
-
+;; make-token : type+value -> int -> int -> token
 (define (make-token t line col)
   (list 'token t line col))
 
 
+;; token? : any -> bool
 (define (token? t)
   (and (list? t)
        (= (length t) 4)
