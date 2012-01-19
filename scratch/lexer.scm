@@ -94,7 +94,7 @@
              (stream 'advance)
              (cons c (loop))))
           (else '())))
-   (list->string (loop)))
+  (list->string (loop)))
 
 
 ;; consume-whitespace : stream -> ()
@@ -211,59 +211,52 @@
 ;; Consume characters from the stream and return the next token.
 ;; Invalid characters return #f.
 (define (tokenize stream)
-  (let ((line (stream 'line))
-        (col (stream 'col))
-        (token
-         (cond
-          ((char=? (stream 'next) #\nul) (consume-eof stream))
+  (let* ((line (stream 'line))
+         (col (stream 'col))
+         (token
+          (cond
+           ((char=? (stream 'next) #\nul) (make-token (consume-eof stream) line col))
 
-          ((char=? (stream 'next) #\()   (consume-open-paren stream))
+           ((char=? (stream 'next) #\()   (make-token (consume-open-paren stream) line col))
 
-          ((char=? (stream 'next) #\))   (consume-close-paren stream))
+           ((char=? (stream 'next) #\))   (make-token (consume-close-paren stream) line col))
 
-          ((char=? (stream 'next) #\')   (consume-quote stream))
+           ((char=? (stream 'next) #\')   (make-token (consume-quote stream) line col))
 
-          ((char=? (stream 'next) #\`)   (consume-backquote stream))
+           ((char=? (stream 'next) #\`)   (make-token (consume-backquote stream) line col))
 
-          ((char=? (stream 'next) #\,)   (consume-comma stream))
+           ((char=? (stream 'next) #\,)   (make-token (consume-comma stream) line col))
 
-          ((char=? (stream 'next) #\")   (consume-string stream))
+           ((char=? (stream 'next) #\")   (make-token (consume-string stream) line col))
 
-          ((char=? (stream 'next) #\#)   (consume-hash stream))
+           ((char=? (stream 'next) #\#)   (make-token (consume-hash stream) line col))
 
-          ((char=? (stream 'next) #\;)
-           (begin
-             (consume-comment stream)
-             (tokenize stream)))
+           ((char=? (stream 'next) #\;)
+            (begin
+              (consume-comment stream)
+              (tokenize stream)))
 
-          ;; We'll skip all white space, then call `tokenize`
-          ;; recursively to return the next token.
-          ((char-whitespace? (stream 'next))
-           (begin
-             (consume-whitespace stream)
-             (tokenize stream)))
+           ;; We'll skip all white space, then call `tokenize`
+           ;; recursively to return the next token.
+           ((char-whitespace? (stream 'next))
+            (begin
+              (consume-whitespace stream)
+              (tokenize stream)))
 
-          ;; Keywords, numbers and identifiers are all read the same way:
-          ;; 1. Characters are read until we no longer have a char-identifier;
-          ;; 2. If the characters read represent a keyword, return a keyword token;
-          ;; 3. If the characters read represent a number, return a number token;
-          ;; 4. Otherwise, return an identifier token.
-          ((char-identifier? (stream 'next))
-           (let ((ident (consume-identifier stream)))
-             (or (lexeme-keyword ident)
-                 (lexeme-numeric ident)
-                 (cons 'ident ident))))
+           ;; Keywords, numbers and identifiers are all read the same way:
+           ;; 1. Characters are read until we no longer have a char-identifier;
+           ;; 2. If the characters read represent a keyword, return a keyword token;
+           ;; 3. If the characters read represent a number, return a number token;
+           ;; 4. Otherwise, return an identifier token.
+           ((char-identifier? (stream 'next))
+            (let* ((ident (consume-identifier stream))
+                   (symbol (or (lexeme-keyword ident)
+                               (lexeme-numeric ident)
+                               (cons 'ident ident))))
+              (make-token symbol line col)))
 
-          (else #f))))
-
-    ;; This is a little hackish; because token will be a full-fledged
-    ;; token instead of just the symbol if we were called recursively
-    ;; in the case of whitespace or comments, we don't want to wrap
-    ;; the token inside a token.
-    (if (token? token)
-        token
-        (make-token token line col))))
-
+           (else #f))))
+    token))
 
 
 ;; lex : string -> [token]
