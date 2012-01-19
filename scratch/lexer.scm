@@ -288,7 +288,7 @@
 ;;
 ;; Accessor used to get the type of a token
 (define (token-type t)
-  (let ((type-value (list-ref t 1)))
+  (let ((type-value (token-symbol t)))
     (if (pair? type-value)
         (car type-value)
         type-value)))
@@ -299,11 +299,10 @@
 ;; If the token has no associated value (e.g. keywords),
 ;; #f is returned.
 (define (token-value t)
-  (let ((type-value (list-ref t 1)))
+  (let ((type-value (token-symbol t)))
     (if (pair? type-value)
         (cdr type-value)
         type-value)))
-
 
 ;; token-symbol : token -> type+value
 (define (token-symbol t)
