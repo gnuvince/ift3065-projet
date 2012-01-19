@@ -45,6 +45,10 @@
       (member c extended)))
 
 
+(define (end-of-token? c)
+  (or (char-whitespace? c)
+      (char=? c #\nul)))
+
 
 ;; consume-eof : stream -> token
 (define (consume-eof stream)
@@ -198,12 +202,28 @@
   (let ((token (cond
                 ((char=? (stream 'next) #\t) 'true)
                 ((char=? (stream 'next) #\f) 'false)
-                ((char=? (stream 'next) #\\) (consume-char stream))
+                ((char=? (stream 'next) #\\) (cons 'char (consume-char stream)))
                 (else #f))))
     (stream 'advance)
     token))
 
 
+(define (consume-char stream)
+  (define (loop)
+    (if (end-of-token? (stream 'next))
+        '()
+        (let ((c (stream 'next)))
+          (stream 'advance)
+          (cons c (loop)))))
+  (stream 'advance)                     ; consume the \
+  (let* ((chars (loop))
+         (char (cond ((null? chars)
+                      (cond ((char=? (stream 'next) #\space) #\space)
+                            ((char=? (stream 'next) #\tab) #\tab)
+                            ((char=? (stream 'next) #\newline) #\newline)))
+                     ((= 1 (length chars)) (car chars))
+                     (else #\nul))))
+    char))
 
 
 ;; tokenize : stream -> token
