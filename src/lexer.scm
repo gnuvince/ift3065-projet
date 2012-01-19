@@ -205,21 +205,20 @@
 (define (consume-hash stream)
   (stream 'advance)                     ; consume the #
   (let ((token (cond
-                ((char=? (stream 'next) #\t) 'true)
-                ((char=? (stream 'next) #\f) 'false)
+                ((char=? (stream 'next) #\t) (begin (stream 'advance) 'true))
+                ((char=? (stream 'next) #\f) (begin (stream 'advance) 'false))
                 ((char=? (stream 'next) #\\) (cons 'char (consume-char stream)))
                 (else #f))))
-    (stream 'advance)
     token))
 
 
 (define (consume-char stream)
   (define (loop)
-    (if (end-of-token? (stream 'next))
-        '()
+    (if (char-identifier? (stream 'next))
         (let ((c (stream 'next)))
           (stream 'advance)
-          (cons c (loop)))))
+          (cons c (loop)))
+        '()))
   (stream 'advance)                     ; consume the \
   (let* ((chars (loop))
          (char (cond ((null? chars)
@@ -227,7 +226,11 @@
                             ((char=? (stream 'next) #\tab) #\tab)
                             ((char=? (stream 'next) #\newline) #\newline)))
                      ((= 1 (length chars)) (car chars))
-                     (else #\nul))))
+                     ((string=? (list->string chars) "nul") #\nul)
+                     ((string=? (list->string chars) "tab") #\tab)
+                     ((string=? (list->string chars) "space") #\space)
+                     ((string=? (list->string chars) "newline") #\newline)
+                     (else #f))))
     char))
 
 
