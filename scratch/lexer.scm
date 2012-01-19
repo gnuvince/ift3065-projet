@@ -416,16 +416,20 @@
 
 
 (define (run-tests)
-  (and (test-eof)
-       (test-open-paren)
-       (test-close-paren)
-       (test-quote)
-       (test-backquote)
-       (test-comma)
-       (test-arobas)
-       (test-true)
-       (test-false)
-       (test-keywords)
-       (test-whitespace)
-       (test-lex)
-       ))
+  (for-each (lambda (t)
+              (display t)
+              (display ": ")
+              (display (if (t) "OK" "FAIL"))
+              (newline))
+            (list test-eof
+                  test-open-paren
+                  test-close-paren
+                  test-quote
+                  test-backquote
+                  test-comma
+                  test-arobas
+                  test-true
+                  test-false
+                  test-keywords
+                  test-whitespace
+                  test-lex)))
