@@ -55,35 +55,35 @@
       (char=? c #\nul)))
 
 
-;; consume-eof : stream -> token
+;; consume-eof : stream -> symbol
 (define (consume-eof stream)
   (stream 'advance)
   'eof)
 
-;; consume-open-paren : stream -> token
+;; consume-open-paren : stream -> symbol
 (define (consume-open-paren stream)
   (stream 'advance)
   'open-paren)
 
-;; consume-close-paren : stream -> token
+;; consume-close-paren : stream -> symbol
 (define (consume-close-paren stream)
   (stream 'advance)
   'close-paren)
 
-;; consume-quote : stream -> token
+;; consume-quote : stream -> symbol
 ;; TODO: Should we return quote-symbol or quote like the keyword?
 (define (consume-quote stream)
   (stream 'advance)
   'quote-symbol)
 
 
-;; consume-backquote : stream -> token
+;; consume-backquote : stream -> symbol
 (define (consume-backquote stream)
   (stream 'advance)
   'backquote)
 
 
-;; consume-comma : stream -> token
+;; consume-comma : stream -> symbol
 (define (consume-comma stream)
   (stream 'advance)
   (if (char=? (stream 'next) #\@)
@@ -92,7 +92,7 @@
         'comma-at)
       'comma))
 
-;; consume-identifier : stream -> token
+;; consume-identifier : stream -> symbol
 ;;
 ;; Read characters, concatenating them into a string, until a
 ;; non-identifier character is read.
@@ -117,7 +117,7 @@
 
 
 
-;; lexeme-keyword : string -> token|bool
+;; lexeme-keyword : string -> symbol|bool
 ;;
 ;; Keywords taken from R5RS, Section 7.1.1
 (define (lexeme-keyword lexeme)
@@ -142,7 +142,7 @@
                            ("quasiquote"       . quasiquote)))))
     (if p (cdr p) #f)))
 
-;; lexeme-numeric : string -> token|bool
+;; lexeme-numeric : string -> symbol|bool
 (define (lexeme-numeric lexeme)
   (let ((n (string->number lexeme)))
     (if n
@@ -151,7 +151,7 @@
 
 
 
-;; consume-string : stream -> token
+;; consume-string : stream -> symbol
 (define (consume-string stream)
   (define (loop escaped?)
     (cond
@@ -201,7 +201,11 @@
 
 
 
-
+;; consume-hash : stream -> symbol
+;;
+;; consume the hash character.  If the next character is t or f,
+;; return the corresponding boolean value.  If the next character is a
+;; \, consume a character.
 (define (consume-hash stream)
   (stream 'advance)                     ; consume the #
   (let ((token (cond
@@ -212,27 +216,34 @@
     token))
 
 
-(define (consume-char stream)
-  (define (loop)
-    (if (char-identifier? (stream 'next))
-        (let ((c (stream 'next)))
-          (stream 'advance)
-          (cons c (loop)))
-        '()))
-  (stream 'advance)                     ; consume the \
-  (let* ((chars (loop))
-         (char (cond ((null? chars)
-                      (cond ((char=? (stream 'next) #\space) #\space)
-                            ((char=? (stream 'next) #\tab) #\tab)
-                            ((char=? (stream 'next) #\newline) #\newline)))
-                     ((= 1 (length chars)) (car chars))
-                     ((string=? (list->string chars) "nul") #\nul)
-                     ((string=? (list->string chars) "tab") #\tab)
-                     ((string=? (list->string chars) "space") #\space)
-                     ((string=? (list->string chars) "newline") #\newline)
-                     (else #f))))
-    char))
 
+;; consume-char : stream -> symbol
+;;
+;; If the character after the \ is non-alphabetic, return the
+;; character's ascii code.  Otherwise, try to read a character name.
+;; If the character name is a single letter, return that letter's
+;; ascii code.  If the character name is a word, return the associated
+;; character code.
+(define (consume-char stream)
+  (define (read-char-name stream)
+    (let ((c (stream 'next)))
+      (cond ((char-alphabetic? c) (stream 'advance) (cons c (read-char-name stream)))
+            (else '()))))
+  (stream 'advance)                     ; consume the \
+  (let ((c (stream 'next)))
+    (cond
+     ((char-alphabetic? c)
+      (let ((chars (read-char-name stream)))
+        (cond ((null? chars) #f)
+              ((= 1 (length chars)) (char->integer (car chars)))
+              ((string=? (list->string chars) "nul") (char->integer #\nul))
+              ((string=? (list->string chars) "tab") (char->integer #\tab))
+              ((string=? (list->string chars) "newline") (char->integer #\newline))
+              ((string=? (list->string chars) "space") (char->integer #\space))
+              (else #f))))
+     (else
+      (stream 'advance)
+      (char->integer c)))))
 
 ;; tokenize : stream -> token
 ;;
