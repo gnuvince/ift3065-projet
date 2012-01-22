@@ -483,6 +483,16 @@
      (equal? (token-type c) #f)
      (equal? (token-value c) #f))))
 
+(define (test-invalid-tokens)
+  (and
+   (token-error? (car (lex "[")))
+   (token-error? (car (lex "]")))
+   (token-error? (car (lex "{")))
+   (token-error? (car (lex "}")))
+   (token-error? (car (lex "#\\foo")))
+   ))
+
+
 (define (run-tests)
   (for-each (lambda (t)
               (display t)
