@@ -296,7 +296,9 @@
                                    (lexeme-numeric ident)
                                    (cons 'ident ident))))
               identifier))
-           (else #f))))
+           (else
+            (stream 'advance)
+            #f))))
     (make-token symbol line col)))
 
 
