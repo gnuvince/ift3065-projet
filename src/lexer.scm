@@ -330,6 +330,10 @@
        (= (length t) 4)
        (eq? (car t) 'token)))
 
+(define (token-error? t)
+  (and (list? t)
+       (eq? (car t) 'token-error)))
+
 ;; token-type : token -> type
 ;;
 ;; Accessor used to get the type of a token
@@ -346,21 +350,19 @@
 ;; #f is returned.
 (define (token-value t)
   (let ((type-value (token-symbol t)))
-    (if (pair? type-value)
-        (cdr type-value)
-        type-value)))
+    (and (pair? type-value) (cdr type-value))))
 
 ;; token-symbol : token -> type+value
 (define (token-symbol t)
-  (list-ref t 1))
+  (and (token? t) (list-ref t 1)))
 
 ;; token-line : token -> int
 (define (token-line t)
-  (list-ref t 2))
+  (and (token? t) (list-ref t 2)))
 
 ;; token-col : token -> int
 (define (token-col t)
-  (list-ref t 3))
+  (and (token? t) (list-ref t 3)))
 
 
 
@@ -461,6 +463,26 @@
    ))
 
 
+(define (test-make-token)
+  (let ((a (make-token '(type . value) 1 1))
+        (b (make-token 'type 1 1))
+        (c (make-token #f 1 1)))
+    (and (token? a)
+         (token? b)
+         (token-error? c))))
+
+(define (test-token-accessors)
+  (let ((a (make-token '(type . value) 1 1))
+        (b (make-token 'type 1 1))
+        (c (make-token #f 1 1)))
+    (and
+     (equal? (token-type a) 'type)
+     (equal? (token-value a) 'value)
+     (equal? (token-type b) 'type)
+     (equal? (token-value b) #f)
+     (equal? (token-type c) #f)
+     (equal? (token-value c) #f))))
+
 (define (run-tests)
   (for-each (lambda (t)
               (display t)
@@ -478,6 +500,8 @@
                   test-false
                   test-keywords
                   test-whitespace
+                  test-make-token
+                  test-token-accessors
                   test-lex)))
 
 (define (self-lex)
