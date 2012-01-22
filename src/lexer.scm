@@ -211,7 +211,9 @@
   (let ((token (cond
                 ((char=? (stream 'next) #\t) (begin (stream 'advance) 'true))
                 ((char=? (stream 'next) #\f) (begin (stream 'advance) 'false))
-                ((char=? (stream 'next) #\\) (cons 'char (consume-char stream)))
+                ((char=? (stream 'next) #\\)
+                 (let ((char (consume-char stream)))
+                   (and char (cons 'char char))))
                 (else #f))))
     token))
 
@@ -229,6 +231,7 @@
     (let ((c (stream 'next)))
       (cond ((char-alphabetic? c) (stream 'advance) (cons c (read-char-name stream)))
             (else '()))))
+
   (stream 'advance)                     ; consume the \
   (let ((c (stream 'next)))
     (cond
@@ -245,42 +248,42 @@
       (stream 'advance)
       (char->integer c)))))
 
-;; tokenize : stream -> token
+
+
+(define (skip-whitespace-and-comments stream)
+  (cond ((char-whitespace? (stream 'next))
+         (consume-whitespace stream)
+         (skip-whitespace-and-comments stream))
+        ((char=? (stream 'next) #\;)
+         (consume-comment stream)
+         (skip-whitespace-and-comments stream))))
+
+
+;; get-token : stream -> token
 ;;
 ;; Consume characters from the stream and return the next token.
 ;; Invalid characters return #f.
-(define (tokenize stream)
+(define (get-token stream)
+  (skip-whitespace-and-comments stream)
   (let* ((line (stream 'line))
          (col (stream 'col))
-         (token
+         (symbol
           (cond
-           ((char=? (stream 'next) #\nul) (make-token (consume-eof stream) line col))
+           ((char=? (stream 'next) #\nul) (consume-eof stream))
 
-           ((char=? (stream 'next) #\()   (make-token (consume-open-paren stream) line col))
+           ((char=? (stream 'next) #\()   (consume-open-paren stream))
 
-           ((char=? (stream 'next) #\))   (make-token (consume-close-paren stream) line col))
+           ((char=? (stream 'next) #\))   (consume-close-paren stream))
 
-           ((char=? (stream 'next) #\')   (make-token (consume-quote stream) line col))
+           ((char=? (stream 'next) #\')   (consume-quote stream))
 
-           ((char=? (stream 'next) #\`)   (make-token (consume-backquote stream) line col))
+           ((char=? (stream 'next) #\`)   (consume-backquote stream))
 
-           ((char=? (stream 'next) #\,)   (make-token (consume-comma stream) line col))
+           ((char=? (stream 'next) #\,)   (consume-comma stream))
 
-           ((char=? (stream 'next) #\")   (make-token (consume-string stream) line col))
+           ((char=? (stream 'next) #\")   (consume-string stream))
 
-           ((char=? (stream 'next) #\#)   (make-token (consume-hash stream) line col))
-
-           ((char=? (stream 'next) #\;)
-            (begin
-              (consume-comment stream)
-              (tokenize stream)))
-
-           ;; We'll skip all white space, then call `tokenize`
-           ;; recursively to return the next token.
-           ((char-whitespace? (stream 'next))
-            (begin
-              (consume-whitespace stream)
-              (tokenize stream)))
+           ((char=? (stream 'next) #\#)   (consume-hash stream))
 
            ;; Keywords, numbers and identifiers are all read the same way:
            ;; 1. Characters are read until we no longer have a char-identifier;
@@ -289,22 +292,22 @@
            ;; 4. Otherwise, return an identifier token.
            ((char-identifier? (stream 'next))
             (let* ((ident (consume-identifier stream))
-                   (symbol (or (lexeme-keyword ident)
-                               (lexeme-numeric ident)
-                               (cons 'ident ident))))
-              (make-token symbol line col)))
-
+                   (identifier (or (lexeme-keyword ident)
+                                   (lexeme-numeric ident)
+                                   (cons 'ident ident))))
+              identifier))
            (else #f))))
-    token))
+    (make-token symbol line col)))
+
 
 
 ;; lex : string -> [token]
 ;;
-;; Call `tokenize` until EOF, accumulating tokens into a list.
+;; Call `get-token` until EOF, accumulating tokens into a list.
 (define (lex str)
   (let ((stream (make-stream str)))
     (define (loop)
-      (let ((token (tokenize stream)))
+      (let ((token (get-token stream)))
         (cond
          ((eq? (token-type token) 'eof) '())
          (else (cons token (loop))))))
@@ -313,8 +316,10 @@
 
 
 ;; make-token : type+value -> int -> int -> token
-(define (make-token t line col)
-  (list 'token t line col))
+(define (make-token tv line col)
+  (if tv
+      (list 'token tv line col)
+      (list 'token-error line col)))
 
 
 ;; token? : any -> bool
@@ -364,7 +369,7 @@
 
 (define (test-eof)
   (and
-   (eq? (token-type (tokenize (make-stream ""))) 'eof)
+   (eq? (token-type (get-token (make-stream ""))) 'eof)
    (null? (lex ""))))
 
 (define (test-open-paren)
@@ -401,25 +406,25 @@
 
 (define (test-keywords)
   (and
-   (equal? (symbols "define") '(define))
-   (equal? (symbols "else") '(else))
-   (equal? (symbols "unquote") '(unquote))
+   (equal? (symbols "define")           '(define))
+   (equal? (symbols "else")             '(else))
+   (equal? (symbols "unquote")          '(unquote))
    (equal? (symbols "unquote-splicing") '(unquote-splicing))
-   (equal? (symbols "quote") '(quote))
-   (equal? (symbols "lambda") '(lambda))
-   (equal? (symbols "if") '(if))
-   (equal? (symbols "set!") '(set!))
-   (equal? (symbols "begin") '(begin))
-   (equal? (symbols "cond") '(cond))
-   (equal? (symbols "and") '(and))
-   (equal? (symbols "or") '(or))
-   (equal? (symbols "case") '(case))
-   (equal? (symbols "let") '(let))
-   (equal? (symbols "let*") '(let-star))
-   (equal? (symbols "letrec") '(letrec))
-   (equal? (symbols "do") '(do))
-   (equal? (symbols "delay") '(delay))
-   (equal? (symbols "quasiquote") '(quasiquote))
+   (equal? (symbols "quote")            '(quote))
+   (equal? (symbols "lambda")           '(lambda))
+   (equal? (symbols "if")               '(if))
+   (equal? (symbols "set!")             '(set!))
+   (equal? (symbols "begin")            '(begin))
+   (equal? (symbols "cond")             '(cond))
+   (equal? (symbols "and")              '(and))
+   (equal? (symbols "or")               '(or))
+   (equal? (symbols "case")             '(case))
+   (equal? (symbols "let")              '(let))
+   (equal? (symbols "let*")             '(let-star))
+   (equal? (symbols "letrec")           '(letrec))
+   (equal? (symbols "do")               '(do))
+   (equal? (symbols "delay")            '(delay))
+   (equal? (symbols "quasiquote")       '(quasiquote))
    ))
 
 (define (test-whitespace)
