@@ -50,11 +50,6 @@
       (member c extended)))
 
 
-(define (end-of-token? c)
-  (or (char-whitespace? c)
-      (char=? c #\nul)))
-
-
 ;; consume-eof : stream -> symbol
 (define (consume-eof stream)
   (stream 'advance)

@@ -1,7 +1,8 @@
 * Lexer
 ** TODO More unit tests
-** TODO Better handling of incorrect in input
+** DONE Better handling of incorrect in input
+CLOSED: [2012-01-22 Sun 22:28]
 - Modify signature of make-token to:
   type -> symbol|#f -> int -> int -> token
   + If symbol = #f, store only the type
-- If type = #f, throw an error or return #f?
+- If value = #f, throw an error or return #f?
