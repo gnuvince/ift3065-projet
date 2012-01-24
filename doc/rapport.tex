@@ -1,0 +1,172 @@
+\documentclass[11pt]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{multicol}
+
+\begin{document}
+
+
+\title{IFT3065 - Rapport sur SINS}
+\author{Vincent Foley-Bourgon (FOLV08078309) \\
+Eric Thivierge (THIE09016601)}
+\maketitle
+
+\abstract
+
+\emph{SINS} (Scheme IN Scheme) est un compilateur Scheme écrit dans le
+langage Scheme dans le cadre du cours IFT3065 de la session hiver 2012
+à l'Université de Montréal.  Ce rapport décrit les différentes parties
+du compilateur, les problèmes et difficultés rencontrés durant son
+écriture et les solutions mises en place pour résoudre ces problèmes.
+
+\chapter{Phase d'analyse}
+
+\section{Analyse lexicale}
+
+\subsection{Introduction}
+La première phase habituelle d'un compilateur est de transformer un
+flux de caractères représentant un programme source en un flux de
+lexèmes.  Dans ce flux sortant, les espaces blancs et les commentaires
+sont éliminés, et les caractères représentant des nombres ou des mots
+sont regroupés ensemble pour une analyse syntaxique plus facile.
+
+Il existe de nombreux outils automatisés qui permettent de faire
+l'analyse lexicale; \emph{lex}, \emph{flex} et \emph{silex} sont de
+tels outils.  Malgré leur disponibilité, nous avons décidé de ne pas
+utiliser ces outils et de plutôt créer notre propre analyseur lexical.
+Cette décision a été prise afin de mieux comprendre les détails de
+plus bas niveau, ainsi que les difficultés d'implantation de cette
+phase.
+
+\subsection{Structures de données}
+
+Afin de faire l'analyse lexicale d'un programme source, deux
+structures de données principales ont été nécessaires: un type flux
+(\emph{stream}), et un type lexème (\emph{token}).
+
+\subsubsection{Stream}
+
+La fonction \emph{make-stream} prend en entrée une chaîne de
+caractères et retourne une structure possédant 3 attributs privés et 4
+opérations.
+
+Les attributs sont les suivants:
+
+\begin{itemize}
+\item \emph{current}: la position absolue dans le flux;
+\item \emph{line}: la ligne courante;
+\item \emph{col}: la colonne courante.
+\end{itemize}
+
+Les opérations sont les suivantes:
+
+\begin{itemize}
+\item \emph{next}: cette fonction retourne le caractère courant du
+  flux.  Si le flux est terminé, elle retourne le caractère nul.
+\item \emph{advance}: cette fonction fait avancer le curseur d'un
+  caractère dans le flux.  Les attributs de ligne et de colonnes sont
+  mis à jour.  \emph{Advance} n'a pas de valeur de retour.
+\item \emph{line}: retourne la ligne courante.
+\item \emph{col}: retourne la colonne courante.
+\end{itemize}
+
+Comme l'analyseur lexicale utilise le flux uniquement via son
+interface, il serait trivial d'ajouter du support pour d'autre types
+de données (par exemple: lire d'un fichier sur disque).
+
+\subsubsection{Token}
+
+Un lexème est représenté par une liste ayant la forme suivante:
+
+\begin{verbatim}
+('token <type + valeur> <ligne> <colonne>)
+\end{verbatim}
+
+Si le lexème a seulement un type (par exemple: un mot clé), la
+deuxième composante est un symbole.  Si le lexème a une donnée
+associée (par exemple: un nombre entier), la deuxième composante est
+une paire dont la première composante est un symbole représentant le
+type et la deuxième composante est la valeur associée.
+
+Une erreur dans un lexème (par exemple: constante de caractère
+invalide) est représentée par une liste ayant la forme suivante:
+
+\begin{verbatim}
+('token-error <ligne> <colonne>)
+\end{verbatim}
+
+
+On peut manipuler les lexèmes à l'aide des fonctions suivantes:
+
+\begin{itemize}
+\item \emph{make-token}: cette fonction permet de créer un lexème en
+  donnant son type et sa valeur, sa ligne, et sa colonne.  Si
+  type/valeur est \#f, \emph{make-token} retourne un erreur de lexème.
+\item \emph{token?}: un prédicat qui détermine si un objet représente
+  un lexème.
+\item \emph{token-error?}: un prédicat qui détermine si un objet
+  représente une erreur dans un lexème.
+\item \emph{token-type}: retourne le type du lexème.
+\item \emph{token-value}: retourne la valeur du lexème ou \#f si le
+  lexème n'a pas de valeur associée.
+\item \emph{token-symbol}: retourne le type et la valeur d'un lexème.
+\item \emph{token-line}: retourne la ligne où commence ce lexème.
+\item \emph{token-col}: retourne la colonne où commence ce lexème.
+\end{itemize}
+
+\section{Algorithme d'analyse}
+
+La fonction \emph{get-token} prend en entrée un flux de caractères et
+retourne le prochain lexème.  Voici une explication de son
+fonctionnement.
+
+Tout d'abord, \emph{get-token} commence par ignorer les espaces blancs
+et les commentaires.  Une fois que le flux se trouve sur un caractère
+non-blanc, on effectue une analyse de cas.  Si le caractère courant
+est un des terminaux du langage, on retourne un lexème représentant ce
+symbole.
+
+Dans le cas où le caractère est une guillemet, on accumule les
+caractères du flux jusqu'à ce qu'on consomme la guillemet fermante (en
+faisant attention aux séquences d'échappement).
+
+Dans le cas où le caractère est un dièse, on essaye de lire, en ordre,
+la constante vraie (\#t), la constante fausse (\#f) ou un caractère
+(\textbackslash).  Dans le cas du caractère, si le caractère suivant
+le backslash n'est pas alphabétique, on retourne immédiatement le code
+ASCII de ce caractère.  Si le caractère est alphabétique, on tente de
+lire un nom de caractère.  Nous supportons les noms ``nul'', ``tab'',
+``space'' et ``newline''.
+
+Dans le cas où le caractère est un caractère qui fait partie de
+l'alphabet des identificateurs, on procède en deux étapes:
+
+\begin{enumerate}
+\item On lit tous les caractères identificateurs;
+\item On classifie le symbole et construisons le lexème approprié.
+\end{enumerate}
+
+Si le symbole représente un mot clé, on retourne un lexème de type
+\emph{keyword}; si le symbole représente un entier, on retourne un
+lexème de type \emph{number}; autrement, on retourne un lexème de type
+identificateur.
+
+Finalement, pour tous les autres caractères, on retourne une erreur de
+lexème.
+
+La fonction \emph{lex} permet de prendre en entrée une chaîne de
+caractères et de retourner une liste de lexemes.
+
+\section{Évaluation}
+
+Notre module d'analyse lexicale est suffisamment puissant pour
+s'analyser lui-même; la fonction de test \emph{self-lex} permet de
+vérifier cela.
+
+\end{document}

@@ -327,6 +327,7 @@
 
 (define (token-error? t)
   (and (list? t)
+       (not (null? t))
        (eq? (car t) 'token-error)))
 
 ;; token-type : token -> type
