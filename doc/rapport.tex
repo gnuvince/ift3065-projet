@@ -70,15 +70,15 @@ Les opérations sont les suivantes:
 \item \emph{next}: cette fonction retourne le caractère courant du
   flux.  Si le flux est terminé, elle retourne le caractère nul.
 \item \emph{advance}: cette fonction fait avancer le curseur d'un
-  caractère dans le flux.  Les attributs de ligne et de colonnes sont
-  mis à jour.  \emph{Advance} n'a pas de valeur de retour.
+  caractère dans le flux et met à jour les attributs \emph{line} et
+  \emph{col}.  \emph{Advance} n'a pas de valeur de retour.
 \item \emph{line}: retourne la ligne courante.
 \item \emph{col}: retourne la colonne courante.
 \end{itemize}
 
-Comme l'analyseur lexicale utilise le flux uniquement via son
+Comme le module d'analyse lexicale utilise le flux uniquement via son
 interface, il serait trivial d'ajouter du support pour d'autre types
-de données (par exemple: lire d'un fichier sur disque).
+d'entrées (par exemple: lire d'un fichier sur disque).
 
 \subsubsection{Token}
 
@@ -129,8 +129,9 @@ fonctionnement.
 Tout d'abord, \emph{get-token} commence par ignorer les espaces blancs
 et les commentaires.  Une fois que le flux se trouve sur un caractère
 non-blanc, on effectue une analyse de cas.  Si le caractère courant
-est un des terminaux du langage, on retourne un lexème représentant ce
-symbole.
+est un des terminaux suivants du langage, on retourne un lexème
+représentant ce symbole: \texttt{(}, \texttt{)}, \texttt{,},
+\texttt{,@}, \texttt{'}, \texttt{`}, et le caractère nul.
 
 Dans le cas où le caractère est une guillemet, on accumule les
 caractères du flux jusqu'à ce qu'on consomme la guillemet fermante (en
@@ -138,11 +139,13 @@ faisant attention aux séquences d'échappement).
 
 Dans le cas où le caractère est un dièse, on essaye de lire, en ordre,
 la constante vraie (\#t), la constante fausse (\#f) ou un caractère
-(\textbackslash).  Dans le cas du caractère, si le caractère suivant
+(\#\textbackslash).  Dans le cas du caractère, si le caractère suivant
 le backslash n'est pas alphabétique, on retourne immédiatement le code
 ASCII de ce caractère.  Si le caractère est alphabétique, on tente de
 lire un nom de caractère.  Nous supportons les noms ``nul'', ``tab'',
-``space'' et ``newline''.
+``space'' et ``newline''.  Si le nom possède un seul caractère, on
+retourne le code ASCII associé à ce caractère.  Dans tous les autres
+cas, on retourne \#f pour signaler une erreur.
 
 Dans le cas où le caractère est un caractère qui fait partie de
 l'alphabet des identificateurs, on procède en deux étapes:
