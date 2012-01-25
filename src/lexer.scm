@@ -492,6 +492,12 @@
    (token-error? (car (lex "#\\foo")))
    ))
 
+(define (test-string)
+  (and
+   (equal? (symbols "\"foo\"") '("foo"))
+   (token-error? (car (lex "\"foo")))
+  ))
+
 
 (define (run-tests)
   (for-each (lambda (t)
@@ -512,6 +518,8 @@
                   test-whitespace
                   test-make-token
                   test-token-accessors
+                  test-invalid-tokens
+                  test-string
                   test-lex)))
 
 (define (self-lex)
