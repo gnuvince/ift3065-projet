@@ -160,6 +160,8 @@
         (stream 'advance)
         (loop #t)))
 
+     ((and (not escaped?) (char=? (stream 'next) #\nul)) #f)
+
      ((not escaped?)
       (let ((c (stream 'next)))
         (stream 'advance)
@@ -174,8 +176,10 @@
                ((char=? c #\t) #\tab)
                ((char=? c #\\) #\\))
               (loop #f))))))
+
   (stream 'advance) ; consume opening double-quote.
-  (cons 'string (list->string (loop #f))))
+  (let ((chars (loop #f)))
+    (and (list? chars) (list->string chars))))
 
 
 
