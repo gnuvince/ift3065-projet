@@ -87,6 +87,11 @@
         'comma-at)
       'comma))
 
+;; consume-dot : stream -> symbol
+(define (consume-dot stream)
+  (stream 'advance)
+  'dot)
+
 ;; consume-identifier : stream -> symbol
 ;;
 ;; Read characters, concatenating them into a string, until a
@@ -275,6 +280,8 @@
            ((char=? (stream 'next) #\`)   (consume-backquote stream))
 
            ((char=? (stream 'next) #\,)   (consume-comma stream))
+
+           ((char=? (stream 'next) #\.)   (consume-dot stream))           
 
            ((char=? (stream 'next) #\")   (consume-string stream))
 
@@ -520,3 +527,8 @@
          (tokens (lex (loop port ""))))
     (close-input-port port)
     tokens))
+
+(define (test-interactif)
+  (let ((port (open-output-string)))
+    (write (read) port)
+    (lex (get-output-string port))))
