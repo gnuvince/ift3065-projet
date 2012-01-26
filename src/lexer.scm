@@ -87,6 +87,11 @@
         'comma-at)
       'comma))
 
+;; consume-dot : stream -> symbol
+(define (consume-dot stream)
+  (stream 'advance)
+  'dot)
+
 ;; consume-identifier : stream -> symbol
 ;;
 ;; Read characters, concatenating them into a string, until a
@@ -280,6 +285,8 @@
 
            ((char=? (stream 'next) #\,)   (consume-comma stream))
 
+           ((char=? (stream 'next) #\.)   (consume-dot stream))
+
            ((char=? (stream 'next) #\")   (consume-string stream))
 
            ((char=? (stream 'next) #\#)   (consume-hash stream))
@@ -397,6 +404,11 @@
    (equal? (symbols ",") '(comma))
    (equal? (symbols ",x") '(comma (ident . "x")))))
 
+(define (test-dot)
+  (and
+   (equal? (symbols ".") '(dot))
+   (equal? (symbols ".foo") '(dot (ident . "foo")))))
+
 (define (test-arobas)
   (and
    (equal? (symbols "@") '((ident . "@")))
@@ -511,6 +523,7 @@
                   test-quote
                   test-backquote
                   test-comma
+                  test-dot
                   test-arobas
                   test-true
                   test-false
@@ -530,5 +543,4 @@
           (loop p (string-append s "\n" line)))))
   (let* ((port (open-input-file "lexer.scm"))
          (tokens (lex (loop port ""))))
-    (close-input-port port)
-    tokens))
+    (close-input-port port)))
