@@ -53,29 +53,29 @@
 ;; consume-eof : stream -> symbol
 (define (consume-eof stream)
   (stream 'advance)
-  'eof)
+  '(eof . #f))
 
 ;; consume-open-paren : stream -> symbol
 (define (consume-open-paren stream)
   (stream 'advance)
-  'open-paren)
+  '(punctuation . open-paren))
 
 ;; consume-close-paren : stream -> symbol
 (define (consume-close-paren stream)
   (stream 'advance)
-  'close-paren)
+  '(punctuation . close-paren))
 
 ;; consume-quote : stream -> symbol
 ;; TODO: Should we return quote-symbol or quote like the keyword?
 (define (consume-quote stream)
   (stream 'advance)
-  'quote-symbol)
+  '(punctuation . quote-symbol))
 
 
 ;; consume-backquote : stream -> symbol
 (define (consume-backquote stream)
   (stream 'advance)
-  'backquote)
+  '(punctuation . backquote))
 
 
 ;; consume-comma : stream -> symbol
@@ -84,13 +84,13 @@
   (if (char=? (stream 'next) #\@)
       (begin
         (stream 'advance)
-        'comma-at)
-      'comma))
+        '(punctuation . comma-at))
+      '(punctuation . comma)))
 
 ;; consume-dot : stream -> symbol
 (define (consume-dot stream)
   (stream 'advance)
-  'dot)
+  '(punctuation . dot))
 
 ;; consume-identifier : stream -> symbol
 ;;
@@ -140,7 +140,9 @@
                            ("do"               . do)
                            ("delay"            . delay)
                            ("quasiquote"       . quasiquote)))))
-    (if p (cdr p) #f)))
+    (if p
+        (cons 'keyword (cdr p))
+        #f)))
 
 ;; lexeme-numeric : string -> symbol|bool
 (define (lexeme-numeric lexeme)
@@ -184,7 +186,8 @@
 
   (stream 'advance) ; consume opening double-quote.
   (let ((chars (loop #f)))
-    (and (list? chars) (list->string chars))))
+    (and (list? chars)
+         (cons 'string (list->string chars)))))
 
 
 
@@ -213,11 +216,9 @@
 (define (consume-hash stream)
   (stream 'advance)                     ; consume the #
   (let ((token (cond
-                ((char=? (stream 'next) #\t) (begin (stream 'advance) 'true))
-                ((char=? (stream 'next) #\f) (begin (stream 'advance) 'false))
-                ((char=? (stream 'next) #\\)
-                 (let ((char (consume-char stream)))
-                   (and char (cons 'char char))))
+                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . true)))
+                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . false)))
+                ((char=? (stream 'next) #\\) (consume-char stream))
                 (else #f))))
     token))
 
@@ -237,20 +238,25 @@
             (else '()))))
 
   (stream 'advance)                     ; consume the \
-  (let ((c (stream 'next)))
-    (cond
-     ((char-alphabetic? c)
-      (let ((chars (read-char-name stream)))
-        (cond ((null? chars) #f)
-              ((= 1 (length chars)) (char->integer (car chars)))
-              ((string=? (list->string chars) "nul") (char->integer #\nul))
-              ((string=? (list->string chars) "tab") (char->integer #\tab))
-              ((string=? (list->string chars) "newline") (char->integer #\newline))
-              ((string=? (list->string chars) "space") (char->integer #\space))
-              (else #f))))
-     (else
-      (stream 'advance)
-      (char->integer c)))))
+  (let* ((c (stream 'next))
+         (char-code
+          (cond
+           ((char-alphabetic? c)
+            (let ((chars (read-char-name stream)))
+              (cond ((null? chars) #f)
+                    ((= 1 (length chars)) (char->integer (car chars)))
+                    ((string=? (list->string chars) "nul") (char->integer #\nul))
+                    ((string=? (list->string chars) "tab") (char->integer #\tab))
+                    ((string=? (list->string chars) "newline") (char->integer #\newline))
+                    ((string=? (list->string chars) "space") (char->integer #\space))
+                    (else #f))))
+           (else
+            (stream 'advance)
+            (char->integer c)))))
+    (if char-code
+        (cons 'char char-code)
+        #f)))
+
 
 
 
@@ -323,54 +329,6 @@
 
 
 
-;; make-token : type+value -> int -> int -> token
-(define (make-token tv line col)
-  (if tv
-      (list 'token tv line col)
-      (list 'token-error line col)))
-
-
-;; token? : any -> bool
-(define (token? t)
-  (and (list? t)
-       (= (length t) 4)
-       (eq? (car t) 'token)))
-
-(define (token-error? t)
-  (and (list? t)
-       (not (null? t))
-       (eq? (car t) 'token-error)))
-
-;; token-type : token -> type
-;;
-;; Accessor used to get the type of a token
-(define (token-type t)
-  (let ((type-value (token-symbol t)))
-    (if (pair? type-value)
-        (car type-value)
-        type-value)))
-
-;; token-value : token -> value|#f
-;;
-;; Accesor used to get the value of a token.
-;; If the token has no associated value (e.g. keywords),
-;; #f is returned.
-(define (token-value t)
-  (let ((type-value (token-symbol t)))
-    (and (pair? type-value) (cdr type-value))))
-
-;; token-symbol : token -> type+value
-(define (token-symbol t)
-  (and (token? t) (list-ref t 1)))
-
-;; token-line : token -> int
-(define (token-line t)
-  (and (token? t) (list-ref t 2)))
-
-;; token-col : token -> int
-(define (token-col t)
-  (and (token? t) (list-ref t 3)))
-
 
 
 
@@ -384,65 +342,65 @@
    (null? (lex ""))))
 
 (define (test-open-paren)
-  (equal? (symbols "(") '(open-paren)))
+  (equal? (symbols "(") '((punctuation . open-paren))))
 
 (define (test-close-paren)
-  (equal? (symbols ")") '(close-paren)))
+  (equal? (symbols ")") '((punctuation . close-paren))))
 
 (define (test-quote)
   (and
-   (equal? (symbols "'") '(quote-symbol))
-   (equal? (symbols "'x") '(quote-symbol (ident . "x")))))
+   (equal? (symbols "'") '((punctuation . quote-symbol)))
+   (equal? (symbols "'x") '((punctuation . quote-symbol) (ident . "x")))))
 
 (define (test-backquote)
   (and
-   (equal? (symbols "`") '(backquote))
-   (equal? (symbols "`x") '(backquote (ident . "x")))))
+   (equal? (symbols "`") '((punctuation . backquote)))
+   (equal? (symbols "`x") '((punctuation . backquote) (ident . "x")))))
 
 (define (test-comma)
   (and
-   (equal? (symbols ",") '(comma))
-   (equal? (symbols ",x") '(comma (ident . "x")))))
+   (equal? (symbols ",") '((punctuation . comma)))
+   (equal? (symbols ",x") '((punctuation . comma) (ident . "x")))))
 
 (define (test-dot)
   (and
-   (equal? (symbols ".") '(dot))
-   (equal? (symbols ".foo") '(dot (ident . "foo")))
+   (equal? (symbols ".") '((punctuation . dot)))
+   (equal? (symbols ".foo") '((punctuation . dot) (ident . "foo")))
    (equal? (symbols "f.oo") '((ident . "f.oo")))
    ))
 
 (define (test-comma-at)
   (and
    (equal? (symbols "@") '((ident . "@")))
-   (equal? (symbols ",@") '(comma-at))))
+   (equal? (symbols ",@") '((punctuation . comma-at)))))
 
 (define (test-true)
-  (equal? (symbols "#t") '(true)))
+  (equal? (symbols "#t") '((boolean . true))))
 
 (define (test-false)
-  (equal? (symbols "#f") '(false)))
+  (equal? (symbols "#f") '((boolean . false))))
 
 (define (test-keywords)
   (and
-   (equal? (symbols "define")           '(define))
-   (equal? (symbols "else")             '(else))
-   (equal? (symbols "unquote")          '(unquote))
-   (equal? (symbols "unquote-splicing") '(unquote-splicing))
-   (equal? (symbols "quote")            '(quote))
-   (equal? (symbols "lambda")           '(lambda))
-   (equal? (symbols "if")               '(if))
-   (equal? (symbols "set!")             '(set!))
-   (equal? (symbols "begin")            '(begin))
-   (equal? (symbols "cond")             '(cond))
-   (equal? (symbols "and")              '(and))
-   (equal? (symbols "or")               '(or))
-   (equal? (symbols "case")             '(case))
-   (equal? (symbols "let")              '(let))
-   (equal? (symbols "let*")             '(let-star))
-   (equal? (symbols "letrec")           '(letrec))
-   (equal? (symbols "do")               '(do))
-   (equal? (symbols "delay")            '(delay))
-   (equal? (symbols "quasiquote")       '(quasiquote))
+   (equal? (symbols "define")           '((keyword . define)))
+   (equal? (symbols "else")             '((keyword . else)))
+   (equal? (symbols "unquote")          '((keyword . unquote)))
+   (equal? (symbols "unquote-splicing") '((keyword . unquote-splicing)))
+   (equal? (symbols "quote")            '((keyword . quote)))
+   (equal? (symbols "lambda")           '((keyword . lambda)))
+   (equal? (symbols "if")               '((keyword . if)))
+   (equal? (symbols "set!")             '((keyword . set!)))
+   (equal? (symbols "begin")            '((keyword . begin)))
+   (equal? (symbols "cond")             '((keyword . cond)))
+   (equal? (symbols "and")              '((keyword . and)))
+   (equal? (symbols "or")               '((keyword . or)))
+   (equal? (symbols "case")             '((keyword . case)))
+   (equal? (symbols "let")              '((keyword . let)))
+   (equal? (symbols "let*")             '((keyword . let-star)))
+   (equal? (symbols "letrec")           '((keyword . letrec)))
+   (equal? (symbols "do")               '((keyword . do)))
+   (equal? (symbols "delay")            '((keyword . delay)))
+   (equal? (symbols "quasiquote")       '((keyword . quasiquote)))
    ))
 
 (define (test-whitespace)
@@ -460,20 +418,20 @@
 (define (test-lex)
   (and
    (equal? (symbols "(let ((x 10)) (* x 2)) ; 10 * 2")
-           '(open-paren
-             let
-             open-paren
-             open-paren
+           '((punctuation . open-paren)
+             (keyword . let)
+             (punctuation . open-paren)
+             (punctuation . open-paren)
              (ident . "x")
              (number . 10)
-             close-paren
-             close-paren
-             open-paren
+             (punctuation . close-paren)
+             (punctuation . close-paren)
+             (punctuation . open-paren)
              (ident . "*")
              (ident . "x")
              (number . 2)
-             close-paren
-             close-paren))
+             (punctuation . close-paren)
+             (punctuation . close-paren)))
    ))
 
 
@@ -487,13 +445,10 @@
 
 (define (test-token-accessors)
   (let ((a (make-token '(type . value) 1 1))
-        (b (make-token 'type 1 1))
         (c (make-token #f 1 1)))
     (and
      (equal? (token-type a) 'type)
      (equal? (token-value a) 'value)
-     (equal? (token-type b) 'type)
-     (equal? (token-value b) #f)
      (equal? (token-type c) #f)
      (equal? (token-value c) #f))))
 
@@ -508,7 +463,7 @@
 
 (define (test-string)
   (and
-   (equal? (symbols "\"foo\"") '("foo"))
+   (equal? (symbols "\"foo\"") '((string . "foo")))
    (token-error? (car (lex "\"foo")))
   ))
 
@@ -545,4 +500,5 @@
           (loop p (string-append s "\n" line)))))
   (let* ((port (open-input-file "lexer.scm"))
          (tokens (lex (loop port ""))))
-    (close-input-port port)))
+    (close-input-port port)
+    tokens))
