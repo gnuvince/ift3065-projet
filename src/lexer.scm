@@ -407,9 +407,11 @@
 (define (test-dot)
   (and
    (equal? (symbols ".") '(dot))
-   (equal? (symbols ".foo") '(dot (ident . "foo")))))
+   (equal? (symbols ".foo") '(dot (ident . "foo")))
+   (equal? (symbols "f.oo") '((ident . "f.oo")))
+   ))
 
-(define (test-arobas)
+(define (test-comma-at)
   (and
    (equal? (symbols "@") '((ident . "@")))
    (equal? (symbols ",@") '(comma-at))))
@@ -524,7 +526,7 @@
                   test-backquote
                   test-comma
                   test-dot
-                  test-arobas
+                  test-comma-at
                   test-true
                   test-false
                   test-keywords
