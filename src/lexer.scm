@@ -10,6 +10,10 @@
 ;; - next: returns the character under the cursor, without moving the cursor.
 ;;         Reading past the end of the stream returns the nul character.
 ;; - advance: moves to the cursor to the next character.
+
+
+(load "token.scm")
+
 (define (make-stream str)
   (let ((current 0)
         (line 1)
@@ -49,6 +53,28 @@
       (member c alpha)
       (member c extended)))
 
+
+(define (char-delimiter? c)
+  (or (member c '(#\( #\) #\" #\;))
+      (char-whitespace? c)))
+
+
+(define (char->digit c)
+  (- (char->integer c) (char->integer #\0)))
+
+(define (consume-number stream)
+  (define (loop n)
+    (let ((c (stream 'next)))
+      (cond ((char-numeric? c)
+             (stream 'advance)
+             (loop (+ (char->digit c) (* 10 n))))
+            ((char-delimiter? c) n)
+            ((char=? c #\nul) n)
+            (else #f))))
+  (let ((n (loop 0)))
+    (if n
+        (cons 'number n)
+        #f)))
 
 ;; consume-eof : stream -> symbol
 (define (consume-eof stream)
@@ -143,14 +169,6 @@
     (if p
         (cons 'keyword (cdr p))
         #f)))
-
-;; lexeme-numeric : string -> symbol|bool
-(define (lexeme-numeric lexeme)
-  (let ((n (string->number lexeme)))
-    (if n
-        (cons 'number n)
-        #f)))
-
 
 
 ;; consume-string : stream -> symbol
@@ -297,6 +315,8 @@
 
            ((char=? (stream 'next) #\#)   (consume-hash stream))
 
+           ((char-numeric? (stream 'next)) (consume-number stream))
+
            ;; Keywords, numbers and identifiers are all read the same way:
            ;; 1. Characters are read until we no longer have a char-identifier;
            ;; 2. If the characters read represent a keyword, return a keyword token;
@@ -305,7 +325,6 @@
            ((char-identifier? (stream 'next))
             (let* ((ident (consume-identifier stream))
                    (identifier (or (lexeme-keyword ident)
-                                   (lexeme-numeric ident)
                                    (cons 'ident ident))))
               identifier))
            (else
