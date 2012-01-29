@@ -2,3 +2,5 @@
 *.log
 *.dvi
 /doc/rapport.pdf
+/scrap
+/scratch/eric
