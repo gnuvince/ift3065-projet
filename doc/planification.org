@@ -127,6 +127,15 @@ Désavantages:
 *** prettyprint IR
 
 ** Minimum subset:
+*** special forms
+- let
+- lambda
+- define
+- cond
+- begin
+- quote
+- set!
+
 *** predicates
 - null?
 - boolean?
