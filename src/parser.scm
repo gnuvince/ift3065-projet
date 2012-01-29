@@ -1,7 +1,7 @@
 ;; Entete
 ;;
 
-(load "lexer.scm")
+(load "token.scm")
 (load "utilities.scm")
 
 (define keywords '(define else unquote unquote-splicing quote lambda
@@ -104,8 +104,7 @@
                (parse-variable+ stream)))))
 
 (define (parse-body stream)
-  (begin
-    (parse-
+  (display "To Be Completed"))
 
 (define (consum-token-value stream value msg)
   (let ((tok (stream 'pop)))
@@ -139,44 +138,3 @@
   (consum-token-value stream keyword (string-append "Expected keyword: "
                                                     (symbol->string keyword)
                                                     " line ")))
-
-(define (self-evaluating? tok)
-  (or (number-token?  tok)
-      (string-token?  tok)
-      (char-token?    tok)
-      (boolean-token? tok)))
-
-(define (is-token-type? tok type)
-  (eq? (token-type tok) type))
-
-(define (is-token-value? tok value)
-  (eq? (token-value tok) value))
-
-(define (number-token? tok)
-  (is-token-type? tok number))
-
-(define (string-token? tok)
-  (is-token-type? tok string))
-
-(define (char-token? tok)
-  (is-token-type? tok char))
-
-(define (boolean-token? tok)
-  (or (eq? tok false)
-      (eq? tok true)))
-
-(define (open-paren-token? tok)
-  (is-token-type? tok open-paren))
-
-(define (close-paren-token? tok)
-  (is-token-type? tok close-paren))
-
-(define (dot-token? tok)
-  (is-token-type? tok dot))
-
-(define (ident-token? tok)
-  (is-token-type? tok ident))
-
-(define (variable-token? tok)
-  (and (ident-token? tok)
-       (not (keyword? tok))))

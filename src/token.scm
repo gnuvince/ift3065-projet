@@ -50,3 +50,46 @@
 ;; token-col : token -> int
 (define (token-col t)
   (and (token? t) (list-ref t 3)))
+
+
+;; 
+(define (is-token-type? tok type)
+  (eq? (token-type tok) type))
+
+(define (is-token-value? tok value)
+  (eq? (token-value tok) value))
+
+(define (number-token? tok)
+  (is-token-type? tok number))
+
+(define (string-token? tok)
+  (is-token-type? tok string))
+
+(define (char-token? tok)
+  (is-token-type? tok char))
+
+(define (boolean-token? tok)
+  (or (eq? tok false)
+      (eq? tok true)))
+
+(define (open-paren-token? tok)
+  (is-token-type? tok open-paren))
+
+(define (close-paren-token? tok)
+  (is-token-type? tok close-paren))
+
+(define (dot-token? tok)
+  (is-token-type? tok dot))
+
+(define (ident-token? tok)
+  (is-token-type? tok ident))
+
+(define (variable-token? tok)
+  (and (ident-token? tok)
+       (not (keyword? tok))))
+
+(define (self-evaluating-tok? tok)
+  (or (number-token?  tok)
+      (string-token?  tok)
+      (char-token?    tok)
+      (boolean-token? tok)))

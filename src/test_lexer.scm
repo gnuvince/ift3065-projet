@@ -167,3 +167,8 @@
          (tokens (lex (loop port ""))))
     (close-input-port port)
     tokens))
+
+(define (test-interactif)
+  (let ((port (open-output-string)))
+    (write (read) port)
+    (lex (get-output-string port))))
