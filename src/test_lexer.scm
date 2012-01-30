@@ -172,3 +172,4 @@
   (let ((port (open-output-string)))
     (write (read) port)
     (lex (get-output-string port))))
+

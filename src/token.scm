@@ -60,29 +60,31 @@
   (eq? (token-value tok) value))
 
 (define (number-token? tok)
-  (is-token-type? tok number))
+  (is-token-type? tok 'number))
 
 (define (string-token? tok)
-  (is-token-type? tok string))
+  (is-token-type? tok 'string))
 
 (define (char-token? tok)
-  (is-token-type? tok char))
+  (is-token-type? tok 'char))
 
 (define (boolean-token? tok)
-  (or (eq? tok false)
-      (eq? tok true)))
+  (is-token-type? tok 'boolean))
+
+(define (punctuation-token? tok)
+  (is-token-type? tok 'punctuation))
 
 (define (open-paren-token? tok)
-  (is-token-type? tok open-paren))
+  (is-token-value? tok 'open-paren))
 
 (define (close-paren-token? tok)
-  (is-token-type? tok close-paren))
+  (is-token-value? tok 'close-paren))
 
 (define (dot-token? tok)
-  (is-token-type? tok dot))
+  (is-token-value? tok 'dot))
 
 (define (ident-token? tok)
-  (is-token-type? tok ident))
+  (is-token-type? tok 'ident))
 
 (define (variable-token? tok)
   (and (ident-token? tok)

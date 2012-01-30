@@ -1,56 +1,32 @@
-;; AST: (head, child*)
-;;   - head: (tok prop)
-;;   - prop: assoc-list
-;;   - tok: token
-;;   - child: AST
-(define (ast-add-node tok prop)
-  (list (list tok prop)))
+;; SINS
+;; IFT3065 - H12
+;; Vincent Foley-Bourgon (FOLV08078309)
+;; Eric Thivierge (THIE09016601)
 
-(define (make-ast) '())
+(define (token->ast tok)
+    (list (cond ((ident-token? tok)
+                 (string->symbol (token-value tok)))
+                (else
+                 (token-value tok)))
+          (list (list 'type (token-type tok))
+                (list 'line (token-line tok))
+                (list 'col  (token-col  tok)))
+          '()))
 
-(define (make-ast-node tok prop
+(define ast-get-value car)
+(define ast-get-alist cadr)
+(define ast-get-childs caddr)
 
-(define (make-ast-prop-list) ... )
-
-(define prop? alist?)
-  
-
-;; return (tok prop)
-(define ast-head car)
-
-;; return tok
-(define ast-tok caar)
-
-;; return 
-(define ast-prop cadar)
-
-;; return child list
-(define ast-childs cdr)
-
-;; return nth child of the ast
-(define (ast-nth-child ast n)
-  (list-ref (ast-childs ast)
-            n))
-
-;; add prop pair to ast
-(define (ast-add-prop ast key value)
-  (cond ((assq key (ast-prop ast))
-         (error (string-append "Key already exists: " key)))
-        (else
-         (make-ast (ast-head ast)
-                   (cons (list key value)
-                         (ast-prop ast))))))
-
-;; return
-;;   - (key value) of property 'key' of ast if it exists
-;;   - #f otherwise
-;; uses eq? to test key equality
 (define (ast-get-prop ast key)
-  (assq key (ast-prop ast)))
-
+  (assoc key (ast-get-alist ast)))
 
 (define (ast-get-prop-value ast key)
-  (cadr (ast-get-prop ast key)))
+  (let ((prop (ast-get-prop ast key)))
+    (and prop
+         (cadr prop))))
 
-(define (ast-set-prop-value ast key)
-  (cond 
+(define (ast-node? ast)
+  (and (= (length ast) 3)
+       (not (pair? (car ast)))
+       (alist? (ast-get-alist ast))))
+           

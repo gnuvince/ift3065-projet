@@ -1,140 +1,194 @@
-;; Entete
-;;
+;; SINS
+;; IFT3065 - H12
+;; Vincent Foley-Bourgon (FOLV08078309)
+;; Eric Thivierge (THIE09016601)
+
 
 (load "token.scm")
 (load "utilities.scm")
-
-(define keywords '(define else unquote unquote-splicing quote lambda
-                    if set! begin cond and or case let let-star letrec
-                    do delay quasiquote))
-
-(define (keyword? ident)
-  (member? keywords ident))
+(load "test_lexer.scm")
+(load "lexer.scm")
+(load "ast.scm")
 
 (define stream #f)
 
-(define (parse tokens)
-  (begin
-    (set! stream (make-token-stream tokens))
-    (program)))
+(define (parse token-list)
+  (<program> (normalize (ASTify token-list))))
 
-(define (program)
-  (cond ((stream 'empty?) '())
-        (else
-         (command_or_definition+))))
+(define (ASTify token-list)
 
-;;  (let ((stream ))
-;;    (define (loop)
-;;      (cond ((stream 'empty?)
-;;             '())
-;;            (else (cons (parse-expr stream)
-;;                        (loop)))))
-;;    (loop)))
-
-(define (command_or_definition+)
-  (cond ((open-paren-token? (stream 'next)))))
-
-(define (command_or_definition)
-  '())
-
-(define (parse-expr stream)
-  (let ((tok (stream 'next)))
-    (cond ((self-evaluating? tok)
-           tok)
-          ((is-token-type? tok ident)
-           tok)
-          ((is-token-type? tok open-paren)
-           (parse-compound-expr stream))
-          (else
-           (error (string-append "Unrecognized token: line "
-                                 (token-line tok)
-                                 " col "
-                                 (token-col tok)
-                                 "\n"))))))
-  
-(define (parse-compound-expr stream)
-  (begin
-    (consum-open-paren stream)
-    (let ((tok (stream 'next)))
-      (case (token-type tok)
-        ((close-paren) #t)
-        ((open-paren)  (parse-compound-expr stream))
-        ((lambda)      (parse-lambda stream))
-    (consum-close-paren stream)))
-      
-(define (parse-lambda stream)
-  (cons (consum-keyword stream 'lambda)
-        (list (parse-formals)
-              (parse-body))))
-
-(define (parse-formals stream)
-  (let ((tok (stream 'next)))
-    (cond ((open-paren-token? tok)
-           (parse-variable* stream))
-          (else
-           (parse-variable stream)))))
-
-(define (parse-variable* stream)
-  (begin
-    (consum-open-paren stream)
-    (cond ((close-paren-token? (stream 'next))
+  (define (consume-pair tree)
+    (cond ((stream 'empty)
+           (error "Early EOF"))
+          ((open-paren-token? (stream 'next))
            (begin
-             (consum-close-paren stream)
-             '()))
+             (consume-lparen)
+             (consume-pair (cons (consume-pair '())
+                                 tree))))
+          ((close-paren-token? (stream 'next))
+           (begin
+             (consume-rparen)
+             (reverse tree)))
           (else
-           (let ((formals (cons (parse-variable stream)
-                                (parse-variable+ stream)))
-             (consum-close-paren stream)
-             formals)))))
+           (consume-pair (cons (stream 'pop)
+                               tree)))))  
+  (define (ASTify-aux tree)
+    (cond ((stream 'empty)
+           (reverse tree))
+          ((open-paren-token? (stream 'next))
+           (begin
+             (consume-lparen)
+             (ASTify-aux (cons (consume-pair '())
+                               tree))))
+          ((close-paren-token? (stream 'next))
+           (error "Datum or EOF expected"))
+          (else
+           (ASTify-aux (cons (stream 'pop)
+                             tree)))))
 
-(define (parse-variable stream)
-  (cond ((variable-token? (stream 'next))
-         (stream 'pop))
+  (begin
+    (set! stream (make-token-stream token-list))
+    (reverse (ASTify-aux '()))))
+
+;;
+;; ( token                      ( <val>
+;;   ( <type> . <val> )  ====>    ( ( type <type> )
+;;   <line>                         ( line <line> )
+;;   <col> )                        ( col  <col>  ) )
+;;                                ( <child>* ) )
+;;
+(define (normalize ast)  
+  (define (normalize-aux ast nast)
+    (cond ((null? ast)
+           (reverse nast))
+          ((token? (car ast))
+           (normalize-aux (cdr ast)
+                          (cons (token->ast (car ast))
+                                nast)))
+          (else
+           (normalize-aux (cdr ast)
+                          (cons (normalize-aux (car ast)
+                                               '())
+                                nast)))))
+           
+  (cond ((null? ast)
+         ast)
         (else
-         (error (make-err-msg "Illegal token for a variable: line " tok)))))
+         (normalize-aux ast '()))))
 
-(define (parse-variable+ stream)
-  (cond ((close-paren-token? (stream 'next))
-         '())
-        ((dot-token? (stream 'next))
-         (cons (stream 'pop)
-               (list (parse-variable stream))))
+(define (<program> ast)
+  (cond ((null? ast)
+         ast)
         (else
-         (cons (parse-variable stream)
-               (parse-variable+ stream)))))
+         (list 'implicit-begin
+               '()
+               (reverse (<command-or-definition+> ast))))))
 
-(define (parse-body stream)
-  (display "To Be Completed"))
+(define (<command-or-definition+> ast)
+  (define (<command-or-definition> ast)
+    (or (<command> ast)
+        (<definition> ast)
+        (and (eq? (car ast) 'begin)
+             (<command-or-definition+> (caddr ast)))))
 
-(define (consum-token-value stream value msg)
-  (let ((tok (stream 'pop)))
-    (cond ((is-token-value? tok value)
-           tok)
-          (else
-           (error (string-append msg
-                                 (token-line tok)
-                                 " col "
-                                 (token-col tok)
-                                 "\n"))))))
+  (map <command-or-definition> ast))
+    
 
-(define (consum-token-type stream type msg)
-  (let ((tok (stream 'pop)))
-    (cond ((is-token-type? tok type)
-           tok)
-          (else
-           (error (string-append msg
-                                 (token-line tok)
-                                 " col "
-                                 (token-col tok)
-                                 "\n"))))))
-  
-(define (consum-open-paren stream)
-  (consum-token-type stream open-paren "Expected start of compound expression: line "))
+(define <command> <expression>)
 
-(define (consum-close-paren stream)
-  (consum-token-type stream close-paren "Expected end of compound expression: line "))
+(define (<definition> ast)
+  #f)
 
-(define (consum-keyword stream keyword)
-  (consum-token-value stream keyword (string-append "Expected keyword: "
-                                                    (symbol->string keyword)
-                                                    " line ")))
+(define (<expression> ast)
+  (or (<variable> ast)
+      (<literal>  ast)
+      (<procedure-call> ast)
+      (<lambda-expression> ast)
+      (<conditional> ast)
+      (<assignment> ast)
+      (<derived-expression> ast)
+      (<macro-use> ast)
+      (<macro-block> ast)))
+
+(define (<variable> ast)
+  #f)
+;;  (and (ident? ast)
+;;       ast))
+
+(define (<literal> ast)
+  (or (<quotation> ast)
+      (<self-evaluating> ast)))
+
+(define (<quotation> ast)
+  #f)
+
+(define (<self-evaluating> ast)
+  (or (<boolean> ast)
+      (<number> ast)
+      (<character> ast)
+      (<string> ast)))
+
+(define (<boolean> ast)
+  (and (ast-node? ast)
+       (let ((type (cadr (assoc 'type (cadr ast)))))
+         (and (eq? type 'boolean)
+              (null? (caddr ast))
+              ast))))
+
+(define (<number> ast)
+  (and (ast-node? ast)
+       (let ((type (cadr (assoc 'type (cadr ast)))))
+         (and (eq? type 'number)
+              (null? (caddr ast))
+              ast))))
+
+(define (<character> ast)
+  #f)
+;;   (let ((type (cadr (assoc 'type (cadr ast)))))
+;;    (and (eq? type 'character)
+;;         (null? (caddr ast))
+;;         ast)))
+
+(define (<string> ast)
+  (and (ast-node? ast)
+       (let ((type (cadr (assoc 'type (cadr ast)))))
+         (and (eq? type 'string)
+              (null? (caddr ast))
+              ast))))
+
+(define (<procedure-call> ast)
+  (and (and (simple-binop? ast)
+            (andmap <number> (cddr ast)))
+        (list (ast-get-value (car ast))
+              (ast-get-alist (car ast))
+              (cdr ast))))
+
+(define (<lambda-expression> ast)
+  #f)
+
+(define (<conditional> ast)
+  #f)
+
+(define (<assignment> ast)
+  #f)
+
+(define (<derived-expression> ast)
+  #f)
+
+(define (<macro-use> ast)
+  #f)
+
+(define (<macro-block> ast)
+  #f)
+
+;;
+;; utilities
+;;
+
+(define (ident? ast)
+  (eq? (ast-get-prop-value ast 'type)
+       'ident))
+
+(define (simple-binop? ast)
+  (member? (ast-get-value (car ast))
+           '(+ - * /)))
