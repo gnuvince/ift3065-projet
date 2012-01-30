@@ -3,7 +3,7 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
-;; make-stream : string -> stream
+;; make-stream :: string -> stream
 ;;
 ;; Takes a string and returns a "stream" on that string.  The stream
 ;; supports two operations:
@@ -37,6 +37,26 @@
     dispatch))
 
 
+(define (make-stream-from-port port)
+  (let ((line 1)
+        (col 1))
+    (define (dispatch msg)
+      (case msg
+        ((next) (let ((c (peek-char port)))
+                  (if (eof-object? c)
+                      #\nul
+                      c)))
+        ((advance) (begin
+                     (if (char=? (dispatch 'next) #\newline)
+                         (begin
+                           (set! col 1)
+                           (set! line (+ line 1)))
+                         (set! col (+ col 1)))
+                     (read-char port)))
+        ((col) col)
+        ((line) line)))
+    dispatch))
+
 
 ;; Definition of lexical elements used in Scheme.  The extended
 ;; characters are taken from R5RS:
@@ -45,7 +65,7 @@
 (define alpha (string->list "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 (define extended (string->list "!$%&*+-./:<=>?@^_~"))
 
-;; char-identifier? : char -> bool
+;; char-identifier? :: char -> bool
 ;;
 ;; Is `c` a character used in an identifier?
 (define (char-identifier? c)
@@ -76,35 +96,35 @@
         (cons 'number n)
         #f)))
 
-;; consume-eof : stream -> symbol
+;; consume-eof :: stream -> symbol
 (define (consume-eof stream)
   (stream 'advance)
   '(eof . #f))
 
-;; consume-open-paren : stream -> symbol
+;; consume-open-paren :: stream -> symbol
 (define (consume-open-paren stream)
   (stream 'advance)
   '(punctuation . open-paren))
 
-;; consume-close-paren : stream -> symbol
+;; consume-close-paren :: stream -> symbol
 (define (consume-close-paren stream)
   (stream 'advance)
   '(punctuation . close-paren))
 
-;; consume-quote : stream -> symbol
+;; consume-quote :: stream -> symbol
 ;; TODO: Should we return quote-symbol or quote like the keyword?
 (define (consume-quote stream)
   (stream 'advance)
   '(punctuation . quote-symbol))
 
 
-;; consume-backquote : stream -> symbol
+;; consume-backquote :: stream -> symbol
 (define (consume-backquote stream)
   (stream 'advance)
   '(punctuation . backquote))
 
 
-;; consume-comma : stream -> symbol
+;; consume-comma :: stream -> symbol
 (define (consume-comma stream)
   (stream 'advance)
   (if (char=? (stream 'next) #\@)
@@ -113,12 +133,12 @@
         '(punctuation . comma-at))
       '(punctuation . comma)))
 
-;; consume-dot : stream -> symbol
+;; consume-dot :: stream -> symbol
 (define (consume-dot stream)
   (stream 'advance)
   '(punctuation . dot))
 
-;; consume-identifier : stream -> symbol
+;; consume-identifier :: stream -> symbol
 ;;
 ;; Read characters, concatenating them into a string, until a
 ;; non-identifier character is read.
@@ -132,7 +152,7 @@
   (string->symbol (list->string (loop))))
 
 
-;; consume-whitespace : stream -> ()
+;; consume-whitespace :: stream -> ()
 ;;
 ;; skip whitespace
 (define (consume-whitespace stream)
@@ -143,7 +163,7 @@
 
 
 
-;; lexeme-keyword : string -> symbol|bool
+;; lexeme-keyword :: string -> symbol|bool
 ;;
 ;; Keywords taken from R5RS, Section 7.1.1
 (define (lexeme-keyword lexeme)
@@ -169,7 +189,7 @@
     (and p
          (cons 'keyword (car p)))))
 
-;; consume-string : stream -> symbol
+;; consume-string :: stream -> symbol
 (define (consume-string stream)
   (define (loop escaped?)
     (cond
@@ -209,7 +229,7 @@
 
 
 
-;; consume-comment : stream -> ()
+;; consume-comment :: stream -> ()
 ;;
 ;; Starting with the semi-colon, discard characters until the
 ;; newline character or the end of the stream.
@@ -224,7 +244,7 @@
 
 
 
-;; consume-hash : stream -> symbol
+;; consume-hash :: stream -> symbol
 ;;
 ;; consume the hash character.  If the next character is t or f,
 ;; return the corresponding boolean value.  If the next character is a
@@ -240,7 +260,7 @@
 
 
 
-;; consume-char : stream -> symbol
+;; consume-char :: stream -> symbol
 ;;
 ;; If the character after the \ is non-alphabetic, return the
 ;; character's ascii code.  Otherwise, try to read a character name.
@@ -285,7 +305,7 @@
          (skip-whitespace-and-comments stream))))
 
 
-;; get-token : stream -> token
+;; get-token :: stream -> token
 ;;
 ;; Consume characters from the stream and return the next token.
 ;; Invalid characters return #f.
@@ -332,14 +352,30 @@
 
 
 
-;; lex : string -> [token]
+;; lex :: stream -> [token]
 ;;
 ;; Call `get-token` until EOF, accumulating tokens into a list.
-(define (lex str)
+(define (lex stream)
+  (define (loop)
+    (let ((token (get-token stream)))
+      (cond
+       ((eq? (token-type token) 'eof) '())
+       (else (cons token (loop))))))
+  (loop))
+
+
+;; lex-from-string :: string -> [token]
+;;
+;; Construct a stream from a string and tokenize it.
+(define (lex-from-string str)
   (let ((stream (make-stream str)))
-    (define (loop)
-      (let ((token (get-token stream)))
-        (cond
-         ((eq? (token-type token) 'eof) '())
-         (else (cons token (loop))))))
-    (loop)))
+    (lex stream)))
+
+
+;; lex-from-file :: filename -> [token]
+;;
+;; Construct a stream from an input port and tokenize it.
+(define (lex-from-file filename)
+  (call-with-input-file filename
+    (lambda (p)
+      (lex (make-stream-from-port p)))))
