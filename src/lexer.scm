@@ -129,7 +129,7 @@
              (stream 'advance)
              (cons c (loop))))
           (else '())))
-  (list->string (loop)))
+  (string->symbol (list->string (loop))))
 
 
 ;; consume-whitespace : stream -> ()
@@ -147,29 +147,27 @@
 ;;
 ;; Keywords taken from R5RS, Section 7.1.1
 (define (lexeme-keyword lexeme)
-  (let ((p (assoc lexeme '(("define"           . define)
-                           ("else"             . else)
-                           ("unquote"          . unquote)
-                           ("unquote-splicing" . unquote-splicing)
-                           ("quote"            . quote)
-                           ("lambda"           . lambda)
-                           ("if"               . if)
-                           ("set!"             . set!)
-                           ("begin"            . begin)
-                           ("cond"             . cond)
-                           ("and"              . and)
-                           ("or"               . or)
-                           ("case"             . case)
-                           ("let"              . let)
-                           ("let*"             . let-star)
-                           ("letrec"           . letrec)
-                           ("do"               . do)
-                           ("delay"            . delay)
-                           ("quasiquote"       . quasiquote)))))
-    (if p
-        (cons 'keyword (cdr p))
-        #f)))
-
+  (let ((p (member lexeme '(define
+                             else
+                             unquote
+                             unquote-splicing
+                             quote
+                             lambda
+                             if
+                             set!
+                             begin
+                             cond
+                             and
+                             or
+                             case
+                             let
+                             let-star
+                             letrec
+                             do
+                             delay
+                             quasiquote))))
+    (and p
+         (cons 'keyword (car p)))))
 
 ;; consume-string : stream -> symbol
 (define (consume-string stream)
