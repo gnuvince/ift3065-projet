@@ -1,3 +1,6 @@
+(load "token.scm")
+(load "lexer.scm")
+
 ;;;; Tests
 (define (symbols string) (map token-symbol (lex string)))
 
@@ -15,28 +18,28 @@
 (define (test-quote)
   (and
    (equal? (symbols "'") '((punctuation . quote-symbol)))
-   (equal? (symbols "'x") '((punctuation . quote-symbol) (ident . "x")))))
+   (equal? (symbols "'x") '((punctuation . quote-symbol) (ident . x)))))
 
 (define (test-backquote)
   (and
    (equal? (symbols "`") '((punctuation . backquote)))
-   (equal? (symbols "`x") '((punctuation . backquote) (ident . "x")))))
+   (equal? (symbols "`x") '((punctuation . backquote) (ident . x)))))
 
 (define (test-comma)
   (and
    (equal? (symbols ",") '((punctuation . comma)))
-   (equal? (symbols ",x") '((punctuation . comma) (ident . "x")))))
+   (equal? (symbols ",x") '((punctuation . comma) (ident . x)))))
 
 (define (test-dot)
   (and
    (equal? (symbols ".") '((punctuation . dot)))
-   (equal? (symbols ".foo") '((punctuation . dot) (ident . "foo")))
-   (equal? (symbols "f.oo") '((ident . "f.oo")))
+   (equal? (symbols ".foo") '((punctuation . dot) (ident . foo)))
+   (equal? (symbols "f.oo") '((ident . f.oo)))
    ))
 
 (define (test-comma-at)
   (and
-   (equal? (symbols "@") '((ident . "@")))
+   (equal? (symbols "@") '((ident . @)))
    (equal? (symbols ",@") '((punctuation . comma-at)))))
 
 (define (test-true)
@@ -61,7 +64,7 @@
    (equal? (symbols "or")               '((keyword . or)))
    (equal? (symbols "case")             '((keyword . case)))
    (equal? (symbols "let")              '((keyword . let)))
-   (equal? (symbols "let*")             '((keyword . let-star)))
+   (equal? (symbols "let*")             '((keyword . let*)))
    (equal? (symbols "letrec")           '((keyword . letrec)))
    (equal? (symbols "do")               '((keyword . do)))
    (equal? (symbols "delay")            '((keyword . delay)))
@@ -71,14 +74,14 @@
 (define (test-whitespace)
   (and
    (equal? (symbols "") '())
-   (equal? (symbols "  x  ") '((ident . "x")))
-   (equal? (symbols "\tx\n\ny ") '((ident . "x") (ident . "y")))
+   (equal? (symbols "  x  ") '((ident . x)))
+   (equal? (symbols "\tx\n\ny ") '((ident . x) (ident . y)))
    ))
 
 (define (test-comment)
   (and
    (equal? (symbols "; hello") '())
-   (equal? (symbols "x ; comment \n y") '((ident . "x") (ident . "y")))))
+   (equal? (symbols "x ; comment \n y") '((ident . x) (ident . y)))))
 
 (define (test-lex)
   (and
@@ -87,13 +90,13 @@
              (keyword . let)
              (punctuation . open-paren)
              (punctuation . open-paren)
-             (ident . "x")
+             (ident . x)
              (number . 10)
              (punctuation . close-paren)
              (punctuation . close-paren)
              (punctuation . open-paren)
-             (ident . "*")
-             (ident . "x")
+             (ident . *)
+             (ident . x)
              (number . 2)
              (punctuation . close-paren)
              (punctuation . close-paren)))
@@ -172,4 +175,3 @@
   (let ((port (open-output-string)))
     (write (read) port)
     (lex (get-output-string port))))
-

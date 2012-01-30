@@ -161,7 +161,7 @@
                              or
                              case
                              let
-                             let-star
+                             let*
                              letrec
                              do
                              delay
