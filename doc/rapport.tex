@@ -53,18 +53,10 @@ structures de données principales ont été nécessaires: un type flux
 \subsubsection{Stream}
 
 La fonction \emph{make-stream} prend en entrée une chaîne de
-caractères et retourne une structure possédant 3 attributs privés et 4
-opérations.
-
-Les attributs sont les suivants:
-
-\begin{itemize}
-\item \emph{current}: la position absolue dans le flux;
-\item \emph{line}: la ligne courante;
-\item \emph{col}: la colonne courante.
-\end{itemize}
-
-Les opérations sont les suivantes:
+caractères et retourne un \emph{stream}.  La fonction
+\emph{make-stream-from-port} prend en entrée un port d'entrée et
+retourne un \emph{stream}.  Un \emph{stream} est une structure de
+données possédant les 4 opérations suivantes:
 
 \begin{itemize}
 \item \emph{next}: cette fonction retourne le caractère courant du
@@ -76,23 +68,21 @@ Les opérations sont les suivantes:
 \item \emph{col}: retourne la colonne courante.
 \end{itemize}
 
-Comme le module d'analyse lexicale utilise le flux uniquement via son
-interface, il serait trivial d'ajouter du support pour d'autre types
-d'entrées (par exemple: lire d'un fichier sur disque).
 
 \subsubsection{Token}
 
 Un lexème est représenté par une liste ayant la forme suivante:
 
 \begin{verbatim}
-('token <type + valeur> <ligne> <colonne>)
+('token <(type . valeur)> <ligne> <colonne>)
 \end{verbatim}
 
-Si le lexème a seulement un type (par exemple: un mot clé), la
-deuxième composante est un symbole.  Si le lexème a une donnée
-associée (par exemple: un nombre entier), la deuxième composante est
-une paire dont la première composante est un symbole représentant le
-type et la deuxième composante est la valeur associée.
+Le premier élément est une étiquette qui permet de distinguer un
+lexème d'un autre type de données.  La paire en deuxième position
+donne l'information sur le type du lexème (ex.: mot-clé,
+identificateur, etc.) et la valeur qui lui est associée.  Les
+troisième et quatrième champs conservent la position du début du
+lexème.
 
 Une erreur dans un lexème (par exemple: constante de caractère
 invalide) est représentée par une liste ayant la forme suivante:
@@ -113,8 +103,7 @@ On peut manipuler les lexèmes à l'aide des fonctions suivantes:
 \item \emph{token-error?}: un prédicat qui détermine si un objet
   représente une erreur dans un lexème.
 \item \emph{token-type}: retourne le type du lexème.
-\item \emph{token-value}: retourne la valeur du lexème ou \#f si le
-  lexème n'a pas de valeur associée.
+\item \emph{token-value}: retourne la valeur du lexème.
 \item \emph{token-symbol}: retourne le type et la valeur d'un lexème.
 \item \emph{token-line}: retourne la ligne où commence ce lexème.
 \item \emph{token-col}: retourne la colonne où commence ce lexème.
@@ -147,6 +136,10 @@ lire un nom de caractère.  Nous supportons les noms ``nul'', ``tab'',
 retourne le code ASCII associé à ce caractère.  Dans tous les autres
 cas, on retourne \#f pour signaler une erreur.
 
+Si le caractère est un chiffre, on lit un nombre.  Cela empêche des
+identificateurs débutant par un chiffre comme \emph{2pi} par exemple.
+Cette limitation est acceptable dans notre compilateur.
+
 Dans le cas où le caractère est un caractère qui fait partie de
 l'alphabet des identificateurs, on procède en deux étapes:
 
@@ -156,15 +149,17 @@ l'alphabet des identificateurs, on procède en deux étapes:
 \end{enumerate}
 
 Si le symbole représente un mot clé, on retourne un lexème de type
-\emph{keyword}; si le symbole représente un entier, on retourne un
-lexème de type \emph{number}; autrement, on retourne un lexème de type
+\emph{keyword}; autrement, on retourne un lexème de type
 identificateur.
 
 Finalement, pour tous les autres caractères, on retourne une erreur de
 lexème.
 
-La fonction \emph{lex} permet de prendre en entrée une chaîne de
-caractères et de retourner une liste de lexemes.
+La fonction \emph{lex} permet de prendre en entrée un flux de
+caractères et de retourner une liste de lexemes.  Les fonctions
+\emph{lex-from-string} et \emph{lex-from-file} crée un flux à partir
+d'une chaîne de caractères et d'un fichier source respectivement et
+font ensuite appel à \emph{lex}.
 
 
 \end{document}
