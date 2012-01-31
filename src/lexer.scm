@@ -12,6 +12,21 @@
 ;; - advance: moves to the cursor to the next character.
 
 
+
+;; whitespace = #\space | #\tab | #\newline
+;; alpha = "a..zA..Z"
+;; digit = "0..9"
+;; extended = "!" | "$" | "%" | "&" | "*" | "+" | "-" | "." | "/" | ":"
+;;          | "<" | "=" | ">" | "?" | "@" | "^" | "_" | "~"
+;; number = digit { digit }
+;; identifier = (alpha | extended) { (alpha | extended | digit) }
+;; keyword = "define" | "else" | "unquote" | "unquote-splicing" | "quote"
+;;         | "lambda" | "if" | "set!" | "begin" | "cond" | "and" | "or"
+;;         | "case" | "let" | "let*" | "letrec" | "do" | "delay" | "quasiquote"
+;; string = """" { any character except double-quote } """"
+;; character = "#\" ( any character | "nul" | "newline" | "space" | "tab" )
+
+
 (load "token.scm")
 
 (define (make-stream str)
