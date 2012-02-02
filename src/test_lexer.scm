@@ -2,12 +2,12 @@
 (load "lexer.scm")
 
 ;;;; Tests
-(define (symbols string) (map token-symbol (lex string)))
+(define (symbols string) (map token-symbol (lex-from-string string)))
 
 (define (test-eof)
   (and
    (eq? (token-type (get-token (make-stream ""))) 'eof)
-   (null? (lex ""))))
+   (null? (lex-from-string ""))))
 
 (define (test-open-paren)
   (equal? (symbols "(") '((punctuation . open-paren))))
@@ -122,17 +122,17 @@
 
 (define (test-invalid-tokens)
   (and
-   (token-error? (car (lex "[")))
-   (token-error? (car (lex "]")))
-   (token-error? (car (lex "{")))
-   (token-error? (car (lex "}")))
-   (token-error? (car (lex "#\\foo")))
+   (token-error? (car (lex-from-string "[")))
+   (token-error? (car (lex-from-string "]")))
+   (token-error? (car (lex-from-string "{")))
+   (token-error? (car (lex-from-string "}")))
+   (token-error? (car (lex-from-string "#\\foo")))
    ))
 
 (define (test-string)
   (and
    (equal? (symbols "\"foo\"") '((string . "foo")))
-   (token-error? (car (lex "\"foo")))
+   (token-error? (car (lex-from-string "\"foo")))
   ))
 
 

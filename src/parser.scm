@@ -92,9 +92,6 @@
              (<command-or-definition+> (caddr ast)))))
 
   (map <command-or-definition> ast))
-    
-
-(define <command> <expression>)
 
 (define (<definition> ast)
   #f)
@@ -110,8 +107,13 @@
       (<macro-use> ast)
       (<macro-block> ast)))
 
+(define <command> <expression>)
+
 (define (<variable> ast)
-  #f)
+  (and (ast-node? ast)
+       (ident? ast)
+       ast))
+;;  #f)
 ;;  (and (ident? ast)
 ;;       ast))
 
@@ -157,11 +159,15 @@
               ast))))
 
 (define (<procedure-call> ast)
-  (and (and (simple-binop? ast)
-            (andmap <number> (cddr ast)))
-        (list (ast-get-value (car ast))
-              (ast-get-alist (car ast))
-              (cdr ast))))
+  (and (not (ast-node? ast))
+       (or (null? (cdr ast))
+           (and (simple-binop? ast)
+                (andmap (lambda (node)
+                          (or (<number> node)
+                              (ident? node))) (cdr ast))))
+       (list (ast-get-value (car ast))
+             (ast-get-alist (car ast))
+             (cdr ast))))
 
 (define (<lambda-expression> ast)
   #f)
@@ -184,6 +190,32 @@
 ;;
 ;; utilities
 ;;
+
+(define (consume-token-value value msg)
+  (let ((tok (stream 'pop)))
+    (cond ((is-token-value? tok value)
+           tok)
+          (else
+           (error (make-err-msg msg tok))))))
+
+(define (consume-token-type type msg)
+  (let ((tok (stream 'pop)))
+    (cond ((is-token-type? tok type)
+           tok)
+          (else
+           (error (make-err-msg msg tok))))))
+  
+(define (consume-lparen)
+  (consume-token-value 'open-paren "Expected start of compound expression: line "))
+
+(define (consume-rparen)
+  (begin
+    (consume-token-value 'close-paren "Expected end of compound expression: line ")))
+
+(define (consume-keyword keyword)
+  (consume-token-value 'keyword (string-append "Expected keyword: "
+                                              (symbol->string keyword)
+                                              " line ")))
 
 (define (ident? ast)
   (eq? (ast-get-prop-value ast 'type)
