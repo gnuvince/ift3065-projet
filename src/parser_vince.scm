@@ -90,12 +90,30 @@
       ((eq? (token-type t) 'ident) (parse-identifier stream))
       ((eq? (token-type t) 'number) (parse-number stream))
       ((eq? (token-type t) 'string) (parse-string stream))
-      ((eq? (token-value t) 'open-paren) (parse-list stream))
+      ((eq? (token-type t) 'char) (parse-character stream))
+      ((eq? (token-value t) 'open-paren) (parse-compound stream))
+      ((eq? (token-type t) 'boolean) (parse-boolean stream))
       (else #f))))
 
 
-(define (parse-list stream)
+(define (parse-compound stream)
   (stream-consume-value stream 'open-paren)
+  (let* ((t (stream-peek stream))
+         (node (cond
+                ((eq? (token-type t) 'keyword) (parse-keyword stream))
+                (else (parse-list stream)))))
+    (stream-consume-value stream 'close-paren)
+    node))
+
+
+(define (parse-keyword stream)
+  (let ((t (stream-peek stream)))
+    (cond
+     ((eq? (token-value t) 'if) (parse-if stream))
+     (else #f))))
+
+
+(define (parse-list stream)
   (let ((exprs
          (let loop ((tokens (list))
                     (t (stream-peek stream)))
@@ -121,3 +139,25 @@
 (define (parse-string stream)
   (let ((t (stream-consume-type stream 'string)))
     (and t (token->ast t))))
+
+(define (parse-boolean stream)
+  (let ((t (stream-consume-type stream 'boolean)))
+    (and t (token->ast t))))
+
+(define (parse-character stream)
+  (let ((t (stream-consume-type stream 'char)))
+    (and t (token->ast t))))
+
+(define (parse-if stream)
+  (stream-consume-value stream 'if)
+  (let* ((condition (parse-expression stream))
+         (then-branch (parse-expression stream))
+         (else-branch (parse-expression stream)))
+    (cond
+     ((and condition then-branch else-branch)
+      (make-ast '((type . if-then-else))
+                (list condition then-branch else-branch)))
+     ((and condition then-branch)
+      (make-ast '((type . if-then))
+                (list condition then-branch)))
+     (else #f))))
