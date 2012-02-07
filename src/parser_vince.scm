@@ -77,11 +77,14 @@
          (let loop ((nodes '())
                     (t (stream-peek stream)))
            (if t
-               (loop (cons (parse-expression stream) nodes)
-                     (stream-peek stream))
-               nodes))))
-    (make-ast '((type . program))
-              (reverse exprs))))
+               (let ((expr (parse-expression stream)))
+                 (if expr
+                     (loop (cons expr nodes) (stream-peek stream))
+                     #f))
+               (reverse nodes)))))
+    exprs))
+
+
 
 
 (define (parse-expression stream)
@@ -102,8 +105,8 @@
          (node (cond
                 ((eq? (token-type t) 'keyword) (parse-keyword stream))
                 (else (parse-list stream)))))
-    (stream-consume-value stream 'close-paren)
-    node))
+    (and (stream-consume-value stream 'close-paren)
+         node)))
 
 
 (define (parse-keyword stream)
@@ -119,12 +122,9 @@
                     (t (stream-peek stream)))
            (cond
             ((eq? (token-value t) 'close-paren) (reverse tokens))
-            ((eq? (token-type t) 'eof) (error "syntax error"))
             (else (loop (cons (parse-expression stream) tokens)
                         (stream-peek stream)))))))
-    (stream-consume-value stream 'close-paren)
-    (make-ast '((type . list))
-              exprs)))
+    (make-ast '((type . list)) exprs)))
 
 
 
@@ -132,21 +132,26 @@
   (let ((t (stream-consume-type stream 'number)))
     (and t (token->ast t))))
 
+
 (define (parse-identifier stream)
   (let ((t (stream-consume-type stream 'ident)))
     (and t (token->ast t))))
+
 
 (define (parse-string stream)
   (let ((t (stream-consume-type stream 'string)))
     (and t (token->ast t))))
 
+
 (define (parse-boolean stream)
   (let ((t (stream-consume-type stream 'boolean)))
     (and t (token->ast t))))
 
+
 (define (parse-character stream)
   (let ((t (stream-consume-type stream 'char)))
     (and t (token->ast t))))
+
 
 (define (parse-if stream)
   (stream-consume-value stream 'if)
