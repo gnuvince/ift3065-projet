@@ -82,13 +82,14 @@
                      (loop (cons expr nodes) (stream-peek stream))
                      #f))
                (reverse nodes)))))
-    exprs))
+    (make-ast '((type . program))
+                exprs)))
 
 
 
 
 (define (parse-expression stream)
-  (let ((t (stream 'peek)))
+  (let ((t (stream-peek stream)))
     (cond
       ((eq? (token-type t) 'ident) (parse-identifier stream))
       ((eq? (token-type t) 'number) (parse-number stream))
