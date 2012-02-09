@@ -44,15 +44,15 @@
                  (number->string (token-col tok))
                  "\n"))
 
-(define (andmap f lst)
-  (define (andmap-aux f lst pred)
+(define (all? f lst)
+  (define (all?-aux f lst pred)
     (cond ((or (not pred)
                (null? lst))
            pred)
           (else
-           (andmap-aux f (cdr lst) (and (f (car lst))
+           (all?-aux f (cdr lst) (and (f (car lst))
                                         pred)))))
-  (andmap-aux f lst #t))
+  (all?-aux f lst #t))
 
 (define (alist? lst)
   (or (null? lst)
