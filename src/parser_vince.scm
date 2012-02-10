@@ -83,17 +83,11 @@
 
 ;; program = { expression }.
 (define (parse-program stream)
-  (let ((exprs
-         (let loop ((nodes '())
-                    (t (stream-peek stream)))
-           (if t
-               (let ((expr (parse-expression stream)))
-                 (if expr
-                     (loop (cons expr nodes) (stream-peek stream))
-                     #f))
-               (reverse nodes)))))
-    (make-ast '((type . program))
-                exprs)))
+  (let loop ((nodes '())
+             (t (stream-peek stream)))
+    (if (stream-empty? stream)
+        (make-ast '((type . program)) (reverse nodes))
+        (loop (cons (parse-expression stream) nodes) (stream-peek stream)))))
 
 
 
@@ -114,7 +108,7 @@
       ((eq? (token-type t) 'boolean) (parse-boolean stream))
       ((eq? (token-type t) 'quote-symbol) (parse-quote stream))
       ((eq? (token-type t) 'open-paren) (parse-compound stream))
-      (else #f))))
+      (else (error "invalid expression")))))
 
 
 ;; compound = special-form
