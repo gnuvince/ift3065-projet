@@ -26,11 +26,29 @@ langage Scheme dans le cadre du cours IFT3065 de la session hiver 2012
 du compilateur, les problèmes et difficultés rencontrés durant son
 écriture et les solutions mises en place pour résoudre ces problèmes.
 
+\chapter{SINS}
+
+\section{Qu'est-ce que SINS?}
+
+\emph{SINS} (Scheme IN Scheme) est un petit compilateur Scheme écrit
+dans le cadre d'un cours de compilation.  Comme son nom l'indique, il
+s'agit d'un compilateur pour Scheme écrit en Scheme.  Le langage généré
+par \emph{SINS} sera du code assembleur x86.
+
+\emph{SINS} est un véhicule pour ses auteurs pour faire un survol des
+différents aspects de la compilation.  La philosophie de base est
+qu'étant donné le choix d'implanter une fonctionnalité en profondeur
+ou d'en implanter deux avec des techniques moins sophistiquées, on
+choisira la deuxième option à tout coup.  Nous sommes d'avis que de
+cette approche nous donnera une vision plus ``large'' d'un
+compilateur.  Les détails d'implantation plus avancés pourront être
+appris et maîtrisé dans le cadre de stages, de recherches et
+d'emplois.
+
 \chapter{Phase d'analyse}
 
 \section{Analyse lexicale}
 
-\subsection{Introduction}
 La première phase habituelle d'un compilateur est de transformer un
 flux de caractères représentant un programme source en un flux de
 lexèmes.  Dans ce flux sortant, les espaces blancs et les commentaires
@@ -110,7 +128,7 @@ On peut manipuler les lexèmes à l'aide des fonctions suivantes:
 \item \emph{token-col}: retourne la colonne où commence ce lexème.
 \end{itemize}
 
-\section{Algorithme d'analyse}
+\subsection{Algorithme d'analyse}
 
 La fonction \emph{get-token} prend en entrée un flux de caractères et
 retourne le prochain lexème.  Voici une explication de son
@@ -139,7 +157,8 @@ cas, on retourne \#f pour signaler une erreur.
 
 Si le caractère est un chiffre, on lit un nombre.  Cela empêche des
 identificateurs débutant par un chiffre comme \emph{2pi} par exemple.
-Cette limitation est acceptable dans notre compilateur.
+Cette limitation est acceptable dans notre compilateur (et est
+conforme avec la syntaxe décrite dans la section 7.1.1 de R5RS).
 
 Dans le cas où le caractère est un caractère qui fait partie de
 l'alphabet des identificateurs, on procède en deux étapes:
@@ -157,10 +176,30 @@ Finalement, pour tous les autres caractères, on retourne une erreur de
 lexème.
 
 La fonction \emph{lex} permet de prendre en entrée un flux de
-caractères et de retourner une liste de lexemes.  Les fonctions
-\emph{lex-from-string} et \emph{lex-from-file} crée un flux à partir
+caractères et de retourner une liste de lexèmes.  Les fonctions
+\emph{lex-from-string} et \emph{lex-from-file} créent un flux à partir
 d'une chaîne de caractères et d'un fichier source respectivement et
 font ensuite appel à \emph{lex}.
 
+
+\section{Analyse syntaxique}
+
+Tout comme l'analyse lexicale, il existe de nombreux outils pour faire
+l'analyse syntaxique d'un flux de lexèmes; Yacc, Bison, LALR-SCM et
+ANTLR sont de tels outils.  Et tout comme pour la phase d'analyse
+lexicale, afin de mieux comprendre les détails d'implantation de cette
+phase et les difficultés qui y sont associées, nous avons décidé de ne
+pas utiliser un de ces outils et de plutôt créer notre propre module
+d'analyse syntaxique.
+
+Comme la syntaxe de Scheme est simple et peut être exprimée par une
+grammaire LL(1), il est naturel de créer cette phase par descente
+récursive.  De plus, comme la récursion est omni-présente en Scheme et
+que le langage possède des symboles, Scheme est un très bon choix pour
+faire cette phase.
+
+Les sections suivantes décriront les structures de donnés
+utilisées ainsi que certains détails d'implantation que nous jugeons
+intéressants.
 
 \end{document}
