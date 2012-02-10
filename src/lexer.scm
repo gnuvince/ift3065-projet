@@ -267,8 +267,8 @@
 (define (consume-hash stream)
   (stream 'advance)                     ; consume the #
   (let ((token (cond
-                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . true)))
-                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . false)))
+                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . #t)))
+                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . #f)))
                 ((char=? (stream 'next) #\\) (consume-char stream))
                 (else #f))))
     token))
@@ -295,7 +295,8 @@
            ((char-alphabetic? c)
             (let ((chars (read-char-name stream)))
               (cond ((null? chars) #f)
-                    ((= 1 (length chars)) (char->integer (car chars)))
+                    ;;((= 1 (length chars)) (char->integer (car chars)))
+                    ((= 1 (length chars)) (car chars))
                     ((string=? (list->string chars) "nul") (char->integer #\nul))
                     ((string=? (list->string chars) "tab") (char->integer #\tab))
                     ((string=? (list->string chars) "newline") (char->integer #\newline))

@@ -3,11 +3,12 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
+
 (define member? member)
 
-(define keywords '(define else unquote unquote-splicing quote lambda
-                    if set! begin cond and or case let let-star letrec
-                    do delay quasiquote))
+(define keywords (quote (define else unquote unquote-splicing quote lambda
+                         if set! begin cond and or case let let-star letrec
+                         do delay quasiquote)))
 
 (define (keyword? ident)
   (member? ident keywords))
@@ -19,11 +20,11 @@
         ((show)    (begin (display stream)(newline)))
         ((empty)   (null? stream))
         ((next)    (cond ((null? stream)
-                          '())
+                          (list))
                          (else
                           (car stream))))
         ((2ndnext) (cond ((< (length stream) 2)
-                          '())
+                          (list))
                          (else
                           (cadr stream))))
         ((advance) (cond ((null? stream)
@@ -50,10 +51,26 @@
                (null? lst))
            pred)
           (else
-           (andmap-aux f (cdr lst) (and (f (car lst))
-                                        pred)))))
+           (andmap-aux f
+                       (cdr lst)
+                       (and pred
+                            (f (car lst)))))))
+  
   (andmap-aux f lst #t))
 
+(define (but-last-n lst n)
+  (reverse (list-tail (reverse lst) n)))
+
+(define (last-n lst n)
+  (list-tail lst (- (length lst) n)))
+
+(define (last lst)
+  (list-ref lst (- (length lst) 1)))
+
+(define (b4last lst)
+  (list-ref lst (- (length lst) 2)))
+
+;; still needed?
 (define (alist? lst)
   (or (null? lst)
       (and (= (length (car lst)) 2)
