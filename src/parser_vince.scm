@@ -117,8 +117,8 @@
       (else #f))))
 
 
-;; compound = begin
-;;          | set!
+;; compound = special-form
+;;          | function-call
 (define (parse-compound stream)
   (stream-consume-type stream 'open-paren)
   (let* ((t (stream-peek stream))
@@ -129,6 +129,13 @@
          node)))
 
 
+;; special-form = if
+;;              | set!
+;;              | and
+;;              | or
+;;              | begin
+;;              | lambda
+;;              | quote
 (define (parse-keyword stream)
   (let ((t (stream-peek stream)))
     (cond
@@ -139,7 +146,7 @@
      ((eq? (token-value t) 'begin) (parse-begin stream))
      ((eq? (token-value t) 'lambda) (parse-lambda stream))
      ((eq? (token-value t) 'quote) (parse-quote stream))
-     (else #f))))
+     (else (error "not a keyword")))))
 
 
 (define (parse-list stream)
