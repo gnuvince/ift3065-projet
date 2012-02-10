@@ -65,13 +65,6 @@
                               ":"
                               (number->string (token-col t)))))))
 
-(define (stream-consume-type-value s type value)
-  (let ((t (stream-peek s)))
-    (if (and (eq? type (token-type t))
-             (equal? value (token-value t)))
-        (stream-consume s)
-        (error "type-value"))))
-
 (define (stream-empty? s)
   (not (stream-peek s)))
 
@@ -81,12 +74,14 @@
 (define (accumulate-expressions-until-close-paren stream)
     (let loop ((exprs '())
              (t (stream-peek stream)))
-    (if (eq? (token-value t) 'close-paren)
+    (if (eq? (token-type t) 'close-paren)
         (reverse exprs)
         (let ((expr (parse-expression stream)))
           (loop (cons expr exprs) (stream-peek stream))))))
 
 
+
+;; program = { expression }.
 (define (parse-program stream)
   (let ((exprs
          (let loop ((nodes '())
@@ -102,6 +97,13 @@
 
 
 
+;; expression = identifier
+;;            | number
+;;            | string
+;;            | character
+;;            | boolean
+;;            | "'" expression
+;;            | compound-expression
 (define (parse-expression stream)
   (let ((t (stream-peek stream)))
     (cond
@@ -109,18 +111,21 @@
       ((eq? (token-type t) 'number) (parse-number stream))
       ((eq? (token-type t) 'string) (parse-string stream))
       ((eq? (token-type t) 'char) (parse-character stream))
-      ((eq? (token-value t) 'open-paren) (parse-compound stream))
       ((eq? (token-type t) 'boolean) (parse-boolean stream))
+      ((eq? (token-type t) 'quote-symbol) (parse-quote stream))
+      ((eq? (token-type t) 'open-paren) (parse-compound stream))
       (else #f))))
 
 
+;; compound = begin
+;;          | set!
 (define (parse-compound stream)
-  (stream-consume-value stream 'open-paren)
+  (stream-consume-type stream 'open-paren)
   (let* ((t (stream-peek stream))
          (node (cond
                 ((eq? (token-type t) 'keyword) (parse-keyword stream))
                 (else (parse-list stream)))))
-    (and (stream-consume-value stream 'close-paren)
+    (and (stream-consume-type stream 'close-paren)
          node)))
 
 
@@ -142,38 +147,43 @@
          (let loop ((tokens (list))
                     (t (stream-peek stream)))
            (cond
-            ((eq? (token-value t) 'close-paren) (reverse tokens))
+            ((eq? (token-type t) 'close-paren) (reverse tokens))
             (else (loop (cons (parse-expression stream) tokens)
                         (stream-peek stream)))))))
     (make-ast '((type . list)) exprs)))
 
 
-
+;; number = digit { digit }
 (define (parse-number stream)
   (let ((t (stream-consume-type stream 'number)))
     (and t (token->ast t))))
 
 
+;; identifier = (alpha | extended ) { alpha | extended | digit }
 (define (parse-identifier stream)
   (let ((t (stream-consume-type stream 'ident)))
     (and t (token->ast t))))
 
 
+;; string = '"' { <character> } '"'
 (define (parse-string stream)
   (let ((t (stream-consume-type stream 'string)))
     (and t (token->ast t))))
 
 
+;; boolean = "#f" | "#t"
 (define (parse-boolean stream)
   (let ((t (stream-consume-type stream 'boolean)))
     (and t (token->ast t))))
 
 
+;; character = "#\" (<char> | <charname>)
 (define (parse-character stream)
   (let ((t (stream-consume-type stream 'char)))
     (and t (token->ast t))))
 
 
+;; if = "(if" expression expression [expression] ")"
 (define (parse-if stream)
   (stream-consume-value stream 'if)
   (let ((condition (parse-expression stream))
@@ -185,6 +195,7 @@
                     (list condition then-branch else-branch))))))
 
 
+;; set! = "(set!" identifier expression ")"
 (define (parse-set! stream)
   (stream-consume-value stream 'set!)
   (let ((lvalue (parse-identifier stream))
@@ -193,59 +204,70 @@
               (list lvalue rvalue))))
 
 
+;; and = "(and" { expression } ")"
 (define (parse-and stream)
   (stream-consume-value stream 'and)
   (make-ast '((type . and))
             (accumulate-expressions-until-close-paren stream)))
 
+
+;; or = "(or" { expression } ")"
 (define (parse-or stream)
   (stream-consume-value stream 'or)
   (make-ast '((type . or))
             (accumulate-expressions-until-close-paren stream)))
 
+
+;; begin = "(begin" {expression} ")"
 (define (parse-begin stream)
   (stream-consume-value stream 'begin)
   (make-ast '((type . begin))
             (accumulate-expressions-until-close-paren stream)))
 
 
+;; lambda = "(lambda" params expression {expression} ")"
+;; params = ident
+;;        | "()"
+;;        | "(" identifier {identifier} ["." identifier] ")"
 (define (parse-lambda stream)
+  (define (parse-lambda-params stream)
+    (let ((t (stream-peek stream)))
+      (if (eq? (token-type t) 'open-paren)
+          (parse-param-list stream)
+          (parse-identifier stream))))
+
+  (define (parse-param-list stream)
+    (stream-consume-type stream 'open-paren)
+    (let loop ((params '())
+               (t (stream-peek stream)))
+
+      (cond ((eq? (token-type t) 'ident)
+             (loop (cons (parse-identifier stream) params)
+                   (stream-peek stream)))
+
+            ((eq? (token-type t) 'close-paren)
+             (stream-consume-type stream 'close-paren)
+             (make-ast '((type . param-list)) (reverse params)))
+
+            ((eq? (token-type t) 'dot)
+             (stream-consume-type stream 'dot)
+             (let ((last-param (parse-identifier stream)))
+               (stream-consume-type stream 'close-paren)
+               (make-ast '((type . dotted-param-list))
+                         (reverse (cons last-param params)))))
+
+            (else (error "parameters of a function should be identifiers")))))
+
   (stream-consume-value stream 'lambda)
   (let ((params (parse-lambda-params stream))
         (body (accumulate-expressions-until-close-paren stream)))
     (make-ast '((type . lambda))
               (list params body))))
 
-(define (parse-lambda-params stream)
-  (let ((t (stream-peek stream)))
-    (if (eq? (token-value t) 'open-paren)
-        (parse-param-list stream)
-        (parse-identifier stream))))
 
-
-(define (parse-param-list stream)
-  (stream-consume-value stream 'open-paren)
-  (let loop ((params '())
-             (t (stream-peek stream)))
-
-    (cond ((eq? (token-type t) 'ident)
-           (loop (cons (parse-identifier stream) params)
-                 (stream-peek stream)))
-
-          ((equal? (token-symbol t) '(punctuation . close-paren))
-           (stream-consume-value stream 'close-paren)
-           (make-ast '((type . param-list)) (reverse params)))
-
-          ((equal? (token-symbol t) '(punctuation . dot))
-           (stream-consume-value stream 'dot)
-           (let ((last-param (parse-identifier stream)))
-             (stream-consume-value stream 'close-paren)
-             (make-ast '((type . dotted-param-list))
-                       (reverse (cons last-param params)))))
-
-          (else (error "parameters of a function should be identifiers")))))
-
+;; quote = "(quote" expression ")"
+;;       | "'" expression
 (define (parse-quote stream)
-  (stream-consume-value stream 'quote)
+  (stream-consume stream)
   (let ((expr (parse-expression stream)))
     (make-ast '((type . quote)) expr)))

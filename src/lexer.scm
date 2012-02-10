@@ -124,24 +124,24 @@
 ;; consume-open-paren :: stream -> symbol
 (define (consume-open-paren stream)
   (stream 'advance)
-  '(punctuation . open-paren))
+  '(open-paren . #f))
 
 ;; consume-close-paren :: stream -> symbol
 (define (consume-close-paren stream)
   (stream 'advance)
-  '(punctuation . close-paren))
+  '(close-paren . #f))
 
 ;; consume-quote :: stream -> symbol
 ;; TODO: Should we return quote-symbol or quote like the keyword?
 (define (consume-quote stream)
   (stream 'advance)
-  '(punctuation . quote-symbol))
+  '(quote-symbol . #f))
 
 
 ;; consume-backquote :: stream -> symbol
 (define (consume-backquote stream)
   (stream 'advance)
-  '(punctuation . backquote))
+  '(backquote . #f))
 
 
 ;; consume-comma :: stream -> symbol
@@ -150,13 +150,13 @@
   (if (char=? (stream 'next) #\@)
       (begin
         (stream 'advance)
-        '(punctuation . comma-at))
-      '(punctuation . comma)))
+        '(comma-at . #f))
+      '(comma . #f)))
 
 ;; consume-dot :: stream -> symbol
 (define (consume-dot stream)
   (stream 'advance)
-  '(punctuation . dot))
+  '(dot . #f))
 
 ;; consume-identifier :: stream -> symbol
 ;;
