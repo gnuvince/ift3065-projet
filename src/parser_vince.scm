@@ -119,8 +119,8 @@
          (node (cond
                 ((eq? (token-type t) 'keyword) (parse-keyword stream))
                 (else (parse-list stream)))))
-    (and (stream-consume-type stream 'close-paren)
-         node)))
+    (stream-consume-type stream 'close-paren)
+    node))
 
 
 ;; special-form = if
