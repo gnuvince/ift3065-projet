@@ -6,3 +6,11 @@ CLOSED: [2012-01-22 Sun 22:28]
   type -> symbol|#f -> int -> int -> token
   + If symbol = #f, store only the type
 - If value = #f, throw an error or return #f?
+
+
+* Parser
+** Pour lundi, 13-Fev-2012
+- [ ] Déplacer arborify dans parse1.scm [Eric]
+- [ ] Continuer parse3.scm + doc + grammaire [Eric]
+- [ ] Rapport [Vincent+Eric]
+- [ ] Tagger répertoire [Eric]
