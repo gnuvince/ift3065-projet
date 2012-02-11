@@ -9,9 +9,11 @@
 \usepackage{graphicx}
 \usepackage{parskip}
 \usepackage{multicol}
+\usepackage{url}
 
 \begin{document}
 
+\newcommand{\sins}{\emph{SINS}}
 
 \title{IFT3065 - Rapport sur SINS}
 \author{Vincent Foley-Bourgon (FOLV08078309) \\
@@ -20,34 +22,62 @@ Eric Thivierge (THIE09016601)}
 
 \abstract
 
-\emph{SINS} (Scheme IN Scheme) est un compilateur Scheme écrit dans le
+\sins (Scheme IN Scheme) est un compilateur Scheme écrit dans le
 langage Scheme dans le cadre du cours IFT3065 de la session hiver 2012
-à l'Université de Montréal.  Ce rapport décrit les différentes parties
-du compilateur, les problèmes et difficultés rencontrés durant son
-écriture et les solutions mises en place pour résoudre ces problèmes.
+à l'Université de Montréal.  Ce rapport décrit la philosophie
+directrice du projet, les différentes parties du compilateur, les
+problèmes et difficultés rencontrés durant son écriture et les
+solutions mises en place pour résoudre ces problèmes.
 
 \chapter{SINS}
 
 \section{Qu'est-ce que SINS?}
 
-\emph{SINS} (Scheme IN Scheme) est un petit compilateur Scheme écrit
-dans le cadre d'un cours de compilation.  Comme son nom l'indique, il
-s'agit d'un compilateur pour Scheme écrit en Scheme.  Le langage généré
-par \emph{SINS} sera du code assembleur x86.
+\sins (Scheme IN Scheme) est un petit compilateur Scheme écrit
+dans le cadre d'un cours de compilation de 15 semaines.  Comme son nom
+l'indique, il s'agit d'un compilateur pour Scheme écrit en Scheme.
+\sins génère du code assembleur x86.
 
-\emph{SINS} est un véhicule pour ses auteurs pour faire un survol des
-différents aspects de la compilation.  La philosophie de base est
-qu'étant donné le choix d'implanter une fonctionnalité en profondeur
-ou d'en implanter deux avec des techniques moins sophistiquées, on
-choisira la deuxième option à tout coup.  Nous sommes d'avis que de
-cette approche nous donnera une vision plus ``large'' d'un
-compilateur.  Les détails d'implantation plus avancés pourront être
-appris et maîtrisé dans le cadre de stages, de recherches et
-d'emplois.
+\sins est un véhicule permettant à ses auteurs de faire un
+survol des différents aspects de la compilation.  La philosophie de
+base est qu'étant donné le choix d'implanter une fonctionnalité en
+profondeur ou d'en implanter deux avec des techniques moins
+sophistiquées, on choisira la deuxième option à tout coup.  Nous
+sommes d'avis que cette approche nous donnera une vision plus globale
+d'un compilateur.  Les détails d'implantation plus avancés pourront
+être appris, implantés et maîtrisés dans le cadre de stages, de
+projets personnels, de recherches et d'emplois.
 
-\chapter{Phase d'analyse}
 
-\section{Analyse lexicale}
+\section{Design de SINS}
+
+\sins suit un modèle en pipeline où chaque étape de la compilation a
+son propre module et où chaque module a comme entrée la sortie du
+module précédent.  Chaque module effectue (si possible) une seule
+transformation afin de garder la complexité du module la plus basse
+possible.  Cela implique que \sins fait plus de passes sur le code et
+qu'il est plus lent à l'exécution qu'un compilateur qui fusionne
+plusieurs phases en une.  Dans le cadre d'un projet éducationnel,
+nous jugeons que cette contrainte est acceptable.
+
+
+\section{Milestone du 13 février 2012}
+
+En date du 13 février 2012, les fonctionnalités suivantes sont
+implantées:
+
+\begin{itemize}
+\item L'analyse lexicale
+\item Le lecteur
+\item La vérification syntaxique des formes spéciales
+\end{itemize}
+
+Notre code se trouve sur le site GitHub, et le code en date du 13
+février 2012 peut être visionné à l'adresse suivante:
+\url{http://www.github.com}
+
+
+\chapter{Analyse lexicale}
 
 La première phase habituelle d'un compilateur est de transformer un
 flux de caractères représentant un programme source en un flux de
@@ -63,13 +93,13 @@ Cette décision a été prise afin de mieux comprendre les détails de
 plus bas niveau, ainsi que les difficultés d'implantation de cette
 phase.
 
-\subsection{Structures de données}
+\section{Structures de données}
 
 Afin de faire l'analyse lexicale d'un programme source, deux
 structures de données principales ont été nécessaires: un type flux
 (\emph{stream}), et un type lexème (\emph{token}).
 
-\subsubsection{Stream}
+\subsection{Stream}
 
 La fonction \emph{make-stream} prend en entrée une chaîne de
 caractères et retourne un \emph{stream}.  La fonction
@@ -88,7 +118,7 @@ données possédant les 4 opérations suivantes:
 \end{itemize}
 
 
-\subsubsection{Token}
+\subsection{Token}
 
 Un lexème est représenté par une liste ayant la forme suivante:
 
@@ -128,7 +158,7 @@ On peut manipuler les lexèmes à l'aide des fonctions suivantes:
 \item \emph{token-col}: retourne la colonne où commence ce lexème.
 \end{itemize}
 
-\subsection{Algorithme d'analyse}
+\section{Algorithme d'analyse}
 
 La fonction \emph{get-token} prend en entrée un flux de caractères et
 retourne le prochain lexème.  Voici une explication de son
@@ -158,7 +188,8 @@ cas, on retourne \#f pour signaler une erreur.
 Si le caractère est un chiffre, on lit un nombre.  Cela empêche des
 identificateurs débutant par un chiffre comme \emph{2pi} par exemple.
 Cette limitation est acceptable dans notre compilateur (et est
-conforme avec la syntaxe décrite dans la section 7.1.1 de R5RS).
+conforme avec la syntaxe décrite dans la section 7.1.1 du standard
+R5RS).
 
 Dans le cas où le caractère est un caractère qui fait partie de
 l'alphabet des identificateurs, on procède en deux étapes:
@@ -182,7 +213,7 @@ d'une chaîne de caractères et d'un fichier source respectivement et
 font ensuite appel à \emph{lex}.
 
 
-\section{Analyse syntaxique}
+\chapter{Analyse syntaxique}
 
 Tout comme l'analyse lexicale, il existe de nombreux outils pour faire
 l'analyse syntaxique d'un flux de lexèmes; Yacc, Bison, LALR-SCM et
@@ -194,12 +225,53 @@ d'analyse syntaxique.
 
 Comme la syntaxe de Scheme est simple et peut être exprimée par une
 grammaire LL(1), il est naturel de créer cette phase par descente
-récursive.  De plus, comme la récursion est omni-présente en Scheme et
+récursive.  De plus, comme la récursion est omniprésente en Scheme et
 que le langage possède des symboles, Scheme est un très bon choix pour
 faire cette phase.
 
-Les sections suivantes décriront les structures de donnés
-utilisées ainsi que certains détails d'implantation que nous jugeons
-intéressants.
+Les sections suivantes décriront les différentes phases de l'analyse
+lexicale, les structures de donnés utilisées ainsi que certains
+détails d'implantation que nous jugeons intéressants.
+
+\section{Le lecteur}
+
+Une caractéristique propre aux langages Lisp est le lecteur
+(\emph{reader} en anglais); le lecteur prend en entrée une chaîne de
+caractères représentant une structure Lisp et retourne la
+représentation arborescente de cette structure.
+
+Dans cette phase, les symboles sont auto-évalués (et non pas traités
+comme des variables) et les listes sont vues non pas comme des appels
+de fonctions ou des formes spéciales, mais simplement comme des listes
+de symboles.  Voici un exemple d'interaction avec la fonction
+\emph{read} dans l'interpréteur de Gambit:
+
+\begin{verbatim}
+> (read (open-input-string "allo"))
+allo
+> (read (open-input-string "(lambda)"))
+(lambda)
+> (read (open-input-string "(sins est un (bon) compilateur)"))
+(sins est un (bon) compilateur)
+\end{verbatim}
+
+La seule vérification syntaxique faite par le lecteur est de s'assurer
+que le parenthèsage des expressions est correct.  Aucune vérification
+syntaxique plus approfondie n'est faite (ex.: qu'une forme lambda soit
+suivie d'une liste de paramètres puis d'expressions à exécuter).  Ceci
+est nécessaire pour la prochaine phase de l'analyse syntaxique,
+l'expansion des macros.
+
+
+\section{L'expansion de macros}
+
+Cette phase n'est pas encore implantée.
+
+
+\section{La vérification syntaxique}
+
+Dans cette phase, \sins vérifie que les différentes formes spéciales
+ont la bonne forme syntaxique.  Elle s'appuie sur la grammaire définie
+dans la section 7.1.3 du standard R5RS de Scheme.
 
 \end{document}
