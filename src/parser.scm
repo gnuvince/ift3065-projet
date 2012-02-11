@@ -87,6 +87,18 @@
            (<variable>* ast))
        ast))
 
+(define (<formals> ast)
+  (and (or (<variable> ast)
+           (and (pair? ast)
+                (or (null? ast)
+                    (let ((dotp (member 'dot ast)))
+                      (and dotp
+                           (= (length dotp) 2)
+                           (<variable> (cadr dotp))
+                           (<variable>+ (but-last-n ast 2))))
+                    (<variable>+ ast))))
+       ast))
+
 (define (<body> ast)
   (and (not (null? ast))
        (or (<expression>+ ast)
@@ -128,14 +140,28 @@
 (define <command> <expression>)
 
 (define (<variable>* ast)
-  (and
-   (or (null? ast)
-       (and (<variable> (car ast))
-            (<variable>* (cdr ast))))
-   ast))
+  (and (or (null? ast)
+           (and (<variable> (car ast))
+                (<variable>* (cdr ast))))
+       ast))
+
+(define (<variable>+ ast)
+  (and (>= (length ast) 1)
+       (<variable> (car ast))
+       (<variable>* (cdr ast))
+       ast))
 
 (define (<variable> ast)
   (and (symbol? ast)
+       ast))
+;;  (and (identifier? ast)
+;;       (not (symbol? ast))
+;;       ast))
+
+(define (identifier? ast)
+  (and (not (number? ast))
+       (not (string? ast))
+       (not (pair? ast))
        ast))
 
 (define (<literal> ast)
@@ -198,15 +224,71 @@
        ast))
 
 (define (<lambda-expression> ast)
-  #f)
+  (and (pair? ast)
+       (= (length ast) 3)
+       (eq? (car ast) 'lambda)
+       (<formals> (cadr ast))
+       (<body> (caddr ast))
+       ast))
 
 (define (<conditional> ast)
-  #f)
+  (and (pair? ast)
+       (eq? (car ast) 'if)
+       (member (length ast) '(3 4))
+       (<expression> (cadr ast))
+       (<expression> (caddr ast))
+       (or (null? (cdddr ast))
+           (<expression> (cdddr ast)))
+       ast))
 
 (define (<assignment> ast)
-  #f)
+  (and (pair? ast)
+       (eq? (car ast) 'set!)
+       (= (length ast) 3)
+       (<variable> (cadr ast))
+       (<expression> (caddr ast))
+       ast))
 
 (define (<derived-expression> ast)
+  (and (pair? ast)
+       (or (<quasiquotation> ast)
+           (cond-derived-expression ast)
+           (and-derived-expression ast)
+           (or-derived-expression ast)
+           (let-derived-expression ast)
+           (begin-derived-expression ast)
+           (do-derived-expression ast)
+           (delay-derived-expression ast)
+           (case-derived-expression ast))
+       ast))
+
+(define (<quasiquotation> ast)
+  (and (or (eq? (car ast) 'backquote)
+           (eq? (car ast) 'quasiquote))
+       ast))
+
+(define (cond-derived-expression ast)
+  #f)
+
+(define (and-derived-expression ast)
+  #f)
+
+(define (or-derived-expression ast)
+  #f)
+
+(define (let-derived-expression ast)
+  #f)
+
+(define (begin-derived-expression ast)
+  #f)
+
+(define (do-derived-expression ast)
+  #f)
+
+(define (case-derived-expression ast)
+  #f)
+
+(define (delay-derived-expression ast)
   #f)
 
 (define (<macro-use> ast)
