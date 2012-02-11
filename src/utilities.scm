@@ -70,6 +70,40 @@
 (define (b4last lst)
   (list-ref lst (- (length lst) 2)))
 
+(define (consume-token-value value msg)
+  (let ((tok (stream 'pop)))
+    (cond ((is-token-value? tok value)
+           tok)
+          (else
+           (error (make-err-msg msg tok))))))
+
+(define (consume-token-type type msg)
+  (let ((tok (stream 'pop)))
+    (cond ((is-token-type? tok type)
+           tok)
+          (else
+           (error (make-err-msg msg tok))))))
+  
+(define (consume-lparen)
+  (consume-token-value 'open-paren "Expected start of compound expression: line "))
+
+(define (consume-rparen)
+  (begin
+    (consume-token-value 'close-paren "Expected end of compound expression: line ")))
+
+(define (consume-keyword keyword)
+  (consume-token-value 'keyword (string-append "Expected keyword: "
+                                              (symbol->string keyword)
+                                              " line ")))
+
+(define (ident? ast)
+  (eq? (ast-get-attr-value ast 'value)
+       'ident))
+
+(define (simple-binop? ast)
+  (member? (ast-get-attr-value ast 'value)
+           '(+ - * /)))
+
 ;; still needed?
 (define (alist? lst)
   (or (null? lst)
