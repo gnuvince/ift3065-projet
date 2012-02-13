@@ -16,6 +16,8 @@
 \begin{document}
 
 \newcommand{\sins}{\emph{SINS}}
+\newcommand{\bop}{\textbf{(}}
+\newcommand{\bcp}{\textbf{)}}
 
 \title{IFT3065 - Rapport sur SINS}
 \author{Vincent Foley-Bourgon (FOLV08078309) \\
@@ -292,7 +294,7 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
 
   <compound datum> $\longrightarrow$ <list>
 
-  <list> $\longrightarrow$ (<datum>*) \alt (<datum>+  .  <datum>)
+  <list> $\longrightarrow$ \bop <datum>* \bcp \alt \bop <datum>+  .  <datum> \bcp
   \alt <abbreviation>
 
   <abbreviation> $\longrightarrow$ <abbrev prefix> <datum>
@@ -308,11 +310,11 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
   
   <command or definition> $\longrightarrow$ <command>
   \alt <definition>
-  \alt (\textbf{begin} <command or definition>+)
+  \alt \bop \textbf{begin} <command or definition>+ \bcp
 
-  <definition> $\longrightarrow$ (define <variable> <expression>)
-  \alt (\textbf{define} (<variable> <def formals>) <body>)
-  \alt (\textbf{begin} <definition>*)
+  <definition> $\longrightarrow$ \bop define <variable> <expression> \bcp
+  \alt \bop \textbf{define} \bop <variable> <def formals> \bcp <body> \bcp
+  \alt \bop \textbf{begin} <definition>* \bcp
 
   <def formals> $\longrightarrow$ <variable>*
   \alt <variable>*  .  <variable>
@@ -334,18 +336,18 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
   <self-evaluating> $\longrightarrow$ <boolean> \alt <number>
   \alt <character> \alt <string>
 
-  <quotation> $\longrightarrow$ '<datum> \alt (quote <datum>)
+  <quotation> $\longrightarrow$ '<datum> \alt \bop quote <datum> \bcp
 
-  <procedure call> $\longrightarrow$ (<operator> <operand>*)
+  <procedure call> $\longrightarrow$ \bop <operator> <operand>* \bcp
   
   <operator> $\longrightarrow$ <expression>
   
   <operand> $\longrightarrow$ <expression>
 
-  <lambda expression> $\longrightarrow$ (lambda <formals> <body>)
+  <lambda expression> $\longrightarrow$ \bop lambda <formals> <body> \bcp
 
-  <formals> $\longrightarrow$ (<variable>*) \alt <variable>
-  \alt (<variable>+  .  <variable>)
+  <formals> $\longrightarrow$ \bop <variable>* \bcp \alt <variable>
+  \alt \bop <variable>+  .  <variable> \bcp
 
   <body> $\longrightarrow$ <definition>* <sequence>
 
@@ -353,7 +355,7 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
 
   <command> $\longrightarrow$ <expression>
 
-  <conditional> $\longrightarrow$ (\textbf{if} <test> <consequent> <alternate>)
+  <conditional> $\longrightarrow$ \bop \textbf{if} <test> <consequent> <alternate> \bcp
 
   <test> $\longrightarrow$ <expression>
 
@@ -361,33 +363,33 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
 
   <alternate> $\longrightarrow$ <expression> \alt <empty>
 
-  <assignment> $\longrightarrow$ (\textbf{set!} <variable> <expression>)
+  <assignment> $\longrightarrow$ \bop \textbf{set!} <variable> <expression> \bcp
 
-  <derived expression> $\longrightarrow$ (cond <cond clause>+)
-  \alt (\textbf{cond} <cond clause>* (else <sequence>))
-  \alt (\textbf{and} <test>*)
-  \alt (\textbf{or} <test>*)
-  \alt (\textbf{let} (<binding spec>*) <body>)
-  \alt (\textbf{let} <variable> (<binding spec>*) <body>)
-  \alt (\textbf{let*} (<binding spec>*) <body>)
-  \alt (\textbf{letrec} (<binding spec>*) <body>)
-  \alt (\textbf{begin} <sequence>)
+  <derived expression> $\longrightarrow$ \bop cond <cond clause>+ \bcp
+  \alt \bop \textbf{cond} <cond clause>* \bop else <sequence> \bcp \bcp
+  \alt \bop \textbf{and} <test>* \bcp
+  \alt \bop \textbf{or} <test>* \bcp
+  \alt \bop \textbf{let} \bop <binding spec>* \bcp <body> \bcp
+  \alt \bop \textbf{let} <variable> \bop <binding spec>* \bcp <body> \bcp
+  \alt \bop \textbf{let*} \bop <binding spec>* \bcp <body> \bcp
+  \alt \bop \textbf{letrec} \bop <binding spec>* \bcp <body> \bcp
+  \alt \bop \textbf{begin} <sequence> \bcp
   \alt <quasiquotation>
 
-  <cond clause> $\longrightarrow$ (<test> <sequence>)
-  \alt (<test>)
-  \alt (<test> => <recipient>)
+  <cond clause> $\longrightarrow$ \bop <test> <sequence> \bcp
+  \alt \bop <test> \bcp
+  \alt \bop <test> => <recipient> \bcp
 
   <recipient> $\longrightarrow$ <expression>
 
-  <binding spec> $\longrightarrow$ (<variable> <expression>)
+  <binding spec> $\longrightarrow$ \bop <variable> <expression> \bcp
   
 \end{grammar}
 
 \subsection{quasiquotation}
 \begin{grammar}
   <quasiquotation> $\longrightarrow$ \`{}<expression>
-  \alt (quasiquote <expression>)
+  \alt \bop \textbf{quasiquote} <expression> \bcp
 \end{grammar}
 
 \end{document}
