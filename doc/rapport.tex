@@ -95,6 +95,9 @@ Cette décision a été prise afin de mieux comprendre les détails de
 plus bas niveau, ainsi que les difficultés d'implantation de cette
 phase.
 
+La grammaire reconnue par \sins{} est décrite dans la section
+\ref{grammar-tokens}.
+
 \section{Structures de données}
 
 Afin de faire l'analyse lexicale d'un programme source, deux
@@ -276,12 +279,49 @@ Dans cette phase, \sins{} vérifie que les différentes formes spéciales
 ont la bonne forme syntaxique.  Elle s'appuie sur la grammaire définie
 dans la section suivante.
 
-\section{La grammaire}
-Voici une description EBNF de la grammaire supportée par \sins{}. Au moment d'écrire le rapport de la première remise, \sins{} ne supportait pas encore les abbréviations complétement mais nous avons choisi de l'inclure dans la description malgré tout. Cette grammaire évoluera probablement au cours du projet.
+\appendix
+\chapter{Grammaire}
+Voici une description EBNF de la grammaire supportée par \sins{}. Au
+moment d'écrire le rapport de la première remise, \sins{} ne
+supportait pas encore les abbréviations complétement mais nous avons
+choisi de l'inclure dans la description malgré tout. Cette grammaire
+évoluera probablement au cours du projet.
 
 \setlength{\grammarindent}{3em}
-\subsection{datum}
 
+
+\section{Lexèmes}
+\label{grammar-tokens}
+\begin{grammar}
+  <alpha> $\longrightarrow$ `a..zA..Z'
+
+  <digit> $\longrightarrow$ `0..9'
+
+  <boolean> $\longrightarrow$ `\#f' | `\#t'
+
+  <extended> $\longrightarrow$ `!' | `\$' | `\%' | `\&' | `*' | `+' | `-' | `.' | `/' | `:'
+  | `<' | `=' | `>' | `?' | `@' | `\textasciicircum' | `\_' | `\textasciitilde'
+
+  <number> $\longrightarrow$ <digit> <digit>*
+
+  <identifier> $\longrightarrow$ (<alpha> | <extended>) (<alpha> | <extended> |
+  <digit>)*
+
+  <keyword> $\longrightarrow$ `define' | `else' | `unquote' | `unquote-splicing' | `quote'
+  \alt `lambda' | `if' | `set!' | `begin' | `cond' | `and' | `or'
+  \alt `case' | `let' | `let*' | `letrec' | `do' | `delay' |
+  `quasiquote'
+
+  <string> $\longrightarrow$ `\textquotedbl' <characters>* `\textquotedbl'
+
+  <character> $\longrightarrow$ `#\textbackslash' ( <any character> | `nul' |
+  `newline' | `space' | `tab' )
+
+\end{grammar}
+
+
+
+\section{datum}
 \begin{grammar}
   <datum> $\longrightarrow$ <simple datum> \alt <compound datum>
 
@@ -298,14 +338,14 @@ Voici une description EBNF de la grammaire supportée par \sins{}. Au moment d'�
   <abbreviation> $\longrightarrow$ <abbrev prefix> <datum>
 
   <abbrev prefix> $\longrightarrow$ \'{} \alt \`{} \alt , \alt ,@
-  
+
 \end{grammar}
 
-\subsection{program}
+\section{program}
 
 \begin{grammar}
   <program> $\longrightarrow$ <command or definition>*
-  
+
   <command or definition> $\longrightarrow$ <command>
   \alt <definition>
   \alt (\textbf{begin} <command or definition>+)
@@ -318,7 +358,7 @@ Voici une description EBNF de la grammaire supportée par \sins{}. Au moment d'�
   \alt <variable>*  .  <variable>
 \end{grammar}
 
-\subsection{expression}
+\section{expression}
 
 \begin{grammar}
   <expression> $\longrightarrow$ <variable>
@@ -337,9 +377,9 @@ Voici une description EBNF de la grammaire supportée par \sins{}. Au moment d'�
   <quotation> $\longrightarrow$ '<datum> \alt (quote <datum>)
 
   <procedure call> $\longrightarrow$ (<operator> <operand>*)
-  
+
   <operator> $\longrightarrow$ <expression>
-  
+
   <operand> $\longrightarrow$ <expression>
 
   <lambda expression> $\longrightarrow$ (lambda <formals> <body>)
@@ -381,10 +421,10 @@ Voici une description EBNF de la grammaire supportée par \sins{}. Au moment d'�
   <recipient> $\longrightarrow$ <expression>
 
   <binding spec> $\longrightarrow$ (<variable> <expression>)
-  
+
 \end{grammar}
 
-\subsection{quasiquotation}
+\section{quasiquotation}
 \begin{grammar}
   <quasiquotation> $\longrightarrow$ \`{}<expression>
   \alt (quasiquote <expression>)
