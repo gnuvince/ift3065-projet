@@ -3,16 +3,6 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
-;; make-stream :: string -> stream
-;;
-;; Takes a string and returns a "stream" on that string.  The stream
-;; supports two operations:
-;; - next: returns the character under the cursor, without moving the cursor.
-;;         Reading past the end of the stream returns the nul character.
-;; - advance: moves to the cursor to the next character.
-
-
-
 ;; whitespace = #\space | #\tab | #\newline
 ;; alpha = "a..zA..Z"
 ;; digit = "0..9"
@@ -29,6 +19,14 @@
 
 (load "token.scm")
 
+
+;; make-stream :: string -> stream
+;;
+;; Takes a string and returns a "stream" on that string.  The stream
+;; supports two operations:
+;; - next: returns the character under the cursor, without moving the cursor.
+;;         Reading past the end of the stream returns the nul character.
+;; - advance: moves to the cursor to the next character.
 (define (make-stream str)
   (let ((current 0)
         (line 1)
@@ -52,6 +50,13 @@
     dispatch))
 
 
+;; make-stream :: string -> stream
+;;
+;; Takes a string and returns a "stream" on that string.  The stream
+;; supports two operations:
+;; - next: returns the character under the cursor, without moving the cursor.
+;;         Reading past the end of the stream returns the nul character.
+;; - advance: moves to the cursor to the next character.
 (define (make-stream-from-port port)
   (let ((line 1)
         (col 1))

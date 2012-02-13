@@ -161,15 +161,8 @@
                   test-lex)))
 
 (define (self-lex)
-  (define (loop p s)
-    (let ((line (read-line p)))
-      (if (eq? line #!eof)
-          s
-          (loop p (string-append s "\n" line)))))
-  (let* ((port (open-input-file "lexer.scm"))
-         (tokens (lex (loop port ""))))
-    (close-input-port port)
-    tokens))
+  (list (lex-from-file "lexer.scm")
+        (lex-from-file "test_lexer.scm")))
 
 (define (test-interactif)
   (let ((port (open-output-string)))
