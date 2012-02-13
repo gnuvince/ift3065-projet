@@ -62,3 +62,22 @@
 (define (ast-put-attr ast key value)
   (make-ast (cons (cons key value) (ast-get-attrs ast))
             (ast-get-children ast)))
+
+;;
+;; utilities
+;;
+
+(define (ast-first-child ast)
+  (car (ast-get-children ast)))
+
+(define (ast-second-child ast)
+  (cadr (ast-get-childrem ast)))
+
+(define (ast-third-child ast)
+  (caddr (ast-get-children ast)))
+
+(define (ast-get-value ast)
+  (ast-get-attr-value ast 'value))
+
+(define (ast-get-type ast)
+  (ast-get-attr-value ast 'type))

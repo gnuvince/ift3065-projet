@@ -1,0 +1,130 @@
+\documentclass[10pt]{article}
+
+\usepackage{times}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{parskip}
+\usepackage{multicol}
+\usepackage{syntax}
+
+\begin{document}
+\setlength{\grammarindent}{3em}
+
+\section*{Grammaire}
+Voici une description EBNF de la grammaire supportée par SINS. Au moment d'écrire le rapport de la première remise, SINS ne supportait pas encore les abbréviations complétement mais nous avons choisi de l'inclure dans la description malgré tout. Cette grammaire évoluera probablement d'ici la fin du projet.
+
+\subsection*{datum}
+
+\begin{grammar}
+  <datum> $\longrightarrow$ <simple datum> \alt <compound datum>
+
+  <simple datum> $\longrightarrow$ <boolean> \alt <number>
+  \alt <character> \alt <string> \alt <symbol>
+
+  <symbol> $\longrightarrow$ <identifier>
+
+  <compound datum> $\longrightarrow$ <list>
+
+  <list> $\longrightarrow$ (<datum>*) \alt (<datum>+  .  <datum>)
+  \alt <abbreviation>
+
+  <abbreviation> $\longrightarrow$ <abbrev prefix> <datum>
+
+  <abbrev prefix> $\longrightarrow$ \'{} \alt \`{} \alt , \alt ,@
+  
+\end{grammar}
+
+\subsection*{program}
+
+\begin{grammar}
+  <program> $\longrightarrow$ <command or definition>*
+  
+  <command or definition> $\longrightarrow$ <command>
+  \alt <definition>
+  \alt (begin <command or definition>+)
+
+  <definition> $\longrightarrow$ (define <variable> <expression>)
+  \alt (define (<variable> <def formals>) <body>)
+  \alt (begin <definition>*)
+
+  <def formals> $\longrightarrow$ <variable>*
+  \alt <variable>*  .  <variable>
+\end{grammar}
+
+\subsection*{expression}
+
+\begin{grammar}
+  <expression> $\longrightarrow$ <variable>
+  \alt <literal>
+  \alt <procedure call>
+  \alt <lambda expression>
+  \alt <conditional>
+  \alt <assignment>
+  \alt <derived expression>
+
+  <literal> $\longrightarrow$ <quotation> \alt <self-evaluating>
+
+  <self-evaluating> $\longrightarrow$ <boolean> \alt <number>
+  \alt <character> \alt <string>
+
+  <quotation> $\longrightarrow$ '<datum> \alt (quote <datum>)
+
+  <procedure call> $\longrightarrow$ (<operator> <operand>*)
+  
+  <operator> $\longrightarrow$ <expression>
+  
+  <operand> $\longrightarrow$ <expression>
+
+  <lambda expression> $\longrightarrow$ (lambda <formals> <body>)
+
+  <formals> $\longrightarrow$ (<variable>*) \alt <variable>
+  \alt (<variable>+  .  <variable>)
+
+  <body> $\longrightarrow$ <definition>* <sequence>
+
+  <sequence> $\longrightarrow$ <command>* <expression>
+
+  <command> $\longrightarrow$ <expression>
+
+  <conditional> $\longrightarrow$ (if <test> <consequent> <alternate>)
+
+  <test> $\longrightarrow$ <expression>
+
+  <consequent> $\longrightarrow$ <expression>
+
+  <alternate> $\longrightarrow$ <expression> \alt <empty>
+
+  <assignment> $\longrightarrow$ (set! <variable> <expression>)
+
+  <derived expression> $\longrightarrow$ (cond <cond clause>+)
+  \alt (cond <cond clause>* (else <sequence>))
+  \alt (and <test>*)
+  \alt (or <test>*)
+  \alt (let (<binding spec>*) <body>)
+  \alt (let <variable> (<binding spec>*) <body>)
+  \alt (let* (<binding spec>*) <body>)
+  \alt (letrec (<binding spec>*) <body>)
+  \alt (begin <sequence>)
+  \alt <quasiquotation>
+
+  <cond clause> $\longrightarrow$ (<test> <sequence>)
+  \alt (<test>)
+  \alt (<test> => <recipient>)
+
+  <recipient> $\longrightarrow$ <expression>
+
+  <binding spec> $\longrightarrow$ (<variable> <expression>)
+  
+\end{grammar}
+
+\subsection*{quasiquotation}
+\begin{grammar}
+  <quasiquotation> $\longrightarrow$ \`{}<expression>
+  \alt (quasiquote <expression>)
+\end{grammar}
+\end{document}
