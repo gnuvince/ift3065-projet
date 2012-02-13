@@ -16,7 +16,41 @@
 \setlength{\grammarindent}{3em}
 
 \section*{Grammaire}
-Voici une description EBNF de la grammaire supportée par SINS. Au moment d'écrire le rapport de la première remise, SINS ne supportait pas encore les abbréviations complétement mais nous avons choisi de l'inclure dans la description malgré tout. Cette grammaire évoluera probablement d'ici la fin du projet.
+Voici une description EBNF de la grammaire supportée par SINS. Au
+moment d'écrire le rapport de la première remise, SINS ne supportait
+pas encore les abbréviations complétement mais nous avons choisi de
+l'inclure dans la description malgré tout. Cette grammaire évoluera
+probablement d'ici la fin du projet.
+
+
+
+\begin{grammar}
+  <alpha> ::= `a..zA..Z'
+
+  <digit> ::= `0..9'
+
+  <boolean> ::= `\#f' | `\#t'
+
+  <extended> ::= `!' | `\$' | `\%' | `\&' | `*' | `+' | `-' | `.' | `/' | `:'
+  | `<' | `=' | `>' | `?' | `@' | `\textasciicircum' | `\_' | `\textasciitilde'
+
+  <number> ::= <digit> <digit>*
+
+  <identifier> ::= (<alpha> | <extended>) (<alpha> | <extended> |
+  <digit>)*
+
+  <keyword> ::= `define' | `else' | `unquote' | `unquote-splicing' | `quote'
+  \alt `lambda' | `if' | `set!' | `begin' | `cond' | `and' | `or'
+  \alt `case' | `let' | `let*' | `letrec' | `do' | `delay' |
+  `quasiquote'
+
+  <string> ::= `\textquotedbl' <characters>* `\textquotedbl'
+
+  <character> ::= `#\textbackslash' ( <any character> | `nul' |
+  `newline' | `space' | `tab' )
+
+\end{grammar}
+
 
 \subsection*{datum}
 
@@ -36,14 +70,14 @@ Voici une description EBNF de la grammaire supportée par SINS. Au moment d'écr
   <abbreviation> $\longrightarrow$ <abbrev prefix> <datum>
 
   <abbrev prefix> $\longrightarrow$ \'{} \alt \`{} \alt , \alt ,@
-  
+
 \end{grammar}
 
 \subsection*{program}
 
 \begin{grammar}
   <program> $\longrightarrow$ <command or definition>*
-  
+
   <command or definition> $\longrightarrow$ <command>
   \alt <definition>
   \alt (begin <command or definition>+)
@@ -75,9 +109,9 @@ Voici une description EBNF de la grammaire supportée par SINS. Au moment d'écr
   <quotation> $\longrightarrow$ '<datum> \alt (quote <datum>)
 
   <procedure call> $\longrightarrow$ (<operator> <operand>*)
-  
+
   <operator> $\longrightarrow$ <expression>
-  
+
   <operand> $\longrightarrow$ <expression>
 
   <lambda expression> $\longrightarrow$ (lambda <formals> <body>)
@@ -119,7 +153,7 @@ Voici une description EBNF de la grammaire supportée par SINS. Au moment d'écr
   <recipient> $\longrightarrow$ <expression>
 
   <binding spec> $\longrightarrow$ (<variable> <expression>)
-  
+
 \end{grammar}
 
 \subsection*{quasiquotation}
