@@ -308,11 +308,11 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
   
   <command or definition> $\longrightarrow$ <command>
   \alt <definition>
-  \alt (begin <command or definition>+)
+  \alt (\textbf{begin} <command or definition>+)
 
   <definition> $\longrightarrow$ (define <variable> <expression>)
-  \alt (define (<variable> <def formals>) <body>)
-  \alt (begin <definition>*)
+  \alt (\textbf{define} (<variable> <def formals>) <body>)
+  \alt (\textbf{begin} <definition>*)
 
   <def formals> $\longrightarrow$ <variable>*
   \alt <variable>*  .  <variable>
@@ -353,7 +353,7 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
 
   <command> $\longrightarrow$ <expression>
 
-  <conditional> $\longrightarrow$ (if <test> <consequent> <alternate>)
+  <conditional> $\longrightarrow$ (\textbf{if} <test> <consequent> <alternate>)
 
   <test> $\longrightarrow$ <expression>
 
@@ -361,17 +361,17 @@ Voici une description EBNF de la grammaire support√©e par \sins{}. Au moment d'√
 
   <alternate> $\longrightarrow$ <expression> \alt <empty>
 
-  <assignment> $\longrightarrow$ (set! <variable> <expression>)
+  <assignment> $\longrightarrow$ (\textbf{set!} <variable> <expression>)
 
   <derived expression> $\longrightarrow$ (cond <cond clause>+)
-  \alt (cond <cond clause>* (else <sequence>))
-  \alt (and <test>*)
-  \alt (or <test>*)
-  \alt (let (<binding spec>*) <body>)
-  \alt (let <variable> (<binding spec>*) <body>)
-  \alt (let* (<binding spec>*) <body>)
-  \alt (letrec (<binding spec>*) <body>)
-  \alt (begin <sequence>)
+  \alt (\textbf{cond} <cond clause>* (else <sequence>))
+  \alt (\textbf{and} <test>*)
+  \alt (\textbf{or} <test>*)
+  \alt (\textbf{let} (<binding spec>*) <body>)
+  \alt (\textbf{let} <variable> (<binding spec>*) <body>)
+  \alt (\textbf{let*} (<binding spec>*) <body>)
+  \alt (\textbf{letrec} (<binding spec>*) <body>)
+  \alt (\textbf{begin} <sequence>)
   \alt <quasiquotation>
 
   <cond clause> $\longrightarrow$ (<test> <sequence>)
