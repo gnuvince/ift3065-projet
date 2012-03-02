@@ -1,0 +1,42 @@
+Readme file for SILex version 1.0
+Copyright (C) 2001  Danny Dube'
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+Description
+-----------
+
+SILex is a lexical analyser generator with a Lex-like syntax.
+
+Contents of the directory:
+
+README		This file.
+gpl.txt		The GNU General Public License.
+multilex.scm	Run-time module.
+silex.ps	Documentation in PostScript.
+silex.scm	The SILex program.
+silex.texi	Source of the documentation in Texinfo.
+
+Author
+------
+
+The author is Danny Dube'.
+
+Bug reports or other messages can be sent at:
+	dube@iro.umontreal.ca
+
+If you want to modify or improve the program yourself, you can get the
+sources in the home page of the author at:
+	http://www.iro.umontreal.ca/~dube

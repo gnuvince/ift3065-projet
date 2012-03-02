@@ -43,14 +43,16 @@
    ast))
 
 (define (begin-com-or-def+ ast)
-  (and (pair? ast)
+  (and (list? ast)
+       (pair? ast)
        (>= (length ast) 2)
        (eq? (car ast) 'begin)
        (<command-or-definition+> (cdr ast))
        ast))
 
 (define (begin-definition* ast)
-  (and (pair? ast)
+  (and (list? ast)
+       (pair? ast)
        (eq? (car ast) 'begin)
        (or (= (length ast) 1)
            (<definition*> (cdr ast)))
@@ -58,16 +60,17 @@
 
 ;; ( define <variable>  <expression> )
 (define (define-var-expr ast)
-  (and (pair? ast)
-       (= (length ast) 3)
+  (and (list? ast)
        (eq? (car ast) 'define)
        (<variable> (cadr ast))
        (<expression> (caddr ast))
+       (null? (cdddr ast))
        ast))
               
 ;; ( define ( <variable> <def-formals> ) body )
 (define (define-var-formals ast)
-  (and (pair? ast)
+  (and (list? ast)
+       (pair? ast)
        (>= (length ast) 3)
        (eq? (car ast) 'define)
        (pair? (cadr ast))
@@ -106,8 +109,6 @@
                 (<body> (cdr ast))))
        ast))
 
-(define <sequence> <expression>+)
-
 (define (<definition> ast)
   (and
    (or (define-var-expr ast)
@@ -125,6 +126,8 @@
        (<expression> (car ast))
        (<expression>* (cdr ast))
        ast))
+
+(define <sequence> <expression>+)
 
 (define (<expression> ast)
   (and 
@@ -148,7 +151,8 @@
        ast))
 
 (define (<variable>+ ast)
-  (and (>= (length ast) 1)
+  (and (list? ast)
+       (>= (length ast) 1)
        (<variable> (car ast))
        (<variable>* (cdr ast))
        ast))
@@ -173,7 +177,13 @@
    ast))
 
 (define (<quotation> ast)
-  #f)
+  (and (list? ast)
+       (= (length ast) 2)
+       (or (eq? (car ast) 'quote)
+           (eq? (car ast) 'unquote)
+           (eq? (car ast) 'unquote-splicing)
+           (eq? (car ast) 'backquote))
+       ast))
 
 (define (<self-evaluating> ast)
   (and
@@ -206,7 +216,7 @@
 ;;(define (<procedure-call> ast)
 ;;  #f)
 (define (<procedure-call> ast)
-  (and (pair? ast)
+  (and (list? ast)
        (>= (length ast) 1)
        (<operator> (car ast))
        (<operand>* (cdr ast))
@@ -226,7 +236,7 @@
        ast))
 
 (define (<lambda-expression> ast)
-  (and (pair? ast)
+  (and (list? ast)
        (= (length ast) 3)
        (eq? (car ast) 'lambda)
        (<formals> (cadr ast))
@@ -234,7 +244,7 @@
        ast))
 
 (define (<conditional> ast)
-  (and (pair? ast)
+  (and (list? ast)
        (eq? (car ast) 'if)
        (member (length ast) '(3 4))
        (<expression> (cadr ast))
@@ -244,11 +254,11 @@
        ast))
 
 (define (<assignment> ast)
-  (and (pair? ast)
+  (and (list? ast)
        (eq? (car ast) 'set!)
-       (= (length ast) 3)
        (<variable> (cadr ast))
        (<expression> (caddr ast))
+       (null? (cdddr ast))
        ast))
 
 (define (<derived-expression> ast)
