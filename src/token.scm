@@ -74,11 +74,11 @@
 (define (punctuation-token? tok)
   (is-token-type? tok 'punctuation))
 
-(define (open-paren-token? tok)
-  (is-token-value? tok 'open-paren))
+;; (define (open-paren-token? tok)
+;;   (is-token-value? tok 'open-paren))
 
-(define (close-paren-token? tok)
-  (is-token-value? tok 'close-paren))
+;; (define (close-paren-token? tok)
+;;   (is-token-value? tok 'close-paren))
 
 (define (dot-token? tok)
   (is-token-value? tok 'dot))

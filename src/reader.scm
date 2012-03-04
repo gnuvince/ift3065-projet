@@ -3,9 +3,12 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
-(include "token.scm")
+;(include "token.scm")
 (include "lexer.scm")
 (include "utilities.scm")
+
+(define open-paren-symbol (string->symbol "open-paren"))
+(define close-paren-symbol (string->symbol "close-paren"))
 
 (define stream #f)
 
@@ -13,31 +16,30 @@
   (if (stream 'empty)
       (error "Incomplete form, EOF reached")
       (let ((next (token-value (stream 'next))))
-        (cond ((eq? 'close-paren next)
+        (cond ((eq? close-paren-symbol next)
                (stream 'pop)
                (reverse lst))
               ((eq? 'dot next)
                (stream 'pop)
                (let ((dp (append (reverse lst) (<datum>))))
-                 (consume-rparen)
                  dp))
                (else
-                (<list> (cons (<datum>)
-                              lst)))))))
+                (let ((d (<datum>)))
+                  (<list> (cons d lst))))))))
 
 (define (<datum>)
   (if (stream 'empty)
       (error "Datum expected")
       (let ((next (token-value (stream 'pop))))
-        (cond ((eq? 'quote-symbol next)
-               (list 'quote (<datum>)))
-              ((eq? 'comma next)
-               (list 'unquote (<datum>)))
-              ((eq? 'backquote next)
-               (list 'quasiquote (<datum>)))
-              ((eq? 'comma-at next)
-               (list 'unquote-splicing (<datum>)))
-              ((eq? 'open-paren next)
+        (cond ((eq? 'quote-prefix next)
+               (list 'quote-prefix (<datum>)))
+              ((eq? 'unquote-prefix next)
+               (list 'unquote-prefix (<datum>)))
+              ((eq? 'quasiquote-prefix next)
+               (list 'quasiquote-prefix (<datum>)))
+              ((eq? 'unquote-splicing-prefix next)
+               (list 'unquote-splicing-prefix (<datum>)))
+              ((eq? open-paren-symbol next)
                (<list> '()))
               ((or (boolean? next)
                    (number? next)
@@ -51,46 +53,11 @@
 (define (sins-read-aux ast)
   (cond ((stream 'empty)
          (reverse ast))
-        (sins-read-aux (cons (<datum>) ast))))
+        (else
+         (let ((d (<datum>)))
+           (sins-read-aux (cons d  ast))))))
 
 (define (sins-read token-list)
   (begin
     (set! stream (make-token-stream token-list))
     (sins-read-aux '())))
-
-
-;;;;;;;;;;;;;;;;;;;;
-;; (define (sins-read token-list)
-;;   (define (consume-pair tree)
-;;     (cond ((stream 'empty)
-;;            (error "Early EOF"))
-;;           ((open-paren-token? (stream 'next))
-;;            (begin
-;;              (consume-lparen)
-;;              (consume-pair (cons (consume-pair '())
-;;                                  tree))))
-;;           ((close-paren-token? (stream 'next))
-;;            (begin
-;;              (consume-rparen)
-;;              (reverse tree)))
-;;           (else
-;;            (consume-pair (cons (token-value (stream 'pop))
-;;                                tree)))))
-  
-;;   (define (sins-read-aux tree)
-;;     (cond ((stream 'empty)
-;;            (reverse tree))
-;;           ((open-paren-token? (stream 'next))
-;;            (begin
-;;              (consume-lparen)
-;;              (sins-read-aux (cons (consume-pair '())
-;;                              tree))))
-;;           ((close-paren-token? (stream 'next))
-;;            (error "Datum or EOF expected"))
-;;           (else
-;;            (sins-read-aux (cons (token-value (stream 'pop))
-;;                            tree)))))
-  
-;;   (begin
-;;     (set! stream (make-token-stream token-list))
-;;     (sins-read-aux '())))

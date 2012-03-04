@@ -3,13 +3,18 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
+(define false (gensym))
+(define quote-prefix-symbol (string->symbol "quote-prefix"))
+(define unquote-prefix-symbol (string->symbol "unquote-prefix"))
+(define unquote-splicing-prefix-symbol (string->symbol "unquote-splicing-prefix"))
+(define quasiquote-prefix-symbol (string->symbol "quasiquote-prefix"))
+
 
 (include "token.scm")
 (include "utilities.scm")
-(include "test_lexer.scm")
 (include "lexer.scm")
 (include "reader.scm")
-;;(include "ast.scm")
+;(include "datum.scm")
 
 (define (parse token-list)
   (<program> (sins-read token-list)))
@@ -21,19 +26,8 @@
          (let ((cod (<command-or-definition> (car ast))))
            (if cod
                (cons cod (<program> (cdr ast)))
-               (error (string-append "Error in expression:\n"
-                                     (with-output-to-string "" (lambda () (write (car ast)))))))))))
-
-(define (<command-or-definition*> ast)
-  (cond ((null? ast)
-         ast)
-        (else
-         (<command-or-definition+> ast))))
-
-(define (<command-or-definition+> ast)
-  (and (<command-or-definition> (car ast))
-       (<command-or-definition*> (cdr ast))
-       ast))
+               (error (with-output-to-string "Error in expression:\n"
+                                             (lambda () (write (car ast))))))))))
 
 (define (<command-or-definition> ast)
   (and
@@ -42,11 +36,22 @@
        (begin-com-or-def+ ast))
    ast))
 
+(define (<command-or-definition>* ast)
+  (cond ((null? ast)
+         ast)
+        (else
+         (<command-or-definition>+ ast))))
+
+(define (<command-or-definition>+ ast)
+  (and (<command-or-definition> (car ast))
+       (<command-or-definition>* (cdr ast))
+       ast))
+
 (define (begin-com-or-def+ ast)
   (and (list? ast)
        (pair? ast)
        (>= (length ast) 2)
-       (eq? (car ast) 'begin)
+       (eq? (cadr ast) 'begin)
        (<command-or-definition+> (cdr ast))
        ast))
 
@@ -54,8 +59,8 @@
   (and (list? ast)
        (pair? ast)
        (eq? (car ast) 'begin)
-       (or (= (length ast) 1)
-           (<definition*> (cdr ast)))
+       (or (null? (cdr ast))
+           (<definition>* (cdr ast)))
        ast))
 
 ;; ( define <variable>  <expression> )
@@ -80,46 +85,55 @@
        ast))
 
 (define (<def-formals> ast)
-  (and (pair? ast)
-       (or (null? ast)
-           (let ((dotp (member 'dot ast)))
-             (and dotp
-                  (= (length dotp) 2)
-                  (<variable> (cadr dotp))
-                  (<variable>* (but-last-n ast 2))))
+  (and (or (null? ast)
+           (and (improper-list? ast)
+                (<variable> (car ast))
+                (<def-formals> (cdr ast)))
            (<variable>* ast))
        ast))
 
 (define (<formals> ast)
-  (and (or (<variable> ast)
+  (and (or (null? ast)
+           (<variable> ast)
+           (and (list? ast)
+                (<variable> (car ast))
+                (<variable>+ (cdr ast)))
            (and (pair? ast)
-                (or (null? ast)
-                    (let ((dotp (member 'dot ast)))
-                      (and dotp
-                           (= (length dotp) 2)
-                           (<variable> (cadr dotp))
-                           (<variable>+ (but-last-n ast 2))))
-                    (<variable>+ ast))))
+                (<variable> (car ast))
+                (<formals> (cdr ast))))
        ast))
 
 (define (<body> ast)
-  (and (not (null? ast))
-       (or (<sequence> ast)
+  (if (<definition> (car ast))
+      (and (<body> (cdr ast))
+           ast)
+      (and (<sequence> ast)
+           ast)))
+
+(define (<definition>* ast)
+  (and (list? ast)
+       (or (null? ast)
            (and (<definition> (car ast))
-                (<body> (cdr ast))))
+                (<definition>* (cdr ast))))
        ast))
 
 (define (<definition> ast)
-  (and
-   (or (define-var-expr ast)
-       (define-var-formals ast)
-       (begin-definition* ast))
-   ast))
-
-(define (<expression>* ast)
-  (and (or (null? ast)
-           (<expression>+ ast))
+  (and (or (define-var-expr ast)
+           (define-var-formals ast)
+           (begin-definition* ast))
        ast))
+
+(define (<expression> ast)
+  (and (or (<variable> ast)
+           (<literal>  ast)
+           (<procedure-call> ast)
+           (<lambda-expression> ast)
+           (<conditional> ast)
+           (<assignment> ast)
+           (<derived-expression> ast)
+           (<macro-use> ast)
+           (<macro-block> ast))
+   ast))
 
 (define (<expression>+ ast)
   (and (pair? ast)
@@ -127,26 +141,28 @@
        (<expression>* (cdr ast))
        ast))
 
-(define <sequence> <expression>+)
+(define (<expression>* ast)
+  (and (or (null? ast)
+           (<expression>+ ast))
+       ast))
 
-(define (<expression> ast)
-  (and 
-   (or (<variable> ast)
-       (<literal>  ast)
-       (<procedure-call> ast)
-       (<lambda-expression> ast)
-       (<conditional> ast)
-       (<assignment> ast)
-       (<derived-expression> ast)
-       (<macro-use> ast)
-       (<macro-block> ast))
-   ast))
+;; diverge de la grammaire
+(define (<sequence> ast)
+  (and (list? ast)
+       (> (length ast) 0)
+       (or (and (list? (car ast))
+                (eq? 'begin (caar ast))
+                (<expression>* (cdar ast)))
+           (<expression>+ ast))
+       ast))
 
 (define <command> <expression>)
 
 (define (<variable>* ast)
   (and (or (null? ast)
-           (and (<variable> (car ast))
+           (<variable> ast)
+           (and (list? ast)
+                (<variable> (car ast))
                 (<variable>* (cdr ast))))
        ast))
 
@@ -160,9 +176,6 @@
 (define (<variable> ast)
   (and (symbol? ast)
        ast))
-;;  (and (identifier? ast)
-;;       (not (symbol? ast))
-;;       ast))
 
 (define (identifier? ast)
   (and (not (number? ast))
@@ -171,40 +184,36 @@
        ast))
 
 (define (<literal> ast)
-  (and 
-   (or (<quotation> ast)
-       (<self-evaluating> ast))
-   ast))
+  (and (or (<quotation> ast)
+           (<self-evaluating> ast))
+       ast))
 
 (define (<quotation> ast)
   (and (list? ast)
        (= (length ast) 2)
-       (or (eq? (car ast) 'quote)
-           (eq? (car ast) 'unquote)
-           (eq? (car ast) 'unquote-splicing)
-           (eq? (car ast) 'backquote))
+       (or
+        (eq? (car ast) quote-prefix-symbol)
+        (eq? (car ast) unquote-prefix-symbol)
+        (eq? (car ast) unquote-splicing-prefix-symbol)
+        (eq? (car ast) quasiquote-prefix-symbol)
+        #t)       
        ast))
 
 (define (<self-evaluating> ast)
-  (and
-   (or (<boolean> ast)
-       (<number> ast)
-       (<character> ast)
-       (<string> ast))
-   ast))
+  (or (<boolean> ast)
+      (<number> ast)
+      (<character> ast)
+      (<string> ast)))
 
 (define (<boolean> ast)
-  (and
-   (or (eq? ast #t)
-       (eq? ast #f))
-   ast))
+  (and (or (boolean? ast)
+           (eq? ast false))
+       ast))
 
 (define (<number> ast)
   (and (number? ast)
        ast))
 
-;;(define (<character> ast)
-;;  #f)
 (define (<character> ast)
   (and (char? ast)
        ast))
@@ -213,8 +222,6 @@
   (and (string? ast)
        ast))
 
-;;(define (<procedure-call> ast)
-;;  #f)
 (define (<procedure-call> ast)
   (and (list? ast)
        (>= (length ast) 1)
@@ -277,8 +284,7 @@
        ast))
 
 (define (<quasiquotation> ast)
-  (and (or (eq? (car ast) 'backquote)
-           (eq? (car ast) 'quasiquote))
+  (and (eq? (car ast) quasiquote-prefix-symbol)
        ast))
 
 (define (cond-derived-expression ast)
@@ -369,13 +375,53 @@
        ast))
 
 (define (begin-derived-expression ast)
-  #f)
+  (and (list? ast)
+       (>= (length ast) 2)
+       (eq? (car ast) 'begin)
+       (<sequence> (cdr ast))
+       ast))
 
 (define (do-derived-expression ast)
   #f)
 
+(define (case-datum ast)
+  (and (or (list? ast)
+           (symbol? ast)
+           (<self-evaluating> ast))
+       ast))
+
+(define (case-datum* ast)
+  (and (or (null? ast)
+           (and (list? ast)
+                (case-datum (car ast))
+                (case-datum* (cdr ast))))
+       ast))
+
+(define (<case-clause> ast)
+  (and (list? ast)
+       (list? (car ast))
+       (case-datum* (car ast))
+       (<sequence> (cdr ast))
+       ast))
+
+(define (case-body ast)
+  (and (list? ast)
+       (not (member #f (map list? ast)))
+       (>= (length ast) 1)
+       (or (and (eq? (caar ast) 'else)
+                (<sequence> (cdar ast)))
+           (and (<case-clause> (car ast))
+                (or (null? (cdr ast))
+                    (case-body (cdr ast)))))
+       ast))
+
 (define (case-derived-expression ast)
-  #f)
+  (and (list? ast)
+       (>= (length ast) 3)
+       (eq? (car ast) 'case)
+       (<expression> (cadr ast))
+       (case-body (cddr ast))
+       ast))
 
 (define (delay-derived-expression ast)
   #f)
