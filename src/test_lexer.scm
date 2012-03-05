@@ -1,5 +1,6 @@
 (load "token.scm")
 (load "lexer.scm")
+(load "tests.scm")
 
 ;;;; Tests
 (define (symbols string) (map token-symbol (lex-from-string string)))
@@ -43,10 +44,10 @@
    (equal? (symbols ",@") '((punctuation . comma-at)))))
 
 (define (test-true)
-  (equal? (symbols "#t") '((boolean . true))))
+  (equal? (symbols "#t") '((boolean . #t))))
 
 (define (test-false)
-  (equal? (symbols "#f") '((boolean . false))))
+  (equal? (symbols "#f") '((boolean . #f))))
 
 (define (test-keywords)
   (and
@@ -135,43 +136,33 @@
    (token-error? (car (lex-from-string "\"foo")))
   ))
 
-
-(define (run-tests)
-  (for-each (lambda (t)
-              (display t)
-              (display ": ")
-              (display (if (t) "OK" "FAIL"))
-              (newline))
-            (list test-eof
-                  test-open-paren
-                  test-close-paren
-                  test-quote
-                  test-backquote
-                  test-comma
-                  test-dot
-                  test-comma-at
-                  test-true
-                  test-false
-                  test-keywords
-                  test-whitespace
-                  test-make-token
-                  test-token-accessors
-                  test-invalid-tokens
-                  test-string
-                  test-lex)))
-
 (define (self-lex)
-  (define (loop p s)
-    (let ((line (read-line p)))
-      (if (eq? line #!eof)
-          s
-          (loop p (string-append s "\n" line)))))
-  (let* ((port (open-input-file "lexer.scm"))
-         (tokens (lex (loop port ""))))
-    (close-input-port port)
-    tokens))
+  (list (lex-from-file "lexer.scm")
+        (lex-from-file "test_lexer.scm")))
 
 (define (test-interactif)
   (let ((port (open-output-string)))
     (write (read) port)
     (lex (get-output-string port))))
+
+
+(let ((result (run-tests (list test-eof
+                               test-open-paren
+                               test-close-paren
+                               test-quote
+                               test-backquote
+                               test-comma
+                               test-dot
+                               test-comma-at
+                               test-true
+                               test-false
+                               test-keywords
+                               test-whitespace
+                               test-make-token
+                               test-token-accessors
+                               test-invalid-tokens
+                               test-string
+                               test-lex))))
+  (if result
+      (exit 0)
+      (exit 1)))

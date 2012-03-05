@@ -1,4 +1,5 @@
 (load "ast.scm")
+(load "tests.scm")
 
 
 (define (test-ast-get-attr)
@@ -49,17 +50,14 @@
          )))
 
 
-(define (run-tests)
-  (for-each (lambda (t)
-              (display t)
-              (display ": ")
-              (display (if (t) "OK" "FAIL"))
-              (newline))
-            (list test-ast-get-attr
-                  test-ast-get-attr-value
-                  test-ast-get-attrs
-                  test-ast-node?
-                  test-ast-get-children
-                  test-ast-add-child
-                  test-ast-put-attr
-                  )))
+(let ((result (run-tests (list test-ast-get-attr
+                          test-ast-get-attr-value
+                          test-ast-get-attrs
+                          test-ast-node?
+                          test-ast-get-children
+                          test-ast-add-child
+                          test-ast-put-attr
+                          ))))
+  (if result
+      (exit 0)
+      (exit 1)))

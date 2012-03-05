@@ -12,5 +12,5 @@ CLOSED: [2012-01-22 Sun 22:28]
 ** Pour lundi, 13-Fev-2012
 - [X] Déplacer arborify dans parse1.scm; s/parse1/reader/ [Eric]
 - [X] Continuer parse3.scm + doc + grammaire [Eric]
-- [ ] Rapport [Vincent+Eric]
-- [ ] Tagger répertoire [Eric]
+- [X] Rapport [Vincent+Eric]
+- [X] Tagger répertoire [Eric]

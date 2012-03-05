@@ -3,16 +3,6 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
-;; make-stream :: string -> stream
-;;
-;; Takes a string and returns a "stream" on that string.  The stream
-;; supports two operations:
-;; - next: returns the character under the cursor, without moving the cursor.
-;;         Reading past the end of the stream returns the nul character.
-;; - advance: moves to the cursor to the next character.
-
-
-
 ;; whitespace = #\space | #\tab | #\newline
 ;; alpha = "a..zA..Z"
 ;; digit = "0..9"
@@ -29,6 +19,17 @@
 
 (load "token.scm")
 
+(define open-paren-symbol (string->symbol "open-paren"))
+(define close-paren-symbol (string->symbol "close-paren"))
+
+
+;; make-stream :: string -> stream
+;;
+;; Takes a string and returns a "stream" on that string.  The stream
+;; supports two operations:
+;; - next: returns the character under the cursor, without moving the cursor.
+;;         Reading past the end of the stream returns the nul character.
+;; - advance: moves to the cursor to the next character.
 (define (make-stream str)
   (let ((current 0)
         (line 1)
@@ -52,6 +53,13 @@
     dispatch))
 
 
+;; make-stream :: string -> stream
+;;
+;; Takes a string and returns a "stream" on that string.  The stream
+;; supports two operations:
+;; - next: returns the character under the cursor, without moving the cursor.
+;;         Reading past the end of the stream returns the nul character.
+;; - advance: moves to the cursor to the next character.
 (define (make-stream-from-port port)
   (let ((line 1)
         (col 1))
@@ -114,29 +122,30 @@
 ;; consume-eof :: stream -> symbol
 (define (consume-eof stream)
   (stream 'advance)
-  '(eof . #f))
+  '(eof . eof))
+  ;; '(eof . #f))
 
 ;; consume-open-paren :: stream -> symbol
 (define (consume-open-paren stream)
   (stream 'advance)
-  '(punctuation . open-paren))
+  (cons 'punctuation open-paren-symbol))
 
 ;; consume-close-paren :: stream -> symbol
 (define (consume-close-paren stream)
   (stream 'advance)
-  '(punctuation . close-paren))
+  (cons 'punctuation close-paren-symbol))
 
 ;; consume-quote :: stream -> symbol
 ;; TODO: Should we return quote-symbol or quote like the keyword?
 (define (consume-quote stream)
   (stream 'advance)
-  '(punctuation . quote-symbol))
+  '(punctuation . quote-prefix))
 
 
 ;; consume-backquote :: stream -> symbol
 (define (consume-backquote stream)
   (stream 'advance)
-  '(punctuation . backquote))
+  '(punctuation . quasiquote-prefix))
 
 
 ;; consume-comma :: stream -> symbol
@@ -145,8 +154,8 @@
   (if (char=? (stream 'next) #\@)
       (begin
         (stream 'advance)
-        '(punctuation . comma-at))
-      '(punctuation . comma)))
+        '(punctuation . unquote-splicing-prefix))
+      '(punctuation . unquote-prefix)))
 
 ;; consume-dot :: stream -> symbol
 (define (consume-dot stream)
@@ -268,7 +277,7 @@
   (stream 'advance)                     ; consume the #
   (let ((token (cond
                 ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . #t)))
-                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . #f)))
+                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . false)))
                 ((char=? (stream 'next) #\\) (consume-char stream))
                 (else #f))))
     token))
