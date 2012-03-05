@@ -10,4 +10,4 @@ all: check
 check:
 	@gsi ${CWD}/tests/test_lexer.scm -e '(main)'
 	@gsi ${CWD}/tests/test_reader.scm -e '(main)'
-	@gsi ${CWD}/tests/test_parser_derived.scm -e '(main)'
+	@gsi ${CWD}/tests/test_parser.scm -e '(main)'
