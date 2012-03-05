@@ -146,23 +146,25 @@
     (lex (get-output-string port))))
 
 
-(let ((result (run-tests (list test-eof
-                               test-open-paren
-                               test-close-paren
-                               test-quote
-                               test-backquote
-                               test-comma
-                               test-dot
-                               test-comma-at
-                               test-true
-                               test-false
-                               test-keywords
-                               test-whitespace
-                               test-make-token
-                               test-token-accessors
-                               test-invalid-tokens
-                               test-string
-                               test-lex))))
-  (if result
-      (exit 0)
-      (exit 1)))
+(define (main)
+  (display "\nLEXER TESTS\n")
+  (let ((result (run-tests (list test-eof
+                                 test-open-paren
+                                 test-close-paren
+                                 test-quote
+                                 test-backquote
+                                 test-comma
+                                 test-dot
+                                 test-comma-at
+                                 test-true
+                                 test-false
+                                 test-keywords
+                                 test-whitespace
+                                 test-make-token
+                                 test-token-accessors
+                                 test-invalid-tokens
+                                 test-string
+                                 test-lex))))
+    (if result
+        (exit 0)
+        (exit 1))))

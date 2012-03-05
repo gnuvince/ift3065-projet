@@ -58,7 +58,7 @@
                        (cdr lst)
                        (and pred
                             (f (car lst)))))))
-  
+
   (andmap-aux f lst #t))
 
 (define (but-last-n lst n)
@@ -86,13 +86,24 @@
            tok)
           (else
            (error (make-err-msg msg tok))))))
-  
+
+(define (consume-token type value msg)
+  (let ((tok (stream 'pop)))
+    (cond ((and (is-token-type? tok type)
+               (is-token-value? tok value))
+           tok)
+          (else
+           (error (make-err-msg msg tok))))))
+
 ;; (define (consume-lparen)
 ;;   (consume-token-value 'open-paren "Expected start of compound expression: line "))
 
-;; (define (consume-rparen)
-;;   (begin
-;;     (consume-token-value 'close-paren "Expected end of compound expression: line ")))
+;; (define (consume-lparen)
+;;   (consume-token-value 'open-paren "Expected start of compound expression: line "))
+
+(define (consume-rparen)
+  (
+    (consume-token-value 'close-paren "Expected end of compound expression: line ")))
 
 (define (consume-keyword keyword)
   (consume-token-value 'keyword (string-append "Expected keyword: "

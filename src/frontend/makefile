@@ -5,9 +5,9 @@ CWD = `pwd`
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test
 
-MINISCM_SOURCE = scanner.scm parser.scm miniscm.scm
-
-all: miniscm.exe check
+all: check
 
 check:
-	gsi ${CWD}/tests/test_lexer.scm
+	@gsi ${CWD}/tests/test_lexer.scm -e '(main)'
+	@gsi ${CWD}/tests/test_reader.scm -e '(main)'
+	@gsi ${CWD}/tests/test_parser_derived.scm -e '(main)'
