@@ -1,6 +1,6 @@
 (load "token.scm")
 (load "lexer.scm")
-(load "tests.scm")
+(load "tests/tests.scm")
 
 ;;;; Tests
 (define (symbols string) (map token-symbol (lex-from-string string)))
@@ -18,18 +18,18 @@
 
 (define (test-quote)
   (and
-   (equal? (symbols "'") '((punctuation . quote-symbol)))
-   (equal? (symbols "'x") '((punctuation . quote-symbol) (ident . x)))))
+   (equal? (symbols "'") '((punctuation . quote-prefix)))
+   (equal? (symbols "'x") '((punctuation . quote-prefix) (ident . x)))))
 
 (define (test-backquote)
   (and
-   (equal? (symbols "`") '((punctuation . backquote)))
-   (equal? (symbols "`x") '((punctuation . backquote) (ident . x)))))
+   (equal? (symbols "`") '((punctuation . quasiquote-prefix)))
+   (equal? (symbols "`x") '((punctuation . quasiquote-prefix) (ident . x)))))
 
 (define (test-comma)
   (and
-   (equal? (symbols ",") '((punctuation . comma)))
-   (equal? (symbols ",x") '((punctuation . comma) (ident . x)))))
+   (equal? (symbols ",") '((punctuation . unquote-prefix)))
+   (equal? (symbols ",x") '((punctuation . unquote-prefix) (ident . x)))))
 
 (define (test-dot)
   (and
@@ -41,13 +41,13 @@
 (define (test-comma-at)
   (and
    (equal? (symbols "@") '((ident . @)))
-   (equal? (symbols ",@") '((punctuation . comma-at)))))
+   (equal? (symbols ",@") '((punctuation . unquote-splicing-prefix)))))
 
 (define (test-true)
-  (equal? (symbols "#t") '((boolean . #t))))
+  (equal? (symbols "#t") '((boolean . true))))
 
 (define (test-false)
-  (equal? (symbols "#f") '((boolean . #f))))
+  (equal? (symbols "#f") '((boolean . false))))
 
 (define (test-keywords)
   (and

@@ -276,7 +276,7 @@
 (define (consume-hash stream)
   (stream 'advance)                     ; consume the #
   (let ((token (cond
-                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . #t)))
+                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . true)))
                 ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . false)))
                 ((char=? (stream 'next) #\\) (consume-char stream))
                 (else #f))))
