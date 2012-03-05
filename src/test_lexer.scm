@@ -43,10 +43,10 @@
    (equal? (symbols ",@") '((punctuation . comma-at)))))
 
 (define (test-true)
-  (equal? (symbols "#t") '((boolean . true))))
+  (equal? (symbols "#t") '((boolean . #t))))
 
 (define (test-false)
-  (equal? (symbols "#f") '((boolean . false))))
+  (equal? (symbols "#f") '((boolean . #f))))
 
 (define (test-keywords)
   (and
