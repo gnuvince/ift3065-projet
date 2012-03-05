@@ -1,7 +1,9 @@
 (define (run-tests tests)
-  (let loop ((tests tests))
+  (let loop ((tests tests)
+             (success #t))
     (if (null? tests)
-        #t
+        success
         (let ((result ((car tests))))
           (print (car tests) ": " (if result "OK" "FAIL") "\n")
-          (and result (loop (cdr tests)))))))
+          (loop (cdr tests)
+                (and success result))))))
