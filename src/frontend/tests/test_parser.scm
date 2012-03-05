@@ -1,4 +1,7 @@
 (include "../parser.scm")
+(include "tests.scm")
+
+(define tests '())
 
 (define (e->string e)
   (with-output-to-string "" (lambda () (write e))))
@@ -7,63 +10,22 @@
   (equal? (parse (lex-from-string (e->string e-in)))
           (list e-out)))
 
-;; Numerique
-(define (test-number)
-  (let ((e-in 42)
-        (e-out 42))
-    (test-parse e-in e-out)))
+(define-macro (make-test name in out)
+  (let ((n (string->symbol (string-append "test-"
+                                          (symbol->string name)))))
+    `(begin (define (,n)
+              (test-parse ,in ,out))
+            (set! tests (cons ,n tests)))))
 
-;; Char
-(define (test-char)
-  (let ((e-in #\a)
-        (e-out #\a))
-    (test-parse e-in e-out)))
+(make-test number 42 42)
+(make-test char #\a #\a)
+(make-test string-non-null "allo" "allo")
+(make-test string-null "" "")
+(make-test string-escapes "\\\\ \\n \\t \\0" "\\\\ \\n \\t \\0")
+(make-test symbol 'sym 'sym)
+(make-test binop0 '(+) '(+))
+(make-test binop1 '(+ 1) '(+ 1))
+(make-test binop2 '(+ 1 2) '(+ 1 2))
+(make-test binop3 '(+ 1 2 3) '(+ 1 2 3))
 
-;; Symbol
-(define (test-symbol)
-  (let ((e-in 'sym)
-        (e-out 'sym))
-    (test-parse e-in e-out)))
-
-;; String, non-empty
-(define (test-string1)
-  (let ((e-in "allo")
-        (e-out "allo"))
-    (test-parse e-in e-out)))
-
-;; String, empty
-(define (test-string2)
-  (let ((e-in "")
-        (e-out ""))
-    (test-parse e-in e-out)))
-
-;; Binop 1
-(define (test-binop1)
-  (let ((e-in '(+))
-        (e-out '(+)))
-    (test-parse e-in e-out)))
-
-;; Binop 2
-(define (test-binop2)
-  (let ((e-in '(+ 1))
-        (e-out '(+ 1)))
-    (test-parse e-in e-out)))
-
-;; Binop 3
-(define (test-binop3)
-  (let ((e-in '(+ 1 2))
-        (e-out '(+ 1 2)))
-    (test-parse e-in e-out)))
-
-
-
-
-;; (pp (parse (lex-from-string (e->string e))))
-(display (test-number))(newline)
-(display (test-char))(newline)
-(display (test-symbol))(newline)
-(display (test-string1))(newline)
-(display (test-string2))(newline)
-(display (test-binop1))(newline)
-(display (test-binop2))(newline)
-(display (test-binop3))(newline)
+(run-tests (reverse tests))

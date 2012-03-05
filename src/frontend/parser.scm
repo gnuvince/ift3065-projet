@@ -277,8 +277,8 @@
            (let*-derived-expression ast)
            (letrec-derived-expression ast)
            (begin-derived-expression ast)
-           (do-derived-expression ast)
-           (delay-derived-expression ast)
+           (do-derived-expression ast) ;; not implemented
+           (delay-derived-expression ast) ;; not implemented
            (case-derived-expression ast))
        ast))
 
