@@ -19,6 +19,9 @@
 
 (load "token.scm")
 
+(define open-paren-symbol (string->symbol "open-paren"))
+(define close-paren-symbol (string->symbol "close-paren"))
+
 
 ;; make-stream :: string -> stream
 ;;
@@ -119,29 +122,30 @@
 ;; consume-eof :: stream -> symbol
 (define (consume-eof stream)
   (stream 'advance)
-  '(eof . #f))
+  '(eof . eof))
+  ;; '(eof . #f))
 
 ;; consume-open-paren :: stream -> symbol
 (define (consume-open-paren stream)
   (stream 'advance)
-  '(punctuation . open-paren))
+  (cons 'punctuation open-paren-symbol))
 
 ;; consume-close-paren :: stream -> symbol
 (define (consume-close-paren stream)
   (stream 'advance)
-  '(punctuation . close-paren))
+  (cons 'punctuation close-paren-symbol))
 
 ;; consume-quote :: stream -> symbol
 ;; TODO: Should we return quote-symbol or quote like the keyword?
 (define (consume-quote stream)
   (stream 'advance)
-  '(punctuation . quote-symbol))
+  '(punctuation . quote-prefix))
 
 
 ;; consume-backquote :: stream -> symbol
 (define (consume-backquote stream)
   (stream 'advance)
-  '(punctuation . backquote))
+  '(punctuation . quasiquote-prefix))
 
 
 ;; consume-comma :: stream -> symbol
@@ -150,8 +154,8 @@
   (if (char=? (stream 'next) #\@)
       (begin
         (stream 'advance)
-        '(punctuation . comma-at))
-      '(punctuation . comma)))
+        '(punctuation . unquote-splicing-prefix))
+      '(punctuation . unquote-prefix)))
 
 ;; consume-dot :: stream -> symbol
 (define (consume-dot stream)
@@ -273,7 +277,7 @@
   (stream 'advance)                     ; consume the #
   (let ((token (cond
                 ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . #t)))
-                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . #f)))
+                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . false)))
                 ((char=? (stream 'next) #\\) (consume-char stream))
                 (else #f))))
     token))

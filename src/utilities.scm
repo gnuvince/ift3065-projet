@@ -3,6 +3,9 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
+(define (improper-list? e)
+  (and (pair? e)
+       (not (list? e))))
 
 (define member? member)
 
@@ -84,12 +87,12 @@
           (else
            (error (make-err-msg msg tok))))))
   
-(define (consume-lparen)
-  (consume-token-value 'open-paren "Expected start of compound expression: line "))
+;; (define (consume-lparen)
+;;   (consume-token-value 'open-paren "Expected start of compound expression: line "))
 
-(define (consume-rparen)
-  (begin
-    (consume-token-value 'close-paren "Expected end of compound expression: line ")))
+;; (define (consume-rparen)
+;;   (begin
+;;     (consume-token-value 'close-paren "Expected end of compound expression: line ")))
 
 (define (consume-keyword keyword)
   (consume-token-value 'keyword (string-append "Expected keyword: "
@@ -103,9 +106,3 @@
 (define (simple-binop? ast)
   (member? (ast-get-attr-value ast 'value)
            '(+ - * /)))
-
-;; still needed?
-(define (alist? lst)
-  (or (null? lst)
-      (and (= (length (car lst)) 2)
-           (alist? (cdr lst)))))
