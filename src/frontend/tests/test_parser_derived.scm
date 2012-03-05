@@ -31,6 +31,8 @@
             #f)))
        (set! tests (cons ,n tests)))))
 
+
+
 (make-test cond-1 '(cond (else x)) '(cond (else x)))
 (make-test cond-2 '(cond (a 1) (b 2) (else 3)) '(cond (a 1) (b 2) (else 3)))
 (make-test cond-3 '(cond ((eq? a 1) #t)) '(cond ((eq? a 1) true)))
@@ -125,6 +127,7 @@
 
 
 (define (main)
+  (display "\nPARSER TESTS\n")
   (if (run-tests (reverse tests))
       (exit 0)
       (exit 1)))

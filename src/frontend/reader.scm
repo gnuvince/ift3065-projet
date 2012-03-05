@@ -7,55 +7,77 @@
 (include "lexer.scm")
 (include "../utils/utilities.scm")
 
-(define open-paren-symbol (string->symbol "open-paren"))
-(define close-paren-symbol (string->symbol "close-paren"))
-
 (define stream #f)
 
 (define (<list> lst)
   (if (stream 'empty)
       (error "Incomplete form, EOF reached")
-      (let ((next (token-value (stream 'next))))
-        (cond ((eq? close-paren-symbol next)
-               (stream 'pop)
-               (reverse lst))
-              ((eq? 'dot next)
-               (stream 'pop)
-               (let ((dp (append (reverse lst) (<datum>))))
-                 dp))
-               (else
-                (let ((d (<datum>)))
-                  (<list> (cons d lst))))))))
+      (let* ((next (stream 'next))
+             (type (token-type next))
+             (value (token-value next)))
+        (cond
+         ((and (eq? type 'punctuation)
+               (eq? value 'close-paren))
+          (stream 'pop)
+          (reverse lst))
+
+         ((and (eq? type 'punctuation)
+               (eq? value 'dot))
+          (if (null? lst)
+              (error "Ill-formed dotted list")
+              (begin
+                (stream 'pop)
+                (let ((dp (append (reverse lst) (<datum>))))
+                  (consume-token 'punctuation 'close-paren "Ill-formed dotted list")
+                  dp))))
+
+         (else
+          (let ((d (<datum>)))
+            (<list> (cons d lst))))))))
+
+
 
 (define (<datum>)
   (if (stream 'empty)
       (error "Datum expected")
-      (let ((next (token-value (stream 'pop))))
-        (cond ((eq? 'quote-prefix next)
-               (list 'quote-prefix (<datum>)))
-              ((eq? 'unquote-prefix next)
-               (list 'unquote-prefix (<datum>)))
-              ((eq? 'quasiquote-prefix next)
-               (list 'quasiquote-prefix (<datum>)))
-              ((eq? 'unquote-splicing-prefix next)
-               (list 'unquote-splicing-prefix (<datum>)))
-              ((eq? open-paren-symbol next)
-               (<list> '()))
-              ((or (boolean? next)
-                   (number? next)
-                   (string? next)
-                   (char? next)
-                   (symbol? next))
-               next)
-              (else
-               (error "Datum or EOF expected"))))))
+      (let* ((next (stream 'pop))
+             (type (token-type next))
+             (value (token-value next)))
+
+        (cond
+         ((and (eq? type 'punctuation)
+               (eq? value 'quote-prefix))
+          (list 'quote-prefix (<datum>)))
+
+         ((and (eq? type 'punctuation)
+               (eq? value 'quasiquote-prefix))
+          (list 'quasiquote-prefix (<datum>)))
+
+         ((and (eq? type 'punctuation)
+               (eq? value 'unquote-prefix))
+          (list 'unquote-prefix (<datum>)))
+
+         ((and (eq? type 'punctuation)
+               (eq? value 'unquote-splicing-prefix))
+          (list 'unquote-splicing-prefix (<datum>)))
+
+         ((and (eq? type 'punctuation)
+               (eq? value 'open-paren))
+          (<list> '()))
+
+         ((memq type '(boolean number string char ident keyword))
+          value)
+
+         (else
+          (error "Datum or EOF expected"))))))
+
 
 (define (sins-read-aux ast)
   (cond ((stream 'empty)
          (reverse ast))
         (else
          (let ((d (<datum>)))
-           (sins-read-aux (cons d  ast))))))
+           (sins-read-aux (cons d ast))))))
 
 (define (sins-read token-list)
   (begin

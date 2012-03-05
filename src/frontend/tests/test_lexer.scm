@@ -147,6 +147,7 @@
 
 
 (define (main)
+  (display "\nLEXER TESTS\n")
   (let ((result (run-tests (list test-eof
                                  test-open-paren
                                  test-close-paren
