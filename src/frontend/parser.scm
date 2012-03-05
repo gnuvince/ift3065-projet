@@ -4,6 +4,7 @@
 ;; Eric Thivierge (THIE09016601)
 
 (define false (gensym))
+(define true  (gensym))
 (define quote-prefix-symbol (string->symbol "quote-prefix"))
 (define unquote-prefix-symbol (string->symbol "unquote-prefix"))
 (define unquote-splicing-prefix-symbol (string->symbol "unquote-splicing-prefix"))
@@ -11,10 +12,9 @@
 
 
 (include "token.scm")
-(include "utilities.scm")
+(include "../utils/utilities.scm")
 (include "lexer.scm")
 (include "reader.scm")
-;(include "datum.scm")
 
 (define (parse token-list)
   (<program> (sins-read token-list)))
@@ -195,8 +195,7 @@
         (eq? (car ast) quote-prefix-symbol)
         (eq? (car ast) unquote-prefix-symbol)
         (eq? (car ast) unquote-splicing-prefix-symbol)
-        (eq? (car ast) quasiquote-prefix-symbol)
-        #t)       
+        (eq? (car ast) quasiquote-prefix-symbol))
        ast))
 
 (define (<self-evaluating> ast)
@@ -206,7 +205,7 @@
       (<string> ast)))
 
 (define (<boolean> ast)
-  (and (or (boolean? ast)
+  (and (or (eq? ast true)
            (eq? ast false))
        ast))
 
