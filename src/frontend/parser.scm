@@ -71,7 +71,7 @@
        (<expression> (caddr ast))
        (null? (cdddr ast))
        ast))
-              
+
 ;; ( define ( <variable> <def-formals> ) body )
 (define (define-var-formals ast)
   (and (list? ast)
@@ -126,11 +126,11 @@
 (define (<expression> ast)
   (and (or (<variable> ast)
            (<literal>  ast)
-           (<procedure-call> ast)
            (<lambda-expression> ast)
            (<conditional> ast)
            (<assignment> ast)
            (<derived-expression> ast)
+           (<procedure-call> ast)
            (<macro-use> ast)
            (<macro-block> ast))
    ast))
