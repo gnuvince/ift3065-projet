@@ -33,7 +33,7 @@
   (and
    (or (<command> ast)
        (<definition> ast)
-       (begin-com-or-def+ ast))
+       (begin-com-or-def ast))
    ast))
 
 (define (<command-or-definition>* ast)
@@ -47,12 +47,23 @@
        (<command-or-definition>* (cdr ast))
        ast))
 
+(define (begin-com-or-def ast)
+  (and (list? ast)
+       (>= (length ast) 1)
+       (eq? (car ast) 'begin)
+       (<command-or-definition>* ast)
+       ast))
+
+(define (begin-com-or-def* ast)
+  (and (or (null? ast)
+           (begin-com-or-def+ ast))
+       ast))
+
 (define (begin-com-or-def+ ast)
   (and (list? ast)
-       (pair? ast)
-       (>= (length ast) 2)
-       (eq? (cadr ast) 'begin)
-       (<command-or-definition+> (cdr ast))
+       (>= (length ast) 1)
+       (begin-com-or-def (car ast))
+       (begin-com-or-def* (cdr ast))
        ast))
 
 (define (begin-definition* ast)
