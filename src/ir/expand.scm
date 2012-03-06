@@ -207,6 +207,24 @@
              (,_
               (error "improper cond")))))
 
+   (cons 'case
+         (lambda rest
+           (match (cons 'case rest)
+             ((case)
+              `#f)
+             ((case ,E1 (else . ,Es))
+              `(begin ,@Es))
+             ((case ,E1 (() . ,Es) .,rest)
+              `(case ,@rest))
+             ((case ,E1 ((,D1 . ,Ds) . ,Es) . ,rest)
+              (let ((v (gensym)))
+                `(let ((,v ,E1))
+                   (if (eqv? ,v ,D1)
+                       (begin ,@Es)
+                       (case ,E1 ((,@Ds) . ,Es) . ,rest)))))
+             (,_
+              (error "improper case")))))
+   
    (cons 'or
          (lambda rest
            (match (cons 'or rest)
