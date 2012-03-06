@@ -16,6 +16,14 @@
 (include "lexer.scm")
 (include "reader.scm")
 
+;; (define (parse token-list)
+;;   (cons 'begin (parse-aux token-list '())))
+
+;; (define (parse-aux token-list list)
+;;   (let ((s (sins-read token-list)))
+;;     (if (eq? s 
+;;         (cons
+        
 (define (parse token-list)
   (<program> (sins-read token-list)))
 

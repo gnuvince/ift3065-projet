@@ -64,6 +64,19 @@ qu'il est plus lent à l'exécution qu'un compilateur qui fusionne
 plusieurs phases en une.  Dans le cadre d'un projet éducationnel,
 nous jugeons que cette contrainte est acceptable.
 
+\section{Milestone du 12 mars 2012}
+
+En date du 12 mars 2012,  les nouvelles fonctionnalités suivantes sont
+implantées:
+\begin{itemize}
+\item Le parseur traite toutes les formes de notre sous-ensemble de scheme
+\item Le parseur retourne un arbre de syntaxe abstraite
+\item * Expansion de macro
+\item * Simplifications
+\item Plus d'une centaine de tests exercent le parseur
+\item Un makefile permet d'exécuter automatiquement la suite de tests
+\end{itemize}
+
 
 \section{Milestone du 13 février 2012}
 
@@ -267,12 +280,17 @@ allo
 (sins est un (bon) compilateur)
 \end{verbatim}
 
-La seule vérification syntaxique faite par le lecteur est de s'assurer
-que le parenthèsage des expressions est correct.  Aucune vérification
-syntaxique plus approfondie n'est faite (ex.: qu'une forme lambda soit
-suivie d'une liste de paramètres puis d'expressions à exécuter).  Ceci
-est nécessaire pour la prochaine phase de l'analyse syntaxique,
-l'expansion des macros.
+Les seules vérifications syntaxiques faites par le lecteur sont de s'assurer
+que le parenthèsage des expressions est correct et que les listes (propres et
+impropres) sont bien formées.  Aucune vérification syntaxique plus approfondie
+n'est faite (ex.: qu'une forme lambda soit suivie d'une liste de paramètres
+puis d'expressions à exécuter).  Ceci est nécessaire pour la prochaine phase
+de l'analyse syntaxique, l'expansion des macros.
+
+Après l'analyse lexicale nous avons une structure de lexèmes; après la phase
+de lecture des lexèmes, nous avons une structure arborescente sémantiquement
+équivalente au programme source. Nous appelons cette structure arbre de
+syntaxe abstraite (AST). 
 
 \subsection{Structures de données}
 
@@ -290,22 +308,46 @@ données.  Les opérations suivantes sont supportées:
   prochain lexème.  Le lexème consommé est retourné.
 \end{itemize}
 
-
-
 \section{L'expansion de macros}
 
 Cette phase n'est pas encore implantée.
 
 
-\section{La vérification syntaxique}
+\section{Vérification de l'AST}
 
-Dans cette phase, \sins{} vérifie que les différentes formes spéciales
-ont la bonne forme syntaxique.  Elle s'appuie sur la grammaire définie
-dans la section suivante.  Au moment de la première remise, cette
-phase fait seulement reconnaître si un programme est syntaxiquement
-correct ou non; elle ne construit pas une nouvelle représentation des
-données (par exemple: l'ajout d'une table d'attributs).  Les détails
-techniques de cette phase seront donnés dans le prochain rapport.
+Tandis que le lecteur fait une vérification de la forme externe du programme
+(le parenthèsage), le parseur effectue la vérification des formes internes du
+programme. Par exemple, le parseur vérifie qu'une lambda expression est formée
+du mot clé ``lambda'', suivi soit d'un identificateur, soit d'une liste
+d'identificateurs (possiblement vide), suivi d'une ou plusieurs expressions.
+
+\subsection{Structures de données}
+
+\sins{} représente l'AST sous forme de listes imbriquées de symboles. Nous
+avons choisi cette représentation pour sa simplicité, son faible coût en
+mémoire et la facilité de manipulation de cette structure en scheme.
+
+Afin de garder l'implantation du compilateur plus simple, nous avons décidé de
+ne pas inclure les informations relatives aux lignes et colonnes dans
+l'AST. Cette décision donnera des messages d'erreur moins précis mais nous
+jugeons que la simplicité gagnée par ce compromis est plus importante dans le
+cadre d'un projet pédagogique. Si le temps le permet, nous pourrons considérer
+revoir cette décision.
+
+\subsection{Algorithmes}
+
+TODO: Relire/réécrire!
+Chaque fct correspond à une production de la grammaire.
+Chaque fonction reçoit un sous-arbre de l'AST.
+Chq fonction teste séquentiellement les alternatives de la production et
+retourne l'AST reçu si l'une d'elles unifie l'AST.
+Si aucune alternative ne correspond à l'AST, la fonction retourne faux.
+Pour chaque alternative, la fonction teste tous les terminaux et non-terminaux
+de la production et retourne vrai s'ils sont tous respectés.
+
+Nous avons choisi cette forme déclarative pour le parseur car elle permet
+d'exprimer une structure de code calquée sur les productions de la
+grammaire.
 
 \appendix
 \chapter{Grammaire}

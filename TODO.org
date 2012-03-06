@@ -14,3 +14,5 @@ CLOSED: [2012-01-22 Sun 22:28]
 - [X] Continuer parse3.scm + doc + grammaire [Eric]
 - [X] Rapport [Vincent+Eric]
 - [X] Tagger répertoire [Eric]
+** Eventuellement
+- [ ] Streamify lex + read + parse
