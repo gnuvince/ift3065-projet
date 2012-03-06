@@ -74,6 +74,13 @@
            (<definition>* (cdr ast)))
        ast))
 
+(define (define-var ast)
+  (and (list? ast)
+       (eq? (car ast) 'define)
+       (<variable> (cadr ast))
+       (null? (cddr ast))
+       ast))
+
 ;; ( define <variable>  <expression> )
 (define (define-var-expr ast)
   (and (list? ast)
@@ -129,7 +136,8 @@
        ast))
 
 (define (<definition> ast)
-  (and (or (define-var-expr ast)
+  (and (or (define-var ast)
+           (define-var-expr ast)
            (define-var-formals ast)
            (begin-definition* ast))
        ast))
