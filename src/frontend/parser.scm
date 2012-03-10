@@ -25,7 +25,7 @@
 ;;         (cons
         
 (define (parse token-list)
-  (<program> (sins-read token-list)))
+  (cons 'begin (<program> (sins-read token-list))))
 
 (define (<program> ast)
   (cond ((null? ast)
@@ -38,11 +38,10 @@
                                              (lambda () (write (car ast))))))))))
 
 (define (<command-or-definition> ast)
-  (and
-   (or (<command> ast)
-       (<definition> ast)
-       (begin-com-or-def ast))
-   ast))
+  (and (or (<command> ast)
+           (<definition> ast)
+           (begin-com-or-def ast))
+       ast))
 
 (define (<command-or-definition>* ast)
   (cond ((null? ast)
