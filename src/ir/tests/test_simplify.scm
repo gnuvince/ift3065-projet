@@ -86,6 +86,31 @@
                (set! a (lambda (b) a))))
             #f))
 
+(make-test cond-0 '(cond (else 1)) 1)
+(make-test cond-1 '(cond (a 1) (else 2)) (if a 1 2))
+(make-test cond-2 '(cond (a 1) (b 2) (else 3)) (if a 1 (if b 2 3)))
+
+(make-test case-0 '(case a (else 1)) 1)
+(make-test case-1 '(case a ((1) 1) (else 2))
+           ((lambda (,_)
+              (if (memv ,_ (1))
+                  1
+                  2))
+            a))
+(make-test case-2 '(case a ((1) 1) ((2) 2) (else 3))
+           ((lambda (,_1)
+              (if (memv ,_1 (1))
+                  1
+                  ((lambda (,_2)
+                     (if (memv ,_2 (2))
+                         2
+                         3))
+                   ,_1)))
+            a))
+
+
+
+
 (run-tests (reverse tests))
 
 (define (main)

@@ -89,10 +89,11 @@
     ((case ,expr (,cases . ,actions) . ,rest)
      when (list? cases)
      (let ((e (gensym)))
-       `(let ((,e ,(simplify expr)))
-          (if (memv ,e ,cases)
-              ,(simplify `(begin ,@actions))
-              ,(simplify `(case ,e ,@rest))))))
+       (simplify
+        `(let ((,e ,(simplify expr)))
+           (if (memv ,e ,cases)
+               ,(simplify `(begin ,@actions))
+               ,(simplify `(case ,e ,@rest)))))))
     ((case . ,_) (error "ill-formed case expression"))
 
 
