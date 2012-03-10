@@ -1,7 +1,12 @@
-(load "token.scm")
-(load "lexer.scm")
-(load "reader.scm")
-(load "tests/tests.scm")
+;; SINS
+;; IFT3065 - H12
+;; Vincent Foley-Bourgon (FOLV08078309)
+;; Eric Thivierge (THIE09016601)
+
+(include "../token.scm")
+(include "../lexer.scm")
+(include "../reader.scm")
+(include "tests.scm")
 
 (define (read string)
   (sins-read (lex-from-string string)))

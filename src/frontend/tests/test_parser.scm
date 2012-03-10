@@ -1,3 +1,8 @@
+;; SINS
+;; IFT3065 - H12
+;; Vincent Foley-Bourgon (FOLV08078309)
+;; Eric Thivierge (THIE09016601)
+
 (include "../parser.scm")
 (include "tests.scm")
 

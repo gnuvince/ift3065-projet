@@ -4,14 +4,8 @@
 ;; Eric Thivierge (THIE09016601)
 
 
-(include "../utils/utilities.scm")
-(include "../ir/match.scm")
-
-(define (binding? expr)
-  (and (pair? expr)
-       (symbol? (car expr))
-       (pair? (cdr expr))
-       (null? (cddr expr))))
+(include "predicates.scm")
+(include "match.scm")
 
 (define (simplify expr)
   (match expr
@@ -25,26 +19,22 @@
            (begin ,@Es)))))
 
 
-    ;; Let simplifies to nested lambdas.
-    ((let () . ,Es) (simplify `(begin ,@Es)))
-
     ;; Labeled let.
     ((let ,label ,Bs . ,Es) when (and (symbol? label)
-                                      (all? binding? Bs))
+                                      (binding-list? Bs))
      (let ((vars (map car Bs))
            (exprs (map cadr Bs)))
        (simplify
         `(letrec ((,label (lambda (,@vars) ,@(simplify Es))))
            (,label ,@exprs)))))
-
-
     ;; Regular let.
-    ((let ,Bs . ,Es) when (all? binding? Bs)
-     (let ((vars (map car Bs))
-           (exprs (map cadr Bs)))
-     `((lambda (,@vars)
-         ,(simplify `(begin ,@Es)))
-       ,@(map simplify exprs))))
+    ((let () . ,Es) (simplify `(begin ,@Es)))
+    ((let ,Bs . ,Es) when (binding-list? Bs)
+     `(let ,Bs ,(simplify `(begin ,@Es))))
+
+
+    ((let . ,_) (error "ill-formed let expression"))
+
 
 
     ;; Expand let* into nested lets.
@@ -59,7 +49,7 @@
 
     ;; Expand letrec into a let + mutations.
     ((letrec () . ,Es) (simplify `(let () ,@Es)))
-    ((letrec ,Bs . ,Es) when (all? binding? Bs)
+    ((letrec ,Bs . ,Es) when (binding-list? Bs)
      (let ((vars (map car Bs))
            (exprs (map cadr Bs)))
        (simplify
