@@ -30,9 +30,13 @@
     ;; Regular let.
     ((let () . ,Es) (simplify `(begin ,@Es)))
     ((let ,Bs . ,Es) when (binding-list? Bs)
-     `(let ,Bs ,(simplify `(begin ,@Es))))
-
-
+     (let ((vars (map car Bs))
+           (exprs (map (lambda (binding) (simplify (cadr binding))) Bs)))
+       `((lambda (,@vars)
+           ,(simplify
+             `(begin
+                ,@Es)))
+         ,@exprs)))
     ((let . ,_) (error "ill-formed let expression"))
 
 
@@ -40,10 +44,11 @@
     ;; Expand let* into nested lets.
     ((let* () . ,Es) (simplify `(let () ,@Es)))
     ((let* (,B1 . ,Bs) . ,Es) when (binding? B1)
-     `(let ((,(car B1) ,(simplify (cadr B1))))
-        ,(simplify
-          `(let* (,@Bs)
-             ,@Es))))
+     (simplify
+      `(let ((,(car B1) ,(simplify (cadr B1))))
+         ,(simplify
+           `(let* (,@Bs)
+              ,@Es)))))
     ((let* . ,_) (error "ill-formed let* expression"))
 
 
