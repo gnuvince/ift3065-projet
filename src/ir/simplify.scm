@@ -100,6 +100,26 @@
                ,(simplify `(case ,e ,@rest)))))))
     ((case . ,_) (error "ill-formed case expression"))
 
+    ;; or is expanded into a series of nested ifs.
+    ((or) #f)
+    ((or ,e) (simplify e))
+    ((or ,e1 ,e2 . ,es)
+     (let ((g (gensym)))
+       (simplify
+        `(let ((,g ,(simplify e1)))
+           (if ,g
+               ,g
+               ,(simplify `(or ,e2 ,@es)))))))
+
+
+    ;; and is expanded into a series of nested ifs.
+    ((and) #t)
+    ((and ,e1) (simplify e1))
+    ((and ,e1 ,e2 . ,es)
+     `(if ,e1
+          ,(simplify `(and ,e2 ,@es))
+          #f))
+
 
     ;; Function calls
     ((,fn . ,args) `(,(simplify fn) ,@(map simplify args)))

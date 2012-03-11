@@ -116,6 +116,18 @@
             a))
 
 
+(make-test or-0 '(or) #f)
+(make-test or-1 '(or 1) 1)
+(make-test or-2 '(or 1 2)
+           ((lambda (,_)
+              (if ,_ ,_ 2))
+            1))
+
+(make-test and-0 '(and) #t)
+(make-test and-1 '(and 1) 1)
+(make-test and-2 '(and 1 2 3)
+           (if 1 (if 2 3 #f) #f))
+
 
 
 (run-tests (reverse tests))
