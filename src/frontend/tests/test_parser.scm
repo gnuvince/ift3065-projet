@@ -1,3 +1,8 @@
+;; SINS
+;; IFT3065 - H12
+;; Vincent Foley-Bourgon (FOLV08078309)
+;; Eric Thivierge (THIE09016601)
+
 (include "../parser.scm")
 (include "tests.scm")
 
@@ -8,7 +13,7 @@
 
 (define (test-parse e-in e-out)
   (equal? (parse (lex-from-string (e->string e-in)))
-          (list e-out)))
+          (list 'begin e-out)))
 
 (define-macro (make-failure-test name in)
   (let ((n (string->symbol (string-append "test-"
@@ -80,7 +85,7 @@
 (make-failure-test fail-set!3 '(set! "a"))
 (make-failure-test fail-set!4 '(set! #\c))
 (make-failure-test fail-set!5 '(set! (+ 1 2) 3))
-(make-failure-test fail-set!5 '(set! (x) 3))
+(make-failure-test fail-set!6 '(set! (x) 3))
 
 (make-test cond-1 '(cond (else x)) '(cond (else x)))
 (make-test cond-2 '(cond (a 1) (b 2) (else 3)) '(cond (a 1) (b 2) (else 3)))

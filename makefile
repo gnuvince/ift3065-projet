@@ -9,7 +9,7 @@ all: miniscm.exe check
 
 check:
 	@cd src/frontend; make check
-#	@cd src/ir; make check
+	@cd src/ir; make check
 #	@cd src/backend; make check
 
 
@@ -38,4 +38,3 @@ clean:
 	@cd src/frontend; make clean
 	@cd src/ir; make clean
 	@cd src/backend; make clean
-

@@ -117,3 +117,10 @@
 (define (simple-binop? ast)
   (member? (ast-get-attr-value ast 'value)
            '(+ - * /)))
+
+
+(define (all? p list)
+  (if (null? list)
+      #t
+      (and (p (car list))
+           (all? p (cdr list)))))

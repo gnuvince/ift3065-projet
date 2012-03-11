@@ -210,20 +210,23 @@
    (cons 'case
          (lambda rest
            (match (cons 'case rest)
-             ((case)
+             ((case ,E1)
               `#f)
              ((case ,E1 (else . ,Es))
               `(begin ,@Es))
-             ((case ,E1 (() . ,Es) .,rest)
-              `(case ,@rest))
+             ((case ,E1 (,D . ,_) . ,rest) when (null? D)
+              `(case ,E1 ,@rest))
              ((case ,E1 ((,D1 . ,Ds) . ,Es) . ,rest)
               (let ((v (gensym)))
+                (pp D1)
                 `(let ((,v ,E1))
                    (if (eqv? ,v ,D1)
                        (begin ,@Es)
                        (case ,E1 ((,@Ds) . ,Es) . ,rest)))))
              (,_
-              (error "improper case")))))
+              (begin
+                (pp rest)
+                (error "improper case"))))))
    
    (cons 'or
          (lambda rest

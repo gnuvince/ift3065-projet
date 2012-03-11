@@ -72,8 +72,9 @@ implantées:
 \item Le parseur traite toutes les formes de notre sous-ensemble de scheme
 \item Le parseur retourne un arbre de syntaxe abstraite
 \item * Expansion de macro
-\item * Simplifications
-\item Plus d'une centaine de tests exercent le parseur
+\item Le langage Scheme d'entrée est simplifié à un langage Scheme
+  utilisant moins de constructions
+\item Plus d'une centaine de tests exercent les différents modules de \sins{}
 \item Un makefile permet d'exécuter automatiquement la suite de tests
 \end{itemize}
 
@@ -290,7 +291,7 @@ de l'analyse syntaxique, l'expansion des macros.
 Après l'analyse lexicale nous avons une structure de lexèmes; après la phase
 de lecture des lexèmes, nous avons une structure arborescente sémantiquement
 équivalente au programme source. Nous appelons cette structure arbre de
-syntaxe abstraite (AST). 
+syntaxe abstraite (AST).
 
 \subsection{Structures de données}
 
@@ -348,6 +349,129 @@ de la production et retourne vrai s'ils sont tous respectés.
 Nous avons choisi cette forme déclarative pour le parseur car elle permet
 d'exprimer une structure de code calquée sur les productions de la
 grammaire.
+
+
+
+\section{Simplification}
+
+Afin de diminuer l'effort de génération de code, nous avons implanté
+un module de simplification ({\tt src/ir/simplification.scm}). Ce
+module prend l'AST du programme d'entrée et retourne un AST dans
+lequel nous avons substitué des formes à des formes plus simples. La
+procédure de simplification est appliquée récursivement jusqu'à ce
+qu'il ne reste que des formes simplifiées.
+
+Voici les différentes simplifications qui sont faites en date de la
+remise du 12 mars 2012.
+
+\subsection{\tt begin}
+
+La forme {\tt (begin $e_1$ $e_2$ ... $e_n$)} est remplacée par une
+série de {\tt let} imbriqués.
+
+
+\begin{verbatim}
+(begin e1) => e1
+(begin e1 e2) => (let ((:g1 e1)) e2)
+(begin e1 e2 e3) => (let ((:g1 e1)) (let ((:g2 e2)) e3))
+\end{verbatim}
+
+(Les symboles {\tt :g1}, etc. sont générés automatiquement et sont
+uniques.)
+
+\subsection{\tt let}
+
+La forme {\tt let} sans étiquette est transformée en une expression
+lambda.
+
+\begin{verbatim}
+(let () e1) => e1
+(let ((a x)) e1) => ((lambda (a) e1) x)
+(let ((a x) (b y)) e1) => ((lambda (a b) e1) x y)
+\end{verbatim}
+
+La forme {\tt let} avec étiquette est transformée en une forme {\tt
+  letrec} (nous verrons que plus tard, {\tt letrec} est transformée
+en {\tt let} sans étiquette).
+
+\begin{verbatim}
+(let t () e1) => (letrec ((t (lambda () e1))) (t))
+(let t ((a x)) e1) => (letrec ((t (lambda (a) e1))) (t x))
+\end{verbatim}
+
+
+\subsection{\tt let*}
+
+La forme {\tt let*} est transformée en une imbrication de {\tt let}.
+
+\begin{verbatim}
+(let* () e1) => e1
+(let* ((a x)) e1) => (let ((a x)) e1)
+(let* ((a x) (b a)) e1) => (let ((a x)) (let ((b a)) e1))
+\end{verbatim}
+
+
+\subsection{\tt letrec}
+
+La forme {\tt letrec} est transformée en un {\tt let} où on modifie la
+valeurs des variables dans le corps du {\tt let}.
+
+\begin{verbatim}
+(letrec () e1) => e1
+(letrec ((f x)) e1) => (let ((f #f)) (set! f x) e1)
+(letrec ((f x) (g y)) e1) =>
+   (let ((f #f) (g #f)) (set! f x) (set! g y) e1)
+\end{verbatim}
+
+
+\subsection{\tt lambda}
+
+Le corps d'une forme {\tt lambda} est transformé en un {\tt begin}.
+
+\begin{verbatim}
+(lambda () e1) => (lambda () e1)
+(lambda () e1 e2) => (lambda () (begin e1 e2))
+\end{verbatim}
+
+
+\subsection{\tt cond}
+
+La forme {\tt cond} est transformée en une imbrication de {\tt if}.
+
+
+\begin{verbatim}
+(cond (else 3)) => 3
+(cond (p1 1) (else 3)) => (if p1 1 3)
+(cond (p1 1) (p2 2) (else 3)) => (if p1 1 (if p2 2 3))
+\end{verbatim}
+
+
+\subsection{\tt case}
+
+La forme {\tt case} est transformée en une imbrication de {\tt if} et
+de {\tt memv}. L'expression sur laquelle on fait le test est évaluée
+une seule fois et son résultat est sauvegardé.  Cela évite de faire
+des opérations avec effets plusieurs fois.
+
+
+\begin{verbatim}
+(case x (else 3)) => 3
+(case x ((1) 1) (else 3)) =>
+   (let ((:g1 x)) (if (memv x (1)) 1 3))
+(case x ((1) 1) ((2) 2) (else 3)) =>
+   (let ((:g1 x))
+     (if (memv :g1 (1))
+         1
+         (let ((:g2 :g1))
+           (if (memv :g2 (2))
+               2
+               3))))
+\end{verbatim}
+
+
+
+
+
 
 \appendix
 \chapter{Grammaire}
