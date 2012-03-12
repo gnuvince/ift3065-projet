@@ -19,6 +19,10 @@
            (begin ,@Es)))))
 
 
+    ((lambda ,Bs ,E1) `(lambda ,Bs ,(simplify E1)))
+    ((lambda ,Bs . ,Es) `(lambda ,Bs ,(simplify `(begin ,@Es))))
+    ((lambda ,Bs) (error "ill-formed lambda"))
+
     ;; Labeled let.
     ((let ,label ,Bs . ,Es) when (and (symbol? label)
                                       (binding-list? Bs))

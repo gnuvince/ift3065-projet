@@ -30,6 +30,13 @@
                b))
             a))
 
+(make-test lambda-0 '(lambda () e1) (lambda () e1))
+(make-test lambda-1 '(lambda () e1 e2)
+           (lambda ()
+             ((lambda (,_)
+                e2)
+              e1)))
+
 (make-test let-0 '(let () a) a)
 (make-test let-1 '(let ((a 1)) a) ((lambda (a) a) 1))
 (make-test let-2 '(let ((a 1) (b 2)) (a b))
