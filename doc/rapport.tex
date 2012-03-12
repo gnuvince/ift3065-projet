@@ -69,7 +69,7 @@ nous jugeons que cette contrainte est acceptable.
 En date du 12 mars 2012,  les nouvelles fonctionnalités suivantes sont
 implantées:
 \begin{itemize}
-\item Le parseur traite toutes les formes de notre sous-ensemble de scheme
+\item Le parseur traite toutes les formes de notre sous-ensemble de Scheme
 \item Le parseur retourne un arbre de syntaxe abstraite
 %\item * Expansion de macro
 \item Le langage Scheme d'entrée est simplifié à un langage Scheme
@@ -326,26 +326,26 @@ d'identificateurs (possiblement vide), suivi d'une ou plusieurs expressions.
 
 \sins{} représente l'AST sous forme de listes imbriquées de symboles. Nous
 avons choisi cette représentation pour sa simplicité, son faible coût en
-mémoire et la facilité de manipulation de cette structure en scheme.
+mémoire et la facilité de manipulation de cette structure en Scheme.
 
-Afin de garder l'implantation du compilateur plus simple, nous avons décidé de
-ne pas inclure les informations relatives aux lignes et colonnes dans
-l'AST. Cette décision donnera des messages d'erreur moins précis mais nous
-jugeons que la simplicité gagnée par ce compromis est plus importante dans le
-cadre d'un projet pédagogique. Si le temps le permet, nous pourrons considérer
-revoir cette décision.
+Afin de garder l'implantation du compilateur plus simple, nous avons
+décidé de ne pas inclure les informations relatives aux lignes et
+colonnes dans l'AST. Cette décision donnera des messages d'erreur
+moins précis, mais nous jugeons que la simplicité gagnée par ce
+compromis est plus importante dans le cadre d'un projet pédagogique.
+Si le temps le permet, nous pourrons considérer revoir cette décision.
 
 \subsection{Algorithmes}
 
 Nous avons choisi une forme déclarative pour le parseur où chaque fonction
-correspond à une production de la grammaire de scheme (r5rs). La fonction
+correspond à une production de la grammaire de Scheme (R5RS). La fonction
 principale \emph{parse} reçoit une liste d'expressions formant le programme à
 vérifier.
 
 Chaque fonction représentant un production reçoit en paramètre un AST à
 vérifier et teste séquentiellement les alternatives de cette production en
 relation avec l'AST. Si l'une des production unifie l'AST, la fonction retourne
-l'AST. Sinon elle retourne faux. 
+l'AST. Sinon elle retourne faux.
 
 Cette forme déclarative pour le parseur permet d'exprimer une structure de
 code claquée sur les productions de la grammaire ce qui donne un programme
@@ -468,7 +468,29 @@ des opérations avec effets plusieurs fois.
                3))))
 \end{verbatim}
 
+\subsection{\tt or}
 
+La forme {\tt or} est transformée en une imbrication de {\tt if}; le
+résultat de chaque expression est sauvegardé dans une variable afin
+d'éviter d'évaluer plusieurs fois les expressions.
+
+
+\begin{verbatim}
+(or) => #f
+(or e1) => e1
+(or e1 e2) => (let ((:g1 e1)) (if :g1 :g1 e2))
+\end{verbatim}
+
+\subsection{\tt and}
+
+La forme {\tt and} est transformée en une imbrication de {\tt if}.
+
+
+\begin{verbatim}
+(and) => #t
+(and e1) => e1
+(and e1 e2) => (if e1 (if e2 e2 #f) #f)
+\end{verbatim}
 
 
 
