@@ -71,7 +71,7 @@ implantées:
 \begin{itemize}
 \item Le parseur traite toutes les formes de notre sous-ensemble de scheme
 \item Le parseur retourne un arbre de syntaxe abstraite
-\item * Expansion de macro
+%\item * Expansion de macro
 \item Le langage Scheme d'entrée est simplifié à un langage Scheme
   utilisant moins de constructions
 \item Plus d'une centaine de tests exercent les différents modules de \sins{}
@@ -311,8 +311,8 @@ données.  Les opérations suivantes sont supportées:
 
 \section{L'expansion de macros}
 
-Cette phase n'est pas encore implantée.
-
+Le code d'expansion de macro fourni en classe n'a pas encore été complétement
+intégré à \sins{}.
 
 \section{Vérification de l'AST}
 
@@ -337,19 +337,19 @@ revoir cette décision.
 
 \subsection{Algorithmes}
 
-TODO: Relire/réécrire!
-Chaque fct correspond à une production de la grammaire.
-Chaque fonction reçoit un sous-arbre de l'AST.
-Chq fonction teste séquentiellement les alternatives de la production et
-retourne l'AST reçu si l'une d'elles unifie l'AST.
-Si aucune alternative ne correspond à l'AST, la fonction retourne faux.
-Pour chaque alternative, la fonction teste tous les terminaux et non-terminaux
-de la production et retourne vrai s'ils sont tous respectés.
+Nous avons choisi une forme déclarative pour le parseur où chaque fonction
+correspond à une production de la grammaire de scheme (r5rs). La fonction
+principale \emph{parse} reçoit une liste d'expressions formant le programme à
+vérifier.
 
-Nous avons choisi cette forme déclarative pour le parseur car elle permet
-d'exprimer une structure de code calquée sur les productions de la
-grammaire.
+Chaque fonction représentant un production reçoit en paramètre un AST à
+vérifier et teste séquentiellement les alternatives de cette production en
+relation avec l'AST. Si l'une des production unifie l'AST, la fonction retourne
+l'AST. Sinon elle retourne faux. 
 
+Cette forme déclarative pour le parseur permet d'exprimer une structure de
+code claquée sur les productions de la grammaire ce qui donne un programme
+facile à valider et à maintenir.
 
 
 \section{Simplification}
