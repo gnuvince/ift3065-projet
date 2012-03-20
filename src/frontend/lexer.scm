@@ -17,7 +17,7 @@
 ;; character = "#\" ( any character | "nul" | "newline" | "space" | "tab" )
 
 
-(load "token.scm")
+(include "token.scm")
 
 (define open-paren-symbol (string->symbol "open-paren"))
 (define close-paren-symbol (string->symbol "close-paren"))
