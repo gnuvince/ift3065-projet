@@ -1,24 +1,39 @@
 (include "../ir/match.scm")
 (include "../ir/simplify.scm")
+(include "../utils/utilities.scm")
 (include "../frontend/lexer.scm")
 (include "../frontend/reader.scm")
 (include "../frontend/parser.scm")
 
 (define (translate ast)
-  (comp-function "_main" ast))
+  (comp-function "_main" ast '()))
 
-(define (comp-function name ast)
+(define (comp-function name ast cte)
   (gen-function name
-                (compile ast)))
+                (compile ast cte)
+                cte))
 
-(define (compile ast)
+(define (compile ast cte)
   (match ast
          (,n when (number? n)
              (gen-literal n))
+         
          ((,op ,op1 ,op2) when (member op '(+ - / *))
           (gen-bin-op op
-                      (compile op1)
-                      (compile op2)))
+                      (compile op1 cte)
+                      (compile op2 cte)))
+
+         (,s when (symbol? s)
+             (let ((x (assq s cte)))
+               (if x
+                   (gen-parameter (cdr x))
+                   (error "invalid identifier"))))
+         
+         ((lambda ,params ,expr)
+          (let ((new-cte (append (map cons params (range 1 (length params))) cte))) 
+            (comp-function (gen-label "anonyme")
+                           (compile expr new-cte)
+                           new-cte)))
          (,_
           (error "Invalid form"))))
                       
@@ -32,7 +47,7 @@
         (set! _i (+ i 1))
         (string-append prefix (number->string i))))))
 
-(define (gen-function name code)
+(define (gen-function name code cte)
   (gen "    .text\n"
        ".globl " name "\n"
        name ":\n"

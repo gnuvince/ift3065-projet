@@ -124,3 +124,8 @@
       #t
       (and (p (car list))
            (all? p (cdr list)))))
+
+(define (range a b)
+  (if (> a b)
+      '()
+      (cons a (range (+ a 1) b))))
