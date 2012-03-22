@@ -129,11 +129,13 @@
        ast))
 
 (define (<body> ast)
-  (if (<definition> (car ast))
-      (and (<body> (cdr ast))
+  (or (and (not (pair? ast))
            ast)
-      (and (<sequence> ast)
-           ast)))
+      (if (<definition> (car ast))
+          (and (<body> (cdr ast))
+               ast)
+          (and (<sequence> ast)
+               ast))))
 
 (define (<definition>* ast)
   (and (list? ast)

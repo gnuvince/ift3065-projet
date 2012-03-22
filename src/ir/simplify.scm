@@ -120,6 +120,27 @@
           ,(simplify `(and ,e2 ,@es))
           #f))
 
+    ((+) 0)
+    ((+ ,n) (simplify n))
+    ((+ ,a ,b . ,rest)
+     `(+ ,(simplify a)
+         ,(simplify `(+ ,b ,@rest))))
+
+    ((- ,n) (- 0 (simplify n)))    
+    ((- ,a ,b . ,rest)
+     `(- ,(simplify a)
+         ,(simplify `(- ,b ,@rest))))
+
+    ((*) 1)
+    ((* ,n) (simplify n))    
+    ((* ,a ,b . ,rest)
+     `(* ,(simplify a)
+         ,(simplify `(* ,b ,@rest))))
+
+    ((/ ,n) 0)
+    ((/ ,a ,b . ,rest)
+     `(/ ,(simplify a)
+         ,(simplify `(/ ,b ,@rest))))
 
     ;; Function calls
     ((,fn . ,args) `(,(simplify fn) ,@(map simplify args)))
