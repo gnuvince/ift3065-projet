@@ -120,30 +120,47 @@
           ,(simplify `(and ,e2 ,@es))
           #f))
 
-    ((+) 0)
-    ((+ ,n) (simplify n))
-    ((+ ,a ,b . ,rest)
-     `(+ ,(simplify a)
-         ,(simplify `(+ ,b ,@rest))))
 
-    ((- ,n) (- 0 (simplify n)))    
-    ((- ,a ,b . ,rest)
-     `(- ,(simplify a)
-         ,(simplify `(- ,b ,@rest))))
+    ((,arith-op . ,rest) when (member arith-op '(+ - * /))
+     (simplify-arithmetic-op `(,arith-op ,@rest)))
 
-    ((*) 1)
-    ((* ,n) (simplify n))    
-    ((* ,a ,b . ,rest)
-     `(* ,(simplify a)
-         ,(simplify `(* ,b ,@rest))))
-
-    ((/ ,n) 0)
-    ((/ ,a ,b . ,rest)
-     `(/ ,(simplify a)
-         ,(simplify `(/ ,b ,@rest))))
+    ((,compare-op . ,rest) when (member compare-op '(< <= = >= >))
+     (simplify-compare-op `(,compare-op ,@rest)))
 
     ;; Function calls
     ((,fn . ,args) `(,(simplify fn) ,@(map simplify args)))
 
     ;; Return all other expressions as is.
     (,_ expr)))
+
+
+;; Comparison operators (<, <=, >=, >, =) can accept an arbitrary number
+;; of arguments and are simplified into a cascade of if expressions.
+(define (simplify-compare-op form)
+  (match form
+    ((,op) #t)
+    ((,op ,a) #t)
+    ((,op ,a ,b . ,rest) `(if (,op ,(simplify a) ,(simplify b))
+                              ,(simplify `(,op ,b ,@rest))
+                              #f))))
+
+
+;; Arithmetic operators (+, -, *, /) can accept an arbitrary number
+;; of arguments and are simplified into a cascade of operations.
+(define (simplify-arithmetic-op form)
+  (match form
+    ((+) 0)
+    ((+ ,n) (simplify n))
+
+    ((-) (error "invalid form for subtraction"))
+    ((- ,n) (- 0 (simplify n)))
+
+    ((*) 1)
+    ((* ,n) (simplify n))
+
+    ((/) (error "invalid form for division"))
+    ((/ ,n) 0)
+
+    ((,op ,a ,b . ,rest)
+     `(,op ,(simplify a)
+         ,(simplify `(,op ,b ,@rest))))))

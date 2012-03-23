@@ -17,9 +17,14 @@
   (match ast
          (,n when (number? n)
              (gen-literal n))
-         
+
          ((,op ,op1 ,op2) when (member op '(+ - / *))
           (gen-bin-op op
+                      (compile op1 cte)
+                      (compile op2 cte)))
+
+         ((,op ,op1 ,op2) when (member op '(< <= = >= >))
+          (gen-cmp-op op
                       (compile op1 cte)
                       (compile op2 cte)))
 
@@ -28,15 +33,15 @@
                (if x
                    (gen-parameter (cdr x))
                    (error "invalid identifier"))))
-         
+
          ((lambda ,params ,expr)
-          (let ((new-cte (append (map cons params (range 1 (length params))) cte))) 
+          (let ((new-cte (append (map cons params (range 1 (length params))) cte)))
             (comp-function (gen-label "anonyme")
                            (compile expr new-cte)
                            new-cte)))
          (,_
-          (error "Invalid form"))))
-                      
+          (error "Unrecognized form: " ast))))
+
 
 (define gen list)
 
@@ -55,7 +60,7 @@
        "    ret\n"))
 
 (define (gen-bin-op op op1 op2)
-  (let ((oper 
+  (let ((oper
          (case op
            ((+) "addl")
            ((-) "subl")
@@ -64,11 +69,34 @@
            (else (error "Invalid operator")))))
     (gen op1
          "    pushl   %eax\n"
-         
+
          op2
-         
+
          "    " oper "    (%esp), %eax\n"
          "    addl    $4, %esp\n")))
+
+;; Comparison operations are implemented by putting 1 in %eax if
+;; the comparison returns true, and 0 otherwise.  The generated code
+;; is inefficient, but simple and easy to understand.
+(define (gen-cmp-op op op1 op2)
+  (let ((oper
+         (case op
+           ((<)  "jl")
+           ((<=) "jle")
+           ((=)  "je")
+           ((>=) "jge")
+           ((>)  "jg")))
+        (label (symbol->string (gensym))))
+    (gen op1
+         "    pushl   %eax\n"
+         op2
+         "    cmp     %eax, (%esp)\n"
+         "    movl    $1, %eax\n"
+         "    " oper "      " label "\n"
+         "    movl    $0, %eax\n"
+         label ":\n"
+         "    addl    $4, %esp\n")))
+
 
 (define (gen-let val body)
   (gen val
