@@ -140,9 +140,10 @@
   (match form
     ((,op) #t)
     ((,op ,a) #t)
-    ((,op ,a ,b . ,rest) `(if (,op ,(simplify a) ,(simplify b))
-                              ,(simplify `(,op ,b ,@rest))
-                              #f))))
+    ((,op ,a ,b) `(,op ,(simplify a) ,(simplify b)))
+    ((,op ,a ,b ,c . ,rest) `(if (,op ,(simplify a) ,(simplify b))
+                                 ,(simplify `(,op ,b ,c ,@rest))
+                                 #f))))
 
 
 ;; Arithmetic operators (+, -, *, /) can accept an arbitrary number
