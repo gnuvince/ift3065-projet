@@ -9,6 +9,7 @@
   (comp-function "_main" ast '()))
 
 (define (comp-function name ast cte)
+  (pp ast)
   (gen-function name
                 (compile ast cte)
                 cte))
@@ -32,7 +33,7 @@
          ((lambda ,params ,expr)
           (let ((new-cte (append (map cons params (range 1 (length params))) cte))) 
             (comp-function (gen-label "anonyme")
-                           (compile expr new-cte)
+                           expr
                            new-cte)))
          (,_
           (error "Invalid form"))))
