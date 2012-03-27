@@ -156,7 +156,7 @@
     ((+ ,a ,b ,c . ,rest) (simplify `(+ (+ ,a ,b) ,c ,@rest)))
 
     ((-) (error "invalid form for substraction"))
-    ((- ,a) (- 0 (simplify a)))
+    ((- ,a) `(- 0 ,(simplify a)))
     ((- ,a ,b) `(- ,(simplify a) ,(simplify b)))
     ((- ,a ,b ,c . ,rest) (simplify `(- (- ,a ,b) ,c ,@rest)))
 

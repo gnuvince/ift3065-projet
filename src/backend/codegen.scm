@@ -6,7 +6,7 @@
 (include "../frontend/parser.scm")
 
 (define main-label "main")
-(define false-sym 4294967282) ; 0xFFFFFFF2
+(define false-sym 4294967294) ; 0xFFFFFFFE
 
 (define (translate ast)
   (comp-function main-label ast '()))
