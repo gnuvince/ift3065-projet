@@ -164,4 +164,4 @@
 
     ((,op ,a ,b . ,rest)
      `(,op ,(simplify a)
-         ,(simplify `(,op ,b ,@rest))))))
+           ,(simplify `(,op ,b ,@rest))))))

@@ -15,32 +15,36 @@
 
 (define (compile ast cte)
   (match ast
-         (,n when (number? n)
-             (gen-literal n))
+    (,n when (number? n)
+        (gen-literal n))
 
-         ((,op ,op1 ,op2) when (member op '(+ - / *))
-          (gen-bin-op op
-                      (compile op1 cte)
-                      (compile op2 cte)))
+    ((,op ,op1 ,op2) when (member op '(+ - / *))
+     (gen-bin-op op
+                 (compile op1 cte)
+                 (compile op2 cte)))
 
-         ((,op ,op1 ,op2) when (member op '(< <= = >= >))
-          (gen-cmp-op op
-                      (compile op1 cte)
-                      (compile op2 cte)))
+    ((,op ,op1 ,op2) when (member op '(< <= = >= >))
+     (gen-cmp-op op
+                 (compile op1 cte)
+                 (compile op2 cte)))
 
-         (,s when (symbol? s)
-             (let ((x (assq s cte)))
-               (if x
-                   (gen-parameter (cdr x))
-                   (error "invalid identifier"))))
+    ((if ,ex1 ,ex2) (compile `(if ,ex1 ,ex2 ()) cte))
 
-         ((lambda ,params ,expr)
-          (let ((new-cte (append (map cons params (range 1 (length params))) cte)))
-            (comp-function (gen-label "anonyme")
-                           (compile expr new-cte)
-                           new-cte)))
-         (,_
-          (error "Unrecognized form: " ast))))
+    ((if ,ex1 ,ex2 ,ex3)
+
+    (,s when (symbol? s)
+        (let ((x (assq s cte)))
+          (if x
+              (gen-parameter (cdr x))
+              (error "invalid identifier"))))
+
+    ((lambda ,params ,expr)
+     (let ((new-cte (append (map cons params (range 1 (length params))) cte)))
+       (comp-function (gen-label "anonyme")
+                      (compile expr new-cte)
+                      new-cte)))
+    (,_
+     (error "Unrecognized form: " ast))))
 
 
 (define gen list)

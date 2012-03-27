@@ -21,6 +21,7 @@
 
 (define open-paren-symbol (string->symbol "open-paren"))
 (define close-paren-symbol (string->symbol "close-paren"))
+(define false (gensym))
 
 
 ;; make-stream :: string -> stream
@@ -276,8 +277,8 @@
 (define (consume-hash stream)
   (stream 'advance)                     ; consume the #
   (let ((token (cond
-                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . true)))
-                ((char=? (stream 'next) #\f) (begin (stream 'advance) '(boolean . false)))
+                ((char=? (stream 'next) #\t) (begin (stream 'advance) '(boolean . #t)))
+                ((char=? (stream 'next) #\f) (begin (stream 'advance) `(boolean . ,false)))
                 ((char=? (stream 'next) #\\) (consume-char stream))
                 (else #f))))
     token))

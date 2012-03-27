@@ -3,8 +3,6 @@
 ;; Vincent Foley-Bourgon (FOLV08078309)
 ;; Eric Thivierge (THIE09016601)
 
-(define false (gensym))
-(define true  (gensym))
 (define quote-prefix-symbol (string->symbol "quote-prefix"))
 (define unquote-prefix-symbol (string->symbol "unquote-prefix"))
 (define unquote-splicing-prefix-symbol (string->symbol "unquote-splicing-prefix"))
@@ -21,11 +19,18 @@
 
 ;; (define (parse-aux token-list list)
 ;;   (let ((s (sins-read token-list)))
-;;     (if (eq? s 
+;;     (if (eq? s
 ;;         (cons
-        
+
+(define (harmonize-false ast)
+  (map (lambda (x)
+         (cond ((eq? x false) #f)
+               ((pair? x) (harmonize-false x))
+               (else x)))
+       ast))
+
 (define (parse token-list)
-  (cons 'begin (<program> (sins-read token-list))))
+  (harmonize-false (cons 'begin (<program> (sins-read token-list)))))
 
 (define (<program> ast)
   (cond ((null? ast)
@@ -233,7 +238,7 @@
       (<string> ast)))
 
 (define (<boolean> ast)
-  (and (or (eq? ast true)
+  (and (or (eq? ast #t)
            (eq? ast false))
        ast))
 

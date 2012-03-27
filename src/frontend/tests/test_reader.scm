@@ -15,9 +15,9 @@
                                                (lambda () (f) #f)))
 
 (define (test-datum)
-  (and (equal? (read "#f") '(false))
-       (equal? (read "#t") '(true))
-       (equal? (read "#f #f") '(false false))
+  (and (equal? (read "#f") `(,false))
+       (equal? (read "#t") '(#t))
+       (equal? (read "#f #f") `(,false ,false))
        (equal? (read "0") '(0))
        (equal? (read "12") '(12))
        (equal? (read "\"\"") '(""))
