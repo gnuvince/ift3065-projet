@@ -151,17 +151,21 @@
 (define (simplify-arithmetic-op form)
   (match form
     ((+) 0)
-    ((+ ,n) (simplify n))
+    ((+ ,a) (simplify a))
+    ((+ ,a ,b) `(+ ,(simplify a) ,(simplify b)))
+    ((+ ,a ,b ,c . ,rest) (simplify `(+ (+ ,a ,b) ,c ,@rest)))
 
-    ((-) (error "invalid form for subtraction"))
-    ((- ,n) (- 0 (simplify n)))
+    ((-) (error "invalid form for substraction"))
+    ((- ,a) (- 0 (simplify a)))
+    ((- ,a ,b) `(- ,(simplify a) ,(simplify b)))
+    ((- ,a ,b ,c . ,rest) (simplify `(- (- ,a ,b) ,c ,@rest)))
 
     ((*) 1)
-    ((* ,n) (simplify n))
+    ((* ,a) (simplify a))
+    ((* ,a ,b) `(* ,(simplify a) ,(simplify b)))
+    ((* ,a ,b ,c . ,rest) (simplify `(* (* ,a ,b) ,c ,@rest)))
 
     ((/) (error "invalid form for division"))
-    ((/ ,n) 0)
-
-    ((,op ,a ,b . ,rest)
-     `(,op ,(simplify a)
-           ,(simplify `(,op ,b ,@rest))))))
+    ((/ ,a) (error "invalid form for division"))
+    ((/ ,a ,b) `(/ ,(simplify a) ,(simplify b)))
+    ((/ ,a ,b ,c . ,rest) (simplify `(/ (/ ,a ,b) ,c ,@rest)))))

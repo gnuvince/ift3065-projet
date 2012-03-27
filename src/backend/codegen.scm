@@ -5,6 +5,8 @@
 (include "../frontend/reader.scm")
 (include "../frontend/parser.scm")
 
+(define false-sym 4294967282) ; 0xFFFFFFF2
+
 (define (translate ast)
   (comp-function "_main" ast '()))
 
@@ -18,9 +20,18 @@
     (,n when (number? n)
         (gen-literal n))
 
-    ((,op ,op1 ,op2) when (member op '(+ - / *))
+    (,b when (boolean? b)
+        (if b
+            (gen-literal 1)
+            (gen-literal false-sym)))
+
+    ((,op ,op1 ,op2) when (member op '(+ - *))
      (gen-bin-op op
                  (compile op1 cte)
+                 (compile op2 cte)))
+
+    ((/ ,op1 ,op2)
+     (gen-div-op (compile op1 cte)
                  (compile op2 cte)))
 
     ((,op ,op1 ,op2) when (member op '(< <= = >= >))
@@ -30,7 +41,10 @@
 
     ((if ,ex1 ,ex2) (compile `(if ,ex1 ,ex2 ()) cte))
 
-    ((if ,ex1 ,ex2 ,ex3)
+    ((if ,ex1 ,ex2 ,ex3) (gen-if (compile ex1 cte)
+                                 (compile ex2 cte)
+                                 (compile ex3 cte)))
+
 
     (,s when (symbol? s)
         (let ((x (assq s cte)))
@@ -68,7 +82,6 @@
          (case op
            ((+) "addl")
            ((-) "subl")
-           ((/) "idivl")
            ((*) "imull")
            (else (error "Invalid operator")))))
     (gen op1
@@ -78,6 +91,18 @@
 
          "    " oper "    (%esp), %eax\n"
          "    addl    $4, %esp\n")))
+
+
+(define (gen-div-op op1 op2)
+  (gen op1
+       "    pushl    %eax\n"
+       op2
+       "    movl     %eax, %ecx\n"
+       "    popl     %eax\n"
+       "    cdq\n"
+       "    idivl    %ecx\n"))
+
+
 
 ;; Comparison operations are implemented by putting 1 in %eax if
 ;; the comparison returns true, and 0 otherwise.  The generated code
@@ -90,17 +115,34 @@
            ((=)  "je")
            ((>=) "jge")
            ((>)  "jg")))
-        (label (symbol->string (gensym))))
+        (label (string-append "cmp_op_" (symbol->string (gensym)))))
     (gen op1
          "    pushl   %eax\n"
          op2
          "    cmp     %eax, (%esp)\n"
          "    movl    $1, %eax\n"
          "    " oper "      " label "\n"
-         "    movl    $0, %eax\n"
+         "    movl    $" false-sym ", %eax\n"
          label ":\n"
          "    addl    $4, %esp\n")))
 
+
+
+(define (gen-if ex1 ex2 ex3)
+  (let* ((g (gensym))
+         (else-label (string-append "else_" (symbol->string g)))
+         (endif-label (string-append "endif_" (symbol->string g))))
+  (gen ex1
+       "    pushl   %eax\n"
+       (gen-literal false-sym)
+       "    cmp     %eax, (%esp)\n"
+       "    je      " else-label "\n"
+       ex2
+       "    jmp     " endif-label "\n"
+       else-label ":\n"
+       ex3
+       endif-label ":\n"
+       "    addl    $4, %esp\n")))
 
 (define (gen-let val body)
   (gen val
