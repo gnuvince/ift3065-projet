@@ -5,10 +5,11 @@
 (include "../frontend/reader.scm")
 (include "../frontend/parser.scm")
 
+(define main-label "main")
 (define false-sym 4294967282) ; 0xFFFFFFF2
 
 (define (translate ast)
-  (comp-function "_main" ast '()))
+  (comp-function main-label ast '()))
 
 (define (comp-function name ast cte)
   (gen-function name
@@ -30,8 +31,9 @@
                  (compile op1 cte)
                  (compile op2 cte)))
 
-    ((/ ,op1 ,op2)
-     (gen-div-op (compile op1 cte)
+    ((,op ,op1 ,op2) when (member op '(/ modulo))
+     (gen-div-op op
+                 (compile op1 cte)
                  (compile op2 cte)))
 
     ((,op ,op1 ,op2) when (member op '(< <= = >= >))
@@ -93,14 +95,17 @@
          "    addl    $4, %esp\n")))
 
 
-(define (gen-div-op op1 op2)
+(define (gen-div-op op op1 op2)
   (gen op1
        "    pushl    %eax\n"
        op2
        "    movl     %eax, %ecx\n"
        "    popl     %eax\n"
        "    cdq\n"
-       "    idivl    %ecx\n"))
+       "    idivl    %ecx\n"
+       (if (eq? op 'modulo)
+           "    movl    %edx, %eax\n"
+           "")))
 
 
 
