@@ -8,13 +8,20 @@
 (define main-label "main")
 (define false-sym 4294967294) ; 0xFFFFFFFE
 
+(define funcs '())
+
 (define (translate ast)
-  (comp-function main-label ast '()))
+  (set! funcs '())
+  (comp-function main-label ast '())
+  funcs)
 
 (define (comp-function name ast cte)
-  (gen-function name
-                (compile ast cte)
-                cte))
+  (set! funcs
+        (cons (gen-function name
+                            (compile ast cte)
+                            cte)
+              funcs))
+  name)
 
 (define (compile ast cte)
   (match ast
@@ -55,10 +62,13 @@
               (error "invalid identifier"))))
 
     ((lambda ,params ,expr)
-     (let ((new-cte (append (map cons params (range 1 (length params))) cte)))
-       (comp-function (gen-label "anonyme")
-                      (compile expr new-cte)
-                      new-cte)))
+     (let* ((new-cte (append (map cons params (range 1 (length params))) cte))
+            (func-name (comp-function (gen-label "anonyme")
+                                      expr
+                                      new-cte)))
+       (gen "    movl " func-name ", %eax\n")))
+
+
     (,_
      (error "Unrecognized form: " ast))))
 
@@ -73,9 +83,7 @@
         (string-append prefix (number->string i))))))
 
 (define (gen-function name code cte)
-  (gen "    .text\n"
-       ".globl " name "\n"
-       name ":\n"
+  (gen name ":\n"
        code
        "    ret\n"))
 
@@ -162,4 +170,6 @@
   (gen "    movl    $" n ", %eax\n"))
 
 (define (main ast)
+  (print ".text\n")
+  (print ".globl " main-label "\n")
   (print (translate ast)))
