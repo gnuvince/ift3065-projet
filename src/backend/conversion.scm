@@ -157,3 +157,63 @@
                    ,(assignc E mut-vars))
                  ,@(map (lambda (x) `(list ,(cdr x)))
                         mut-params))))))))
+
+
+
+(define (closure-conv expr)
+  (closurec expr '()))
+
+(define (closurec expr cte)
+  (define (pos id)
+    (let ((x (memq id cte)))
+      (and x
+           (- (length cte)
+              (length x)))))
+
+  (match expr
+    (,const when (constant? const)
+            expr)
+
+    (,var when (variable? var)
+          (let ((p (pos var)))
+            (if p
+                `(closure-ref $this ,p)
+                var)))
+
+    ((lambda ,params ,E)
+     (let ((new-cte (freevar-analysis expr)))
+       `(make-closure
+         (lambda ($this ,@params)
+           ,(closurec E new-cte))
+         ,@(map (lambda (v) (closurec v cte))
+                new-cte))))
+
+    ((if ,E1 ,E2)
+     `(if ,(closurec E1 cte) ,(closurec E2 cte)))
+
+    ((if ,E1 ,E2 ,E3)
+     `(if ,(closurec E1 cte) ,(closurec E2 cte) ,(closurec E3 cte)))
+
+    ((,E0 . ,Es)
+     (if (primitive? E0)
+         `(,E0
+           ,@(map (lambda (e) (closurec e cte))
+                  Es))
+         `(let (($clo ,(closurec E0 cte)))
+            ((closure-code $clo)
+             $clo
+             ,@(map (lambda (e) (closurec e cte))
+                    Es)))))
+
+    (,_ (error "invalid form."))))
+
+
+
+(define (make-closure code . free-vars)
+  (cons code free-vars))
+
+(define (closure-ref closure i)
+  (list-ref (cdr closure) i))
+
+(define (closure-code closure)
+  (car closure))
