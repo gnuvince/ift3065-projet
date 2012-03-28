@@ -15,15 +15,15 @@
   (comp-function main-label ast '())
   funcs)
 
-(define (comp-function name ast cte)
+(define (comp-function name ast env)
   (set! funcs
         (cons (gen-function name
-                            (compile ast cte)
-                            cte)
+                            (compile ast env)
+                            env)
               funcs))
   name)
 
-(define (compile ast cte)
+(define (compile ast env)
   (match ast
     (,n when (number? n)
         (gen-literal n))
@@ -35,39 +35,47 @@
 
     ((,op ,op1 ,op2) when (member op '(+ - *))
      (gen-bin-op op
-                 (compile op1 cte)
-                 (compile op2 cte)))
+                 (compile op1 env)
+                 (compile op2 env)))
 
     ((,op ,op1 ,op2) when (member op '(/ modulo))
      (gen-div-op op
-                 (compile op1 cte)
-                 (compile op2 cte)))
+                 (compile op1 env)
+                 (compile op2 env)))
 
     ((,op ,op1 ,op2) when (member op '(< <= = >= >))
      (gen-cmp-op op
-                 (compile op1 cte)
-                 (compile op2 cte)))
+                 (compile op1 env)
+                 (compile op2 env)))
 
-    ((if ,ex1 ,ex2) (compile `(if ,ex1 ,ex2 ()) cte))
+    ((if ,ex1 ,ex2) (compile `(if ,ex1 ,ex2 ()) env))
 
-    ((if ,ex1 ,ex2 ,ex3) (gen-if (compile ex1 cte)
-                                 (compile ex2 cte)
-                                 (compile ex3 cte)))
+    ((if ,ex1 ,ex2 ,ex3) (gen-if (compile ex1 env)
+                                 (compile ex2 env)
+                                 (compile ex3 env)))
 
 
     (,s when (symbol? s)
-        (let ((x (assq s cte)))
+        (let ((x (assq s env)))
           (if x
               (gen-parameter (cdr x))
               (error "invalid identifier"))))
 
     ((lambda ,params ,expr)
-     (let* ((new-cte (append (map cons params (range 1 (length params))) cte))
+     (let* ((new-env (append (map cons params (range 1 (length params))) env))
             (func-name (comp-function (gen-label "anonyme")
                                       expr
-                                      new-cte)))
+                                      new-env)))
        (gen "    movl " func-name ", %eax\n")))
 
+
+    ((,f ,args)
+     (begin
+       (compile f env)
+       (compile args env)
+       (gen (compile args env)
+            "call %eax\n"
+            "addl $4, (%esp)\n")))
 
     (,_
      (error "Unrecognized form: " ast))))
@@ -82,7 +90,7 @@
         (set! _i (+ i 1))
         (string-append prefix (number->string i))))))
 
-(define (gen-function name code cte)
+(define (gen-function name code env)
   (gen name ":\n"
        code
        "    ret\n"))

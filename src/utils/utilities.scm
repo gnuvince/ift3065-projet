@@ -129,3 +129,16 @@
   (if (> a b)
       '()
       (cons a (range (+ a 1) b))))
+
+
+
+(define (constant? x)
+  (or (number? x)
+      (string? x)
+      (char? x)))
+
+(define variable? symbol?)
+
+(define (primitive? x)
+  (memq x
+        '(lambda if)))
