@@ -11,7 +11,9 @@
   (match expr
     ;; Expand begin into nested lets.
     ((begin) '())
-    ((begin ,E) (simplify E))
+    ((begin ,E)
+     (let ((g (gensym)))
+       `(let ((,g ,(simplify E))) ,g)))
     ((begin ,E1 . ,Es)
      (let ((g (gensym)))
        (simplify
@@ -24,25 +26,28 @@
     ((lambda ,Bs) (error "ill-formed lambda"))
 
     ;; Labeled let.
-    ((let ,label ,Bs . ,Es) when (and (symbol? label)
-                                      (binding-list? Bs))
-     (let ((vars (map car Bs))
-           (exprs (map cadr Bs)))
-       (simplify
-        `(letrec ((,label (lambda (,@vars) ,@(simplify Es))))
-           (,label ,@exprs)))))
-    ;; Regular let.
-    ((let () . ,Es) (simplify `(begin ,@Es)))
-    ((let ,Bs . ,Es) when (binding-list? Bs)
-     (let ((vars (map car Bs))
-           (exprs (map (lambda (binding) (simplify (cadr binding))) Bs)))
-       `((lambda (,@vars)
-           ,(simplify
-             `(begin
-                ,@Es)))
-         ,@exprs)))
-    ((let . ,_) (error "ill-formed let expression"))
+    ;; ((let ,label ,Bs . ,Es) when (and (symbol? label)
+    ;;                                   (binding-list? Bs))
+    ;;  (let ((vars (map car Bs))
+    ;;        (exprs (map cadr Bs)))
+    ;;    (simplify
+    ;;     `(letrec ((,label (lambda (,@vars) ,@(simplify Es))))
+    ;;        (,label ,@exprs)))))
+    ;; ;; Regular let.
+    ;; ((let () . ,Es) (simplify `(begin ,@Es)))
+    ;; ((let ,Bs . ,Es) when (binding-list? Bs)
+    ;;  (let ((vars (map car Bs))
+    ;;        (exprs (map (lambda (binding) (simplify (cadr binding))) Bs)))
+    ;;    `((lambda (,@vars)
+    ;;        ,(simplify
+    ;;          `(begin
+    ;;             ,@Es)))
+    ;;      ,@exprs)))
+    ;; ((let . ,_) (error "ill-formed let expression"))
 
+
+    ((let ((,v (define ,var ,exp))) . ,es)
+     `(let ((,var ,exp)) ,@(map simplify es)))
 
 
     ;; Expand let* into nested lets.

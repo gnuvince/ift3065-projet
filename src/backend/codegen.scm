@@ -8,7 +8,19 @@
 (define main-label "main")
 (define false-sym 4294967294) ; 0xFFFFFFFE
 
+
 (define funcs '())
+
+
+(define (create-global-env ast env)
+  (match ast
+    ((define ,var ,exp) (cons (cons var (gensym)) env))
+    ((begin ,e1 . ,es)
+     (append (create-global-env e1 env)
+             (create-global-env `(begin ,@es) env)))
+    (,_ env)))
+
+
 
 (define (translate ast)
   (set! funcs '())
