@@ -113,7 +113,7 @@ int main(void)
     __pair__ *p1, *p2, *p3;
 
     
-    allocByteField(&f, 1024, __PAIRSIZE__);
+    allocByteField(&f, 2, __PAIRSIZE__);
     if (f.field == NULL)
         return -1;
 
@@ -144,9 +144,6 @@ int main(void)
         print_bword(__vector_ref(v, 1));
         print_bword(__vector_ref(v, 10));
     }
-    
-    /* printf("%llu, %llu \n", (bword_t)__getcar(p), (bword_t)__getcdr(p)); */
-    
     
     free(f.field);
     return 0;

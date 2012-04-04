@@ -1,17 +1,9 @@
 #include <stdint.h>
+#include "box.h"
 
-typedef uint64_t __WORD__;
-typedef __WORD__ __BWORD__;
-#define bword_t uint64_t
-#define __WORDSIZE__ 8
-
-/* 3 bits for boxing */
-#define __BOX_SIZE__  3
-#define __BOX_MASK__  7
-#define __PAIR_TYPE__ 0
-#define __PAIR_SHFT__ 1 
-#define __INT_TYPE__  1
-#define __INT_SHFT__  3
+#define word_t uint64_t
+typedef word_t __WORD__;
+#define __WORDSIZE__ sizeof(__WORD__)
 
 typedef struct {
     __WORD__ size;
