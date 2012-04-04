@@ -74,8 +74,6 @@ __vector__* __vector( __bytefield__ *f, __WORD__ size) {
         return NULL;
     else {
         newvector->size = size;
-        /* newvector->head = (newvector + 1); */
-        /* printf("newvector[0]: %llu\n", (bword_t)*(newvector->head)); */
         return newvector;
     }
 }
@@ -102,39 +100,12 @@ void __vector_set( __vector__* v, __WORD__ ref, __BWORD__ val) {
     }
 
     if (ref >= 0 && ref < v->size)
-        (__BWORD__)*(((__BWORD__*)v) + ref + 1) = val;
+        *(((__BWORD__*)v) + ref + 1) = val;
     else {
         printf("Error: Invalid vector index: %llu\n", (bword_t)ref);
         exit(-1);
     }
 }
-
-__BWORD__ __box( __WORD__ v, __WORD__ type ) {
-    switch (type) {
-    case __PAIR_TYPE__:
-        return (v << __PAIR_SHFT__) + __PAIR_TYPE__;
-        
-    case __INT_TYPE__:
-        return (v << __INT_SHFT__) + __INT_TYPE__;
-
-    default:
-        break;
-    }
-}
-
-__WORD__ __unbox( __BWORD__ v ) {
-    switch (v & __BOX_MASK__) {
-    case __PAIR_TYPE__:
-        return (v >> __PAIR_SHFT__);
-
-    case __INT_TYPE__:
-        return (v >> __INT_SHFT__);
-
-    default:
-        break;
-    }
-}
-
 
 int main(void)
 {

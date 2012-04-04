@@ -15,7 +15,6 @@ typedef __WORD__ __BWORD__;
 
 typedef struct {
     __WORD__ size;
-    /* __BWORD__ *head; */
 } __vector__;
 
 typedef struct {
