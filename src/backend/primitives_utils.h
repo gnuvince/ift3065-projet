@@ -1,3 +1,6 @@
+#include "sins_types.h"
+#include "sins_const.h"
+
 void print_bword(__BWORD__ v) {
     printf("v: %llu\n", (bword_t)v);
 }

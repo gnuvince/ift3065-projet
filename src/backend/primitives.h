@@ -1,9 +1,8 @@
-#include <stdint.h>
-#include "box.h"
+#ifndef PRIMITIVES_H
+#define PRIMITIVES_H
 
-#define word_t uint64_t
-typedef word_t __WORD__;
-#define __WORDSIZE__ sizeof(__WORD__)
+#include "sins_types.h"
+#include "box.h"
 
 typedef struct {
     __WORD__ size;
@@ -26,10 +25,6 @@ void allocByteField( __bytefield__ *f, size_t num, size_t size );
 
 void* allocBlock( __bytefield__ *f, __WORD__ size );
 
-int __pair_p( __BWORD__ v );
-
-int __int_p( __BWORD__ v );
-
 __BWORD__ __getcar( __pair__ *p );
 
 __BWORD__ __getcdr( __pair__ *p );
@@ -50,4 +45,5 @@ __BWORD__ __box( __WORD__ v, __WORD__ type );
 
 __WORD__ __unbox( __BWORD__ v );
 
+#endif
 

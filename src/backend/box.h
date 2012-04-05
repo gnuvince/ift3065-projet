@@ -1,33 +1,12 @@
+#ifndef BOX_H
+#define BOX_H
+#include "sins_types.h"
+#include "sins_const.h"
 #include "primitives.h"
 
-/****************************************************/
-/*                                                  */
-/* Boxed types Pattern                              */
-/* ------------------------------------------------ */
-/* int         all box bits set to 0                */
-/* pair        last 2 bits 11                       */
-/* pointed     last 2 bits 01                       */
-/* ascii       last 2 bits 10                       */
-/*                                                  */
-/****************************************************/
-
-typedef word_t __BWORD__;
-#define __BWORDSIZE__ sizeof(__BWORD__)
-
-#define __BOX_SIZE__  2
-#define __BOX_MASK__  3
-
-#define __INT_TYPE__  0
-#define __INT_SHFT__  2
-#define __PTD_TYPE__  1
-#define __PTD_SHFT__  0
-#define __PTD_VEC__   255
-#define __PTD_STR__   0
-#define __CHAR_TYPE__ 2
-#define __CHAR_SHFT__ 0
-#define __PAIR_TYPE__ 3
-#define __PAIR_SHFT__ 0
-
+/*            */
+/* Boxing fns */
+/*            */
 __BWORD__ __box( __WORD__ v, __WORD__ type ) {
     switch (type) {
     case __INT_TYPE__:
@@ -63,6 +42,9 @@ __BWORD__ __boxpair( __WORD__ v ) {
     return __box(v, __PAIR_TYPE__);
 }
 
+/*              */
+/* Unboxing fns */
+/*              */
 __WORD__ __unboxint( __BWORD__ v ) {
     return ((v - __INT_TYPE__) >> __INT_SHFT__);
 }
@@ -72,10 +54,40 @@ __WORD__ __unboxptd( __BWORD__ v ) {
 }
 
 char  __unboxchar( __BWORD__ v ) {
-    return ((v - __INT_TYPE__) >> __INT_SHFT__);
+    return (char)((v - __CHAR_TYPE__) >> __CHAR_SHFT__);
 }
 
 __WORD__ __unboxpair( __BWORD__ v ) {
-    return ((v - __INT_TYPE__) >> __INT_SHFT__);
+    return ((v - __PAIR_TYPE__) >> __INT_SHFT__);
 }
 
+/*                        */
+/* Boxed types predicates */
+/*                        */
+int __boxint_p( __BWORD__ v ) {
+    return ((v & __BOX_MASK__) == __INT_TYPE__);
+}
+
+int __boxptd_p( __BWORD__ v ) {
+    return ((v & __BOX_MASK__) == __PTD_TYPE__);
+}
+
+int __boxchar_p( __BWORD__ v ) {
+    return ((v != __FALSE__) && (v & __BOX_MASK__) == __CHAR_TYPE__);
+}
+
+int __boxpair_p( __BWORD__ v ) {
+    return ((v & __BOX_MASK__) == __PAIR_TYPE__);
+}
+
+int __boxvector_p( __BWORD__ v ) {
+    return (__boxptd_p(v) && (*((__WORD__*)__unboxptd(v)) & __SUB_MASK__ == __VEC_TYPE__));
+}
+
+int __boxstring_p( __BWORD__ v ) {
+    return 0; /* not yet */
+    /* return (__boxptd_p(v) && (*((void*)__unboxptd(v)) & __SUB_MASK__ == __STR_TYPE__)); */
+}
+
+
+#endif
