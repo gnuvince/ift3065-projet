@@ -2,6 +2,8 @@
 #define PRIMITIVES_H
 
 #include "sins_types.h"
+#include "sins_const.h"
+#include "primitives_utils.h"
 #include "box.h"
 
 typedef struct {
