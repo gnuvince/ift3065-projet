@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include "primitives.h"
 #include "sins_types.h"
 #include "sins_const.h"
 #include "primitives_utils.h"
 #include "box.h"
-#include "primitives.h"
 
 
 void allocByteField( __bytefield__ *f, size_t num, size_t size ) {

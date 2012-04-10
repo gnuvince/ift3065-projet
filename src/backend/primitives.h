@@ -1,27 +1,11 @@
 #ifndef PRIMITIVES_H
 #define PRIMITIVES_H
 
+#include <stddef.h>
 #include "sins_types.h"
 #include "sins_const.h"
 #include "primitives_utils.h"
 #include "box.h"
-
-typedef struct {
-    __WORD__ size;
-} __vector__;
-
-typedef struct {
-    __BWORD__ car;
-    __BWORD__ cdr;
-} __pair__;
-
-#define __PAIRSIZE__ sizeof(__pair__)
-
-typedef struct {
-    void *field;
-    __WORD__ fieldsize;
-    __WORD__ next;
-} __bytefield__;
 
 void allocByteField( __bytefield__ *f, size_t num, size_t size );
 

@@ -13,4 +13,21 @@ typedef word_t __WORD__;
 typedef bword_t __BWORD__;
 #define __BWORDSIZE__ sizeof(__BWORD__)
 
+typedef struct {
+    __WORD__ size;
+} __vector__;
+
+typedef struct {
+    __BWORD__ car;
+    __BWORD__ cdr;
+} __pair__;
+
+#define __PAIRSIZE__ sizeof(__pair__)
+
+typedef struct {
+    void *field;
+    __WORD__ fieldsize;
+    __WORD__ next;
+} __bytefield__;
+
 #endif

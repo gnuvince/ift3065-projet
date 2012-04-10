@@ -43,7 +43,6 @@ int main(void)
         print_bword(__vector_ref(v, 0));
     }
 
-    /* printf("__CHR_HMASK__: %d\n", (__CHR_HMASK__ == 0xFFFFFFFF00000000)); */
     
     free(f.field);
     return 0;

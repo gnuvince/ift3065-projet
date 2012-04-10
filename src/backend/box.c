@@ -2,6 +2,7 @@
 #include "sins_types.h"
 #include "sins_const.h"
 #include "primitives.h"
+#include "primitives_utils.h"
 
 /*            */
 /* Boxing fns */
