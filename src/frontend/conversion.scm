@@ -123,14 +123,16 @@
     ((if . ,rest)
      (error "improper if"))
 
-    ((begin ,E1)
-     (expand E1))
-    ((begin ,E1 . ,Es)
-     (expand
-      (let ((v (gensym)))
-        `(let ((,v ,E1)) (begin ,@Es)))))
-    ((begin . ,Es)
-     (error "improper begin"))
+    ;; ((begin ,E1)
+    ;;  (expand E1))
+    ;; ((begin ,E1 . ,Es)
+    ;;  (expand
+    ;;   (let ((v (gensym)))
+    ;;     `(let ((,v ,E1)) (begin ,@Es)))))
+    ;; ((begin . ,Es)
+    ;;  (error "improper begin"))
+
+    ((begin ,E1 . ,Es) `(begin ,@(map expand (cons E1 Es))))
 
     ((lambda ,params . ,Es)
      `(lambda ,params ,(expand `(begin ,@Es))))
@@ -592,3 +594,12 @@
       ((,f) (f datum))
       ((,f ,g . ,rest) (f (loop (cons g rest))))))
   (loop (reverse fns)))
+
+
+(define (conv expr)
+  (-> expr
+      expand
+      alpha-conv
+      assign-conv
+      closure-conv
+      ))
