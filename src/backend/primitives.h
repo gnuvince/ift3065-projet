@@ -31,5 +31,7 @@ __BWORD__ __box( __WORD__ v, __WORD__ type );
 
 __WORD__ __unbox( __BWORD__ v );
 
-#endif
 
+__BWORD__ __add(__BWORD__ a, __BWORD__ b);
+
+#endif

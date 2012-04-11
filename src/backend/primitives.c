@@ -23,7 +23,7 @@ void* allocBlock( __bytefield__ *f, __WORD__ size ) {
     }
     else {
         b = (void*)(f->field + f->next);
-        
+
         f->next = f->next + size;
         misalign = (f->next % __WORDSIZE__);
         if (misalign != 0)
@@ -51,9 +51,9 @@ void __setcdr( __pair__ *p, __BWORD__ newcdr ) {
 
 __pair__*  __cons( __bytefield__ *f, __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
-    
+
     newpair = (__pair__*)allocBlock(f, __PAIRSIZE__);
-    
+
     if (newpair == NULL)
         return newpair;
     else {
@@ -80,12 +80,12 @@ __BWORD__ __vector_ref( __vector__* v, __WORD__ ref) {
         printf("Invalid vector");
         exit(-1);
     }
-        
+
     if (ref >= 0 && ref < v->size)
         return (__BWORD__)*(((__BWORD__*)v) + ref + 1);
     else {
         printf("Error: Invalid vector index: %llu\n", (bword_t)ref);
-        exit(-1);        
+        exit(-1);
     }
 }
 
@@ -105,3 +105,6 @@ void __vector_set( __vector__* v, __WORD__ ref, __BWORD__ val) {
 }
 
 
+__BWORD__ __add(__BWORD__ a, __BWORD__ b) {
+    return a+b;
+}
