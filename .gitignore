@@ -3,5 +3,5 @@
 *.dvi
 /doc/rapport.pdf
 /scrap
-/scratch/eric
+/scratch
 .DS_Store
