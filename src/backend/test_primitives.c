@@ -8,17 +8,17 @@
 
 int main(void)
 {
-    __bytefield__ f;
+    /* __bytefield__ f; */
     __pair__ *p1, *p2, *p3;
 
     
-    allocByteField(&f, 1024, __PAIRSIZE__);
+    allocByteField(1024, __PAIRSIZE__);
     if (f.field == NULL)
         return -1;
 
-    p1 = __cons(&f, __boxint(3), __boxint(4));
-    p2 = __cons(&f, __boxint(5), __boxint(6));
-    p3 = __cons(&f, __boxint(7), __boxint(8));
+    p1 = __cons(__boxint(3), __boxint(4));
+    p2 = __cons(__boxint(5), __boxint(6));
+    p3 = __cons(__boxint(7), __boxint(8));
 
     if (p1 == NULL || p2 == NULL || p3 == NULL) {
         printf("Out of memory\n");
@@ -34,16 +34,16 @@ int main(void)
     __BWORD__ b = __getcdr(p1);
     printf("a: %llu, b: %llu\n", (bword_t)a, (bword_t)b);
 
-    __vector__ *v = __vector(&f, 10);
+    __vector__ *v = __vector(10);
     if (v == NULL)
         return -1;
     else {
         print_vector(v);
-        __vector_set(v, 0, 42);
+        __vectorSet(v, 0, 42);
         print_bword(__vector_ref(v, 0));
     }
 
     
-    free(f.field);
+    freeByteField();
     return 0;
 }
