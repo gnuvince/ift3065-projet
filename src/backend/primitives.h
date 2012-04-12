@@ -35,5 +35,15 @@ __BWORD__ __box( __WORD__ v, __WORD__ type );
 
 __WORD__ __unbox( __BWORD__ v );
 
+__BWORD__ __add( __BWORD__ a, __BWORD__ b );
+
+__BWORD__ __sub( __BWORD__ a, __BWORD__ b );
+
+__BWORD__ __mul( __BWORD__ a, __BWORD__ b );
+
+__BWORD__ __quotient( __BWORD__ a, __BWORD__ b );
+
+__BWORD__ __remainder( __BWORD__ a, __BWORD__ b );
+
 #endif
 

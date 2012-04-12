@@ -106,3 +106,23 @@ void __vectorSet( __vector__* v, __WORD__ ref, __BWORD__ val) {
         exit(-1);
     }
 }
+
+__BWORD__ __add( __BWORD__ a, __BWORD__ b ) {
+    return a + b;
+}
+
+__BWORD__ __sub( __BWORD__ a, __BWORD__ b ) {
+    return a - b;
+}
+
+__BWORD__ __mul( __BWORD__ a, __BWORD__ b ) {
+    return a * b;
+}
+
+__BWORD__ __quotient( __BWORD__ a, __BWORD__ b ) {
+    return a / b;
+}
+
+__BWORD__ __remainder( __BWORD__ a, __BWORD__ b ) {
+    return a % b;
+}
