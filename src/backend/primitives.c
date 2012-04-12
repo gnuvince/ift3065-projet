@@ -7,65 +7,68 @@
 #include "primitives_utils.h"
 #include "box.h"
 
-
-void allocByteField( __bytefield__ *f, size_t num, size_t size ) {
-    f->field = (void*)calloc(num, size);
-    f->fieldsize = num*size;
-    f->next = 0;
+void allocByteField( size_t num, size_t size ) {
+    f.field = (void*)calloc(num, size);
+    f.fieldsize = num*size;
+    f.next = 0;
 }
 
-void* allocBlock( __bytefield__ *f, __WORD__ size ) {
+void freeByteField( ) {
+    free(f.field);
+}
+
+void* allocBlock( __WORD__ size ) {
     void *b;
     __WORD__ misalign;
 
-    if ((f->next + size) > f->fieldsize) {
+    if ((f.next + size) > f.fieldsize) {
         return NULL;
     }
     else {
-        b = (void*)(f->field + f->next);
+        b = (void*)(f.field + f.next);
         
-        f->next = f->next + size;
-        misalign = (f->next % __WORDSIZE__);
+        f.next = f.next + size;
+        misalign = (f.next % __WORDSIZE__);
         if (misalign != 0)
-            f->next = f->next + (__WORDSIZE__ - misalign);
+            f.next = f.next + (__WORDSIZE__ - misalign);
 
         return b;
     }
 }
 
-__BWORD__ __getcar( __pair__ *p ) {
+__BWORD__ __getCar( __pair__ *p ) {
     return p->car;
 }
 
-__BWORD__ __getcdr( __pair__ *p ) {
+__BWORD__ __getCdr( __pair__ *p ) {
     return p->cdr;
 }
 
-void __setcar( __pair__ *p, __BWORD__ newcar ) {
+void __setCar( __pair__ *p, __BWORD__ newcar ) {
     p->car = newcar;
 }
 
-void __setcdr( __pair__ *p, __BWORD__ newcdr ) {
+void __setCdr( __pair__ *p, __BWORD__ newcdr ) {
     p->cdr = newcdr;
 }
 
-__pair__*  __cons( __bytefield__ *f, __BWORD__ car, __BWORD__ cdr ) {
+__pair__*  __cons( __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     
-    newpair = (__pair__*)allocBlock(f, __PAIRSIZE__);
+    newpair = (__pair__*)allocBlock(__PAIRSIZE__);
     
     if (newpair == NULL)
         return newpair;
     else {
-        __setcar(newpair, car);
-        __setcdr(newpair, cdr);
+        __setCar(newpair, car);
+        __setCdr(newpair, cdr);
         return newpair;
     }
 }
 
-__vector__* __vector( __bytefield__ *f, __WORD__ size) {
+__vector__* __vector( __WORD__ size) {
     __vector__ *newvector = NULL;
-    newvector = (__vector__*)allocBlock(f, __WORDSIZE__*(size + 1));
+    newvector = (__vector__*)allocBlock(__WORDSIZE__*(size + 1));
 
     if (newvector == NULL)
         return NULL;
@@ -75,7 +78,7 @@ __vector__* __vector( __bytefield__ *f, __WORD__ size) {
     }
 }
 
-__BWORD__ __vector_ref( __vector__* v, __WORD__ ref) {
+__BWORD__ __vectorRef( __vector__* v, __WORD__ ref) {
     if (v == NULL) {
         printf("Invalid vector");
         exit(-1);
@@ -89,7 +92,7 @@ __BWORD__ __vector_ref( __vector__* v, __WORD__ ref) {
     }
 }
 
-void __vector_set( __vector__* v, __WORD__ ref, __BWORD__ val) {
+void __vectorSet( __vector__* v, __WORD__ ref, __BWORD__ val) {
     __BWORD__ *pos;
     if (v == NULL) {
         printf("Invalid vector");
@@ -103,5 +106,3 @@ void __vector_set( __vector__* v, __WORD__ ref, __BWORD__ val) {
         exit(-1);
     }
 }
-
-

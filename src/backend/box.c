@@ -53,7 +53,7 @@ __WORD__ __unboxptd( __BWORD__ v ) {
     return ((v - __PTD_TYPE__) >> __PTD_SHFT__);
 }
 
-char  __unboxpair( __BWORD__ v ) {
+__WORD__  __unboxpair( __BWORD__ v ) {
     return ((v - __PAIR_TYPE__) >> __PAIR_SHFT__);
 }
 

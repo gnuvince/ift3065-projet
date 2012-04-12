@@ -7,25 +7,29 @@
 #include "primitives_utils.h"
 #include "box.h"
 
-void allocByteField( __bytefield__ *f, size_t num, size_t size );
+__bytefield__ f;
 
-void* allocBlock( __bytefield__ *f, __WORD__ size );
+void allocByteField( size_t num, size_t size );
 
-__BWORD__ __getcar( __pair__ *p );
+void freeByteField();
 
-__BWORD__ __getcdr( __pair__ *p );
+void* allocBlock( __WORD__ size );
 
-void __setcar( __pair__ *p, __BWORD__ newcar );
+__BWORD__ __getCar( __pair__ *p );
 
-void __setcdr( __pair__ *p, __BWORD__ newcdr );
+__BWORD__ __getCdr( __pair__ *p );
 
-__pair__* __cons( __bytefield__ *f, __BWORD__ car, __BWORD__ cdr );
+void __setCar( __pair__ *p, __BWORD__ newcar );
 
-__vector__* __vector( __bytefield__ *f, __WORD__ size);
+void __setCdr( __pair__ *p, __BWORD__ newcdr );
 
-__BWORD__ __vector_ref( __vector__* v, __WORD__ ref);
+__pair__* __cons( __BWORD__ car, __BWORD__ cdr );
 
-void __vector_set( __vector__* v, __WORD__ ref, __BWORD__ val);
+__vector__* __vector( __WORD__ size);
+
+__BWORD__ __vectorRef( __vector__* v, __WORD__ ref);
+
+void __vectorSet( __vector__* v, __WORD__ ref, __BWORD__ val);
 
 __BWORD__ __box( __WORD__ v, __WORD__ type );
 

@@ -13,7 +13,7 @@ __BWORD__ __boxptd( __WORD__ v );
 
 __BWORD__ __boxpair( __WORD__ v );
 
-__BWORD__ __boxlambda( char v );
+__BWORD__ __boxlambda( __WORD__ v );
 
 /*              */
 /* Unboxing fns */
