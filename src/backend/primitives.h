@@ -45,5 +45,19 @@ __BWORD__ __quotient( __BWORD__ a, __BWORD__ b );
 
 __BWORD__ __remainder( __BWORD__ a, __BWORD__ b );
 
+int __number_p( __BWORD__ n );
+
+int __pair_p( __BWORD__ p );
+
+int __lt( __BWORD__ a, __BWORD__ b );
+
+int __gt( __BWORD__ a, __BWORD__ b );
+
+int __ge( __BWORD__ a, __BWORD__ b );
+
+int __le( __BWORD__ a, __BWORD__ b );
+
+int __eq( __BWORD__ a, __BWORD__ b );
+
 #endif
 

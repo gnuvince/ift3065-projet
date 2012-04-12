@@ -116,13 +116,42 @@ __BWORD__ __sub( __BWORD__ a, __BWORD__ b ) {
 }
 
 __BWORD__ __mul( __BWORD__ a, __BWORD__ b ) {
-    return a * b;
+    return __box(__unbox(a) * __unbox(b));
 }
 
 __BWORD__ __quotient( __BWORD__ a, __BWORD__ b ) {
-    return a / b;
+    return __box(__unbox(a) / __unbox(b));
 }
 
 __BWORD__ __remainder( __BWORD__ a, __BWORD__ b ) {
-    return a % b;
+    return __box(__unbox(a) % __unbox(b));
 }
+
+int __number_p( __BWORD__ n ) {
+    return __boxint_p(n);
+}
+
+int __pair_p( __BWORD__ p ) {
+    return __boxpair_p(p);
+}
+
+int __lt( __BWORD__ a, __BWORD__ b ) {
+    return a < b;
+}
+
+int __gt( __BWORD__ a, __BWORD__ b ) {
+    return a > b;
+}
+
+int __ge( __BWORD__ a, __BWORD__ b ) {
+    return a >= b;
+}
+
+int __le( __BWORD__ a, __BWORD__ b ) {
+    return a <= b;
+}
+
+int __eq( __BWORD__ a, __BWORD__ b ) {
+    return a == b;
+}
+

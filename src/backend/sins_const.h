@@ -3,7 +3,8 @@
 
 #include "sins_types.h"
 
-#define __FALSE__ ~(__WORD__)0 - 13
+#define __FALSE__ 0
+#define __TRUE__  1
 
 /****************************************************/
 /*                                                  */
