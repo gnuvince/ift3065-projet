@@ -149,6 +149,12 @@ int __le( __BWORD__ a, __BWORD__ b ) {
     return a <= b;
 }
 
+int __equal( __BWORD__ a, __BWORD__ b ) {
+    int res = 0;
+
+    return res;
+}
+
 int __eq( __BWORD__ a, __BWORD__ b ) {
     return a == b;
 }

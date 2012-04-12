@@ -15,6 +15,10 @@ __BWORD__ __boxpair( __WORD__ v );
 
 __BWORD__ __boxlambda( __WORD__ v );
 
+__WORD__ __boxtype( __BWORD__ v );
+
+__WORD__ __boxsubtype( __BWORD__ v );
+
 /*              */
 /* Unboxing fns */
 /*              */

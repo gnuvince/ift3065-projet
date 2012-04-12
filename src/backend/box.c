@@ -42,6 +42,22 @@ __BWORD__ __boxlambda( __WORD__ v ) {
     return __box(v, __LAMBDA_TYPE__);
 }
 
+__WORD__ __boxtype( __BWORD__ v ) {
+    __WORD__ boxtype = v & __BOX_MASK__;
+    switch(boxtype) {
+    case __INT_TYPE__:
+    case __PAIR_TYPE__:
+    case __LAMBDA_TYPE__:
+        return boxtype;
+    case __PTD_TYPE__:
+        return __boxsubtype(v);
+    }
+}
+
+__WORD__ __boxsubtype( __BWORD__ v ) {
+    return (*(__unboxptd(v)) & __SUB_MASK__); 
+}
+
 /*              */
 /* Unboxing fns */
 /*              */
