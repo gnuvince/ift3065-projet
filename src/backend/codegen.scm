@@ -6,18 +6,20 @@
 ;(include "runtime.scm")
 
 
+(define delayed-functions '())
+
 (define primitive-funcs '(;symbol         # args primitive name
-                          (%*                  2 "PRIM_MUL")
+                          (%*                  2 "__mul")
                           (%*-aux              2 "PRIM_MUL_AUX")
-                          (%+                  2 "PRIM_ADD")
+                          (%+                  2 "__add")
                           (%+-aux              2 "PRIM_ADD_AUX")
-                          (%-                  2 "PRIM_SUB")
+                          (%-                  2 "__sub")
                           (%--aux              2 "PRIM_SUB_AUX")
-                          (%<                  2 "PRIM_LT")
-                          (%<=                 2 "PRIM_LE")
-                          (%=                  2 "PRIM_EQ")
-                          (%>                  2 "PRIM_GT")
-                          (%>=                 2 "PRIM_GE")
+                          (%<                  2 "__lt")
+                          (%<=                 2 "__le")
+                          (%=                  2 "__equal")
+                          (%>                  2 "__gt")
+                          (%>=                 2 "__ge")
                           (%car                1 "PRIM_CAR")
                           (%cdr                1 "PRIM_CDR")
                           (%cons               2 "PRIM_CONS")
@@ -53,6 +55,61 @@
         `(,sym global ,(string-append "glob_" (symbol->string sym))))))
 
 
+(define (compile expr)
+  (let ((asm-code (compile-expr expr '()))
+        (delayed-asm (compile-delayed-lambdas)))
+    (list asm-code
+          delayed-asm)))
+
+
+(define (compile-delayed-lambdas)
+  (let loop ((acc '()))
+    (match delayed-functions
+      (() acc)
+      (((,sym ,fn ,env) . ,rest)
+       (begin
+         (set! delayed-functions rest)
+         (loop (cons (compile-lambda sym fn env) acc)))))))
+
+
+(define (compile-expr expr env)
+  (match expr
+    (,n when (number? n) (gen-number n))
+    (,s when (symbol? s) (gen-variable-access s env))
+    ((let ,args ,body) (compile-let expr env))
+    ((lambda ,args ,body) (delay-lambda expr env))
+    ((,f . ,args)
+     (let ((primitive (assq f primitive-funcs)))
+       (if primitive
+           (gen-prim-call primitive args env)
+           (gen-fun-call f args env))))
+    (,_ (error "unknown expression"))))
+
+(define (update-env env args)
+  (let loop ((new-env env) (args args) (fs -1))
+    (if (null? args)
+        new-env
+        (loop (cons (list (car args) 'local fs) new-env)
+              (cdr args)
+              (- fs 1)))))
+
+(define (compile-lambda sym fn env)
+  (match fn
+    ((lambda ,args ,body)
+     (list "\n" sym ":\n"
+           (compile-expr body (update-env env args))
+           "ret\n\n"))))
+
+(define (delay-lambda expr env)
+  (match expr
+    ((lambda ,args ,body)
+     (let ((g (gensym)))
+       (set! delayed-functions
+             (append delayed-functions (list (list g expr env))))
+       (list
+        "movl " g ", %eax  # lambda pointer\n")))))
+
+
 (define (compile-let expr env)
   (match expr
     ((let ,bindings ,body)
@@ -71,23 +128,24 @@
                           "pushl %eax\n"))
                   bindings)
              (compile-expr body new-env)
-             "addl $" (* 4 (length bindings)) ", %esp\n")))))
+             "addl $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
 
 
-(define (compile-expr expr env)
-  (match expr
-    (,n when (number? n) (gen-number n))
-    (,s when (symbol? s) (gen-variable-access s env))
-    ((,f . ,args)
-     (let ((primitive (assq f primitive-funcs)))
-       (if primitive
-           (gen-prim-call primitive args env)
-           (gen-fun-call f args env))))
-    (,_ (error "unknown expression"))))
+
 
 
 (define (gen-number n)
-  (list "movl $" n ", %eax\n"))
+  (list
+   "movl __INT_TYPE__, %eax\n"
+   "pushl %eax\n"
+   "movl $" n ", %eax\n"
+   "pushl %eax\n"
+   "call __box\n"
+   "addl $8, %esp\n"
+   ))
+;; (list
+;;  "movl $" n ", %eax\n"
+;;  "mul  $4, %eax\n"))
 
 
 (define (gen-variable-access var env)
@@ -104,7 +162,7 @@
                 "pushl %eax\n")) args)
    (gen-variable-access f env)
    "call %eax\n"
-   "addl $" (* 4 (length args)) ", %esp\n"))
+   "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
 
 
 
@@ -117,4 +175,4 @@
              (list (compile-expr a env)
                    "pushl %eax\n")) args)
       "call " label "\n"
-      "addl $" (* 4 nb-args) ", $esp\n"))))
+      "addl $" (* 4 nb-args) ", %esp # cleaning up primitive\n"))))
