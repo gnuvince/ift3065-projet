@@ -107,6 +107,10 @@ void __vectorSet( __vector__* v, __WORD__ ref, __BWORD__ val) {
     }
 }
 
+__WORD__ __vectorLength( __BWORD__ v ) {
+    return (*(__unboxptd(v)) >> __VEC_LEN_SHFT__);
+}
+
 __BWORD__ __add( __BWORD__ a, __BWORD__ b ) {
     return a + b;
 }
@@ -151,10 +155,25 @@ int __le( __BWORD__ a, __BWORD__ b ) {
     return a <= b;
 }
 
-int __equal( __BWORD__ a, __BWORD__ b ) {
-    int res = 0;
+int __equalPtd( __BWORD__ a, __BWORD__ b ) {
+    switch(__boxsubtype(a)) {
+    case __VEC_TYPE__:
+        break;
+    case __STR_TYPE__:
+        return 0;
+    default:
+        return 0;
+    }
+}
 
-    return res;
+int __equal( __BWORD__ a, __BWORD__ b ) {
+    if(__boxtype(a) != __boxtype(b))
+        return 0;
+
+    if(__boxtype(a) == __PTD_TYPE__)
+        return __equalPtd(a, b);
+    else
+        return a == b;
 }
 
 int __eq( __BWORD__ a, __BWORD__ b ) {
