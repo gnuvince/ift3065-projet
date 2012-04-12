@@ -31,10 +31,6 @@ __BWORD__ __vectorRef( __vector__* v, __WORD__ ref);
 
 void __vectorSet( __vector__* v, __WORD__ ref, __BWORD__ val);
 
-__BWORD__ __box( __WORD__ v, __WORD__ type );
-
-__WORD__ __unbox( __BWORD__ v );
-
 __BWORD__ __add( __BWORD__ a, __BWORD__ b );
 
 __BWORD__ __sub( __BWORD__ a, __BWORD__ b );
@@ -56,6 +52,8 @@ int __gt( __BWORD__ a, __BWORD__ b );
 int __ge( __BWORD__ a, __BWORD__ b );
 
 int __le( __BWORD__ a, __BWORD__ b );
+
+int __equal( __BWORD__ a, __BWORD__ b );
 
 int __eq( __BWORD__ a, __BWORD__ b );
 
