@@ -9,7 +9,7 @@
 
 (define (comp-expr expr fs cte) ;; fs = frame size
                                 ;; cte = compile time environment
-
+  (pp cte)
   (cond ((number? expr)
          (gen-literal expr))
 

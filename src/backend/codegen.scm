@@ -48,15 +48,9 @@
          `("glob_" ,var ": .long 0\n"))
        (fv expr)))
 
-(define (lookup sym env)
-  (let ((x (assq sym env)))
-    (if x
-        x
-        `(,sym global ,(string-append "glob_" (symbol->string sym))))))
-
 
 (define (compile expr)
-  (let ((asm-code (compile-expr expr '()))
+  (let ((asm-code (compile-expr expr (make-env)))
         (delayed-asm (compile-delayed-lambdas)))
     (list asm-code
           delayed-asm)))
@@ -85,19 +79,12 @@
            (gen-fun-call f args env))))
     (,_ (error "unknown expression"))))
 
-(define (update-env env args)
-  (let loop ((new-env env) (args args) (fs -1))
-    (if (null? args)
-        new-env
-        (loop (cons (list (car args) 'local fs) new-env)
-              (cdr args)
-              (- fs 1)))))
 
 (define (compile-lambda sym fn env)
   (match fn
     ((lambda ,args ,body)
      (list "\n" sym ":\n"
-           (compile-expr body (update-env env args))
+           (compile-expr body (env-update env args))
            "ret\n\n"))))
 
 (define (delay-lambda expr env)
@@ -107,49 +94,44 @@
        (set! delayed-functions
              (append delayed-functions (list (list g expr env))))
        (list
-        "movl " g ", %eax  # lambda pointer\n")))))
+        "lea " g ", %eax  # lambda pointer\n")))))
 
 
 (define (compile-let expr env)
   (match expr
     ((let ,bindings ,body)
-     ;; Update the environment.
-     (let ((new-env (let loop ((fs 0) (bindings (reverse bindings)) (new-env '()))
-                      (if (null? bindings)
-                          new-env
-                          (loop (- fs 1)
-                                (cdr bindings)
-                                (cons (list (caar bindings)
-                                            'local
-                                            fs)
-                                      new-env))))))
-       (list (map (lambda (b)
-                    (list (compile-expr (cadr b) env)
-                          "pushl %eax\n"))
-                  bindings)
-             (compile-expr body new-env)
-             "addl $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
-
+     (let ((new-env (env-update env (map car bindings))))
+       (list
+        "                            # begin let\n"
+        (map (lambda (b)
+               (list (compile-expr (cadr b) env) ; Use the old env
+                     "pushl %eax\n"))
+             bindings)
+        (compile-expr body new-env)
+        "add $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
 
 
 
 
 (define (gen-number n)
-  (list
-   "movl __INT_TYPE__, %eax\n"
-   "pushl %eax\n"
-   "movl $" n ", %eax\n"
-   "pushl %eax\n"
-   "call __box\n"
-   "addl $8, %esp\n"
-   ))
+  (list "movl $" n ", %eax\n"))
+;; Boxed version
+  ;; (list
+  ;;  "movl __INT_TYPE__, %eax  # begin_number\n"
+  ;;  "pushl %eax\n"
+  ;;  "movl $" n ", %eax\n"
+  ;;  "pushl %eax\n"
+  ;;  "call __box\n"
+  ;;  "addl $8, %esp            # end_numer\n"
+  ;;  ))
+;; More efficient version if we don't use the __box primitive.
 ;; (list
 ;;  "movl $" n ", %eax\n"
 ;;  "mul  $4, %eax\n"))
 
 
 (define (gen-variable-access var env)
-  (match (lookup var env)
+  (match (env-lookup env var)
     ((,varname local ,offset) (list "movl " (* offset 4) "(%esp), %eax\n"))
     ((,varname global ,label) (list "movl " label ", %eax\n"))))
 
@@ -161,7 +143,7 @@
           (list (compile-expr a env)
                 "pushl %eax\n")) args)
    (gen-variable-access f env)
-   "call %eax\n"
+   "call *%eax\n"
    "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
 
 
