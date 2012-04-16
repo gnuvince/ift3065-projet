@@ -34,6 +34,7 @@
 #define __LAMBDA_SHFT__   0
 
 #define __VEC_TYPE__      255
+#define __VEC_LEN_SHFT__  8
 #define __STR_TYPE__      0
 
 
