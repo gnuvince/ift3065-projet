@@ -8,6 +8,8 @@
 
 (define delayed-functions '())
 
+(define *false* 12345678)
+
 (define primitive-funcs '(;symbol         # args primitive name
                           (%*                  2 "__mul")
                           (%*-aux              2 "PRIM_MUL_AUX")
@@ -70,8 +72,10 @@
   (match expr
     (,n when (number? n) (gen-number n))
     (,s when (symbol? s) (gen-variable-access s env))
+    (#f (gen-number *false*))
     ((let ,args ,body) (compile-let expr env))
     ((lambda ,args ,body) (delay-lambda expr env))
+    ((if ,condition ,then ,else) (compile-if expr env))
     ((,f . ,args)
      (let ((primitive (assq f primitive-funcs)))
        (if primitive
@@ -110,6 +114,25 @@
         (compile-expr body new-env)
         "add $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
 
+
+(define (compile-if expr env)
+  (match expr
+    ((if ,condition ,then ,else)
+     (let ((cond-comp (compile-expr condition env))
+           (then-comp (compile-expr then env))
+           (else-comp (compile-expr else env))
+           (else-label (gensym))
+           (endif-label (gensym)))
+       (list
+        cond-comp
+        "cmp   $" *false* ", %eax\n"
+        "je    " else-label "\n"
+        then-comp
+        "jmp   " endif-label "\n"
+        else-label ":\n"
+        else-comp
+        endif-label ":\n"
+        )))))
 
 
 
