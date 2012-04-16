@@ -98,7 +98,7 @@
        (set! delayed-functions
              (append delayed-functions (list (list g expr env))))
        (list
-        "lea " g ", %eax  # lambda pointer\n")))))
+        "movl $" g ", %eax  # lambda pointer\n")))))
 
 
 (define (compile-let expr env)
