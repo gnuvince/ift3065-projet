@@ -1,8 +1,10 @@
 (include "../utils/utilities.scm")
 
+(define word-size 4)
+
 ;; Create a new environment with a frame size of 0.
 (define (make-env)
-  (list 0))
+  (list 0 '()))
 
 ;; Return the frame size of an environment.
 (define (env-fs env)
@@ -10,15 +12,19 @@
 
 ;; Return the list of symbols of an environment.
 (define (env-symbols env)
-  (cdr env))
+  (cadr env))
+
+(define (env-fs++ env)
+  (list (+ (env-fs env) word-size)
+        (env-symbols env)))
 
 
 ;; Add a local symbol tuple to the environment:
 ;; (<symbol> local <offset>)
 ;; Decrease the frame size.
 (define (env-add-local-symbol env s)
-  (cons (+ (env-fs env) 1)
-        (cons (list s 'local (+ (env-fs env) 1))
+  (list (+ (env-fs env) word-size)
+        (cons (list s 'local (env-fs env))
               (env-symbols env))))
 
 

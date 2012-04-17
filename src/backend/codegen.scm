@@ -112,7 +112,7 @@
                      "pushl %eax\n"))
              bindings)
         (compile-expr body new-env)
-        "add $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
+        "addl $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
 
 
 (define (compile-if expr env)
@@ -155,16 +155,19 @@
 
 (define (gen-variable-access var env)
   (match (env-lookup env var)
-    ((,varname local ,offset) (list "movl " (* offset 4) "(%esp), %eax\n"))
+    ((,varname local ,offset) (list "movl " (- (env-fs env) offset word-size) "(%esp), %eax\n"))
     ((,varname global ,label) (list "movl " label ", %eax\n"))))
 
 
 
 (define (gen-fun-call f args env)
   (list
-   (map (lambda (a)
-          (list (compile-expr a env)
-                "pushl %eax\n")) args)
+   (let loop ((env env) (args args))
+     (if (null? args)
+         '()
+         (cons (list (compile-expr (car args) env)
+                     "pushl %eax\n")
+               (loop (env-fs++ env) (cdr args)))))
    (gen-variable-access f env)
    "call *%eax\n"
    "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
@@ -179,5 +182,5 @@
       (map (lambda (a)
              (list (compile-expr a env)
                    "pushl %eax\n")) args)
-      "call " label "\n"
+      "call $" label "\n"
       "addl $" (* 4 nb-args) ", %esp # cleaning up primitive\n"))))
