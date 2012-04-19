@@ -6,6 +6,9 @@ TESTS = [
     # filename    expected return value
     ("test1.scm", 3),
     ("test2.scm", 3),
+    ("test_if_then.scm", 4),
+    ("test_if_else.scm", 3),
+    ("test_if_1.scm", 4),
 ]
 
 def main():
