@@ -30,6 +30,8 @@ __WORD__ __unboxpair( __BWORD__ v );
 
 __WORD__ __unboxlambda( __BWORD__ v );
 
+char __unboxchar( __BWORD__ ch );
+
 /*                        */
 /* Boxed types predicates */
 /*                        */
@@ -45,5 +47,6 @@ int __boxvector_p( __BWORD__ v );
 
 int __boxstring_p( __BWORD__ v );
 
+int __boxchar_p( __BWORD__ v );
 
 #endif

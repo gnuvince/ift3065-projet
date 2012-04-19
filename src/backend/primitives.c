@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <string.h>
 #include "primitives.h"
 #include "sins_types.h"
 #include "sins_const.h"
@@ -9,6 +10,10 @@
 
 void allocByteField( size_t num, size_t size ) {
     f.field = (void*)calloc(num, size);
+    if (f.field == NULL) {
+        printf("Out of memory\n");
+        exit(1);
+    }
     f.fieldsize = num*size;
     f.next = 0;
 }
@@ -36,147 +41,413 @@ void* allocBlock( __WORD__ size ) {
     }
 }
 
-__BWORD__ __getCar( __pair__ *p ) {
-    return p->car;
+__BWORD__ __getCar( __BWORD__ p ) {
+    if (__pair_p(p) != __TRUE__) {
+        printf("PAIR expected\n");
+        exit(1);
+    }
+
+    return ((__pair__*)__unboxpair(p))->car;
 }
 
-__BWORD__ __getCdr( __pair__ *p ) {
-    return p->cdr;
+__BWORD__ __getCdr( __BWORD__ p ) {
+    if (__pair_p(p) != __TRUE__) {
+        printf("PAIR expected\n");
+        exit(1);
+    }
+
+    return ((__pair__*)__unboxpair(p))->cdr;
 }
 
-void __setCar( __pair__ *p, __BWORD__ newcar ) {
-    p->car = newcar;
+void __setCar( __BWORD__ p, __BWORD__ newcar ) {
+    if (__pair_p(p) != __TRUE__) {
+        printf("PAIR expected\n");
+        exit(1);
+    }
+
+    ((__pair__*)__unboxpair(p))->car = newcar;
 }
 
-void __setCdr( __pair__ *p, __BWORD__ newcdr ) {
-    p->cdr = newcdr;
+void __setCdr( __BWORD__ p, __BWORD__ newcdr ) {
+    if (__pair_p(p) != __TRUE__) {
+        printf("PAIR expected\n");
+        exit(1);
+    }
+
+    ((__pair__*)__unboxpair(p))->cdr = newcdr;
 }
 
-__pair__*  __cons( __BWORD__ car, __BWORD__ cdr ) {
+__BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
+    __BWORD__ bpair;
     
     newpair = (__pair__*)allocBlock(__PAIRSIZE__);
     
-    if (newpair == NULL)
-        return newpair;
+    if (newpair == NULL) {
+        printf("Out of memory\n");
+        exit(1);
+    }
     else {
-        __setCar(newpair, car);
-        __setCdr(newpair, cdr);
-        return newpair;
+        bpair = __box((__WORD__)newpair, __PAIR_TYPE__);
+        __setCar(bpair, car);
+        __setCdr(bpair, cdr);
+        return bpair;
     }
 }
 
-__vector__* __vector( __WORD__ size) {
+__BWORD__ __vector( __WORD__ size) {
     __vector__ *newvector = NULL;
-    newvector = (__vector__*)allocBlock(__WORDSIZE__*(size + 1));
+    
+    newvector = (__vector__*)allocBlock(sizeof(__vector__) + (__WORDSIZE__ * size));
 
-    if (newvector == NULL)
-        return NULL;
+    if (newvector == NULL) {
+        printf("Out of memory\n");
+        exit(1);
+    }
     else {
-        newvector->size = size;
-        return newvector;
+        newvector->hdr = (size << __VEC_LEN_SHFT__) + __VEC_TYPE__;
+        return __box((__WORD__)newvector, __PTD_TYPE__);
     }
 }
 
-__BWORD__ __vectorRef( __vector__* v, __WORD__ ref) {
-    if (v == NULL) {
-        printf("Invalid vector");
-        exit(-1);
+__BWORD__ __vectorRef( __BWORD__ v, __WORD__ ref) {
+    if (__vector_p(v) == __FALSE__) {
+        printf("VECTOR expected\n");
+        exit(1);
     }
-        
-    if (ref >= 0 && ref < v->size)
-        return (__BWORD__)*(((__BWORD__*)v) + ref + 1);
-    else {
-        printf("Error: Invalid vector index: %llu\n", (bword_t)ref);
-        exit(-1);        
+
+    if ((ref < 0) || (ref >= __vectorLength(v))) {
+        printf("Error: Invalid vector index\n");
+        exit(1);        
     }
+    
+    return *((__BWORD__*)__unboxptd(v) + ref + 2);
 }
 
-void __vectorSet( __vector__* v, __WORD__ ref, __BWORD__ val) {
-    __BWORD__ *pos;
-    if (v == NULL) {
-        printf("Invalid vector");
-        exit(-1);
+void __vectorSet( __BWORD__ v, __WORD__ ref, __BWORD__ val) {
+    if (__vector_p(v) == __FALSE__) {
+        printf("VECTOR expected\n");
+        exit(1);
     }
 
-    if (ref >= 0 && ref < v->size)
-        *(((__BWORD__*)v) + ref + 1) = val;
-    else {
-        printf("Error: Invalid vector index: %llu\n", (bword_t)ref);
-        exit(-1);
+    if ((ref < 0) || (ref >= __unboxint(__vectorLength(v)))) {
+        printf("Error: Invalid vector index\n");
+        exit(1);        
     }
+
+    *((__BWORD__*)__unboxptd(v) + ref + 2) = val;
 }
 
-__WORD__ __vectorLength( __BWORD__ v ) {
-    return (*(__unboxptd(v)) >> __VEC_LEN_SHFT__);
+__BWORD__ __vectorLength( __BWORD__ v ) {
+    if (__vector_p(v) == __FALSE__) {
+        printf("VECTOR expected\n");
+        exit(1);
+    }
+
+    return __box(((__vector__*)__unboxptd(v))->hdr >> __VEC_LEN_SHFT__, __INT_TYPE__);
+}
+
+__BWORD__ __vectorEqual( __BWORD__ v1, __BWORD__ v2) {
+    if (__vector_p(v1) == __FALSE__) {
+        printf("VECTOR expected\n");
+        exit(1);
+    }
+
+    if (__vector_p(v2) == __FALSE__) {
+        printf("VECTOR expected\n");
+        exit(1);
+    }
+    
+    __WORD__ v1Len = __vectorLength(v1);
+    
+    if (v1Len != __vectorLength(v2))
+        return __FALSE__;
+
+    for (__WORD__ i = 0; i < v1Len; ++i) {
+        if (__vectorRef(v1, i) != __vectorRef(v2, i))
+            return __FALSE__;
+    }
+    
+    return __TRUE__;
+}
+
+__BWORD__ __vector_p( __BWORD__ v ) {
+    if (__boxvector_p(v))
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
 __BWORD__ __add( __BWORD__ a, __BWORD__ b ) {
-    return a + b;
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    return (a + b);
 }
 
 __BWORD__ __sub( __BWORD__ a, __BWORD__ b ) {
-    return a - b;
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    return (a - b);
 }
 
 __BWORD__ __mul( __BWORD__ a, __BWORD__ b ) {
-    return __box(__unbox(a) * __unbox(b));
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    return __box(__unboxint(a) * __unboxint(b), __INT_TYPE__);
 }
 
 __BWORD__ __quotient( __BWORD__ a, __BWORD__ b ) {
-    return __box(__unbox(a) / __unbox(b));
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    return __box(__unboxint(a) / __unboxint(b), __INT_TYPE__);
 }
 
 __BWORD__ __remainder( __BWORD__ a, __BWORD__ b ) {
-    return __box(__unbox(a) % __unbox(b));
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    return __box(__unboxint(a) % __unboxint(b), __INT_TYPE__);
 }
 
-int __number_p( __BWORD__ n ) {
-    return __boxint_p(n);
+__BWORD__ __number_p( __BWORD__ n ) {
+    if (__boxint_p(n))
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
-int __pair_p( __BWORD__ p ) {
-    return __boxpair_p(p);
+__BWORD__  __null_p( __BWORD__ p ) {
+    if (p == __NULL__)
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
-int __lt( __BWORD__ a, __BWORD__ b ) {
-    return a < b;
+__BWORD__ __pair_p( __BWORD__ p ) {
+    if(__boxpair_p(p) && (__null_p(p) == __FALSE__))
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
-int __gt( __BWORD__ a, __BWORD__ b ) {
-    return a > b;
+
+__BWORD__ __list_p( __BWORD__ p ) {
+    if (__null_p(p) == __TRUE__)
+        return __TRUE__;
+    
+    if(__boxpair_p(p))
+        return __list_p(__getCdr(p));
+    else
+        return __FALSE__;
 }
 
-int __ge( __BWORD__ a, __BWORD__ b ) {
-    return a >= b;
+__BWORD__ __lt( __BWORD__ a, __BWORD__ b ) {
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    if (a < b)
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
-int __le( __BWORD__ a, __BWORD__ b ) {
-    return a <= b;
+__BWORD__ __gt( __BWORD__ a, __BWORD__ b ) {
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    if (a > b)
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
-int __equalPtd( __BWORD__ a, __BWORD__ b ) {
-    switch(__boxsubtype(a)) {
+__BWORD__ __ge( __BWORD__ a, __BWORD__ b ) {
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    if (a >= b)
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+__BWORD__ __le( __BWORD__ a, __BWORD__ b ) {
+    if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
+        printf("NUMBER expected\n");
+        exit(1);
+    }
+
+    if (a <= b)
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+__BWORD__ __equalPtd( __BWORD__ b1, __BWORD__ b2 ) {
+    switch(__boxsubtype(b1)) {
     case __VEC_TYPE__:
-        break;
+        return __vectorEqual(b1, b2);
     case __STR_TYPE__:
-        return 0;
+        return __stringEqual(b1, b2);
     default:
-        return 0;
+        return __FALSE__;
     }
 }
 
-int __equal( __BWORD__ a, __BWORD__ b ) {
-    if(__boxtype(a) != __boxtype(b))
-        return 0;
+__BWORD__ __equal( __BWORD__ a, __BWORD__ b ) {
+    if (__boxtype(a) != __boxtype(b))
+        return __FALSE__;
 
-    if(__boxtype(a) == __PTD_TYPE__)
+    if (__boxtype(a) == __PTD_TYPE__)
         return __equalPtd(a, b);
     else
-        return a == b;
+        return __eq(a, b);    
 }
 
-int __eq( __BWORD__ a, __BWORD__ b ) {
-    return a == b;
+__BWORD__ __eq( __BWORD__ a, __BWORD__ b ) {
+    if (a == b)
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
+__BWORD__ __string( char *s ) {
+    __string__ *newstring = NULL;
+    __WORD__ slen = (__WORD__)strlen(s);
+
+    newstring = (__string__*)allocBlock(sizeof(__string__) + slen + 1);
+
+    if (newstring == NULL) {
+        printf("Out of memory\n");
+        exit(1);
+    }
+    else {
+        newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
+        strcpy((char*)newstring + sizeof(__string__), s);
+        return __box((__WORD__)newstring, __PTD_TYPE__);
+    }
+}
+
+__BWORD__ __string_p( __BWORD__ s ) {
+    if ((__boxtype(s) == __PTD_TYPE__) && (__boxsubtype(s) == __STR_TYPE__))
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+__BWORD__ __stringLength( __BWORD__ s ) {
+    if (__string_p(s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(1);
+    }
+
+    return __box((((__string__*)(__unboxptd(s)))->hdr) >> __STR_LEN_SHFT__, __INT_TYPE__);
+}
+
+__BWORD__ __stringRef( __BWORD__ s, __WORD__ ref) {
+    if (__string_p(s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(1);
+    }
+
+    if ((ref < 0) || (ref >= __stringLength(s))) {
+        printf("Error: Invalid vector index\n");
+        exit(1);        
+    }
+    
+    return *((char*)__unboxptd(s) + ref + sizeof(__char__));
+}
+
+__BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
+    if (__string_p(s1) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(1);
+    }
+
+    if (__string_p(s2) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(1);
+    }
+    
+    __WORD__ s1Len = __stringLength(s1);
+    
+    if (s1Len != __stringLength(s2))
+        return __FALSE__;
+
+    for (__WORD__ i = 0; i < s1Len; ++i) {
+        if (__stringRef(s1, i) != __stringRef(s2, i))
+            return __FALSE__;
+    }
+    
+    return __TRUE__;
+    
+}
+
+void __display( __BWORD__ s ) {
+    if (__string_p(s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(1);
+    }
+
+    printf((char*)__unboxptd(s) + sizeof(__string__));
+}
+
+void __newline( ) {
+    __writeChar(__char(__CH_newline__));
+}
+
+__BWORD__ __char( char ch ) {
+    __char__ *newchar = NULL;
+
+    newchar = (__char__*)allocBlock(sizeof(__char__));
+
+    if (newchar == NULL) {
+        printf("Out of memory\n");
+        exit(1);
+    }
+    else {
+        newchar->hdr = ((__WORD__)ch << __CHAR_LEN_SHFT__) + __CHAR_TYPE__;
+        return __box((__WORD__)newchar, __PTD_TYPE__);
+    }
+}
+
+__BWORD__ __char_p( __BWORD__ ch ) {
+    if ((__boxtype(ch) == __PTD_TYPE__) && (__boxsubtype(ch) == __CHAR_TYPE__))
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+ 
+void __writeChar( __BWORD__ ch ) {
+    if (__char_p(ch) == __FALSE__) {
+        printf("CHAR expected\n");
+        exit(1);
+    }
+
+    int c = (int)__unboxchar(ch);
+    if (putchar(c) != c) {
+        printf("Error writing char\n");
+        exit(1);
+    }
+}
+                                                    

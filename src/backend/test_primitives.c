@@ -8,41 +8,35 @@
 
 int main(void)
 {
-    /* __bytefield__ f; */
-    __pair__ *p1, *p2, *p3;
-
-    
     allocByteField(1024, __PAIRSIZE__);
-    if (f.field == NULL)
-        return -1;
 
-    p1 = __cons(__boxint(3), __boxint(4));
-    p2 = __cons(__boxint(5), __boxint(6));
-    p3 = __cons(__boxint(7), __boxint(8));
+    __newline(); __display(__string("** Pair **")); __newline();
+    __BWORD__ p1, p2, p3;    
+    p1 = __cons(4, __boxint(4));
+    p2 = __cons(6, __boxint(6));
+    p3 = __cons(8, __boxint(8));
+    __display(__string("p1: ")); print_pair(p1); __newline();
+    __display(__string("p2: ")); print_pair(p2); __newline();
+    __display(__string("p3: ")); print_pair(p3); __newline();
+    __BWORD__ a = __getCar(p1);
+    __BWORD__ b = __getCdr(p1);
+    __display(__string("car(p1): ")); print_bword(a); __newline();
+    __display(__string("cdr(p1): ")); print_bword(b); __newline();
 
-    if (p1 == NULL || p2 == NULL || p3 == NULL) {
-        printf("Out of memory\n");
-        return -1;
-    }
-    else {
-        print_pair(p1);
-        print_pair(p2);
-        print_pair(p3);
-    }
-    
-    __BWORD__ a = __getcar(p1);
-    __BWORD__ b = __getcdr(p1);
-    printf("a: %llu, b: %llu\n", (bword_t)a, (bword_t)b);
+    __newline(); __display(__string("** Vector **")); __newline();
+    __BWORD__ v = __vector(10);
+    __display(__string("vectorLength(v): ")); print_bword(__unboxint(__vectorLength(v))); __newline();
+    __display(__string("v[0] = 42")); __newline();
+    __vectorSet(v, 0, 42);
+    __display(__string("v[0]: ")); print_bword(__vectorRef(v, 0)); __newline();
+    __display(__string("v[9] = 84")); __newline();
+    __vectorSet(v, 9, 84);
+    __display(__string("v[9]: ")); print_bword(__vectorRef(v, 9)); __newline();
 
-    __vector__ *v = __vector(10);
-    if (v == NULL)
-        return -1;
-    else {
-        print_vector(v);
-        __vectorSet(v, 0, 42);
-        print_bword(__vector_ref(v, 0));
-    }
-
+    __newline(); __display(__string("** String **")); __newline();
+    __BWORD__ s;
+    s = __string("Allo les amis");
+    __display(s); __newline();
     
     freeByteField();
     return 0;

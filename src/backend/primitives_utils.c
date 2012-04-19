@@ -6,15 +6,16 @@
 #include "box.h"
 
 void print_bword(__BWORD__ v) {
-    printf("v: %llu\n", (bword_t)v);
+    printf("%llu", (bword_t)v);
 }
 
-void print_pair(__pair__ *p) {
-    if (p == NULL)
-        printf("NULL Pair\n");
+void print_pair(__BWORD__ p) {
+    if (__null_p(p) == __TRUE__)
+        printf("()");
     else {
-        printf("Pair\n");
-        printf("car: %llu, cdr: %llu\n", (bword_t)p->car, (bword_t)p->cdr);
+        printf("(");
+        printf("%llu . %llu", __getCar(p), __getCdr(p));
+        printf(")");
     }
 }
 
@@ -27,12 +28,12 @@ void print_byteField(__bytefield__ *f) {
     }
 }
 
-void print_vector(__vector__ *v) {
-    if (v == NULL)
-        printf("NULL vector\n");
+void print_vector(__BWORD__ v) {
+    if (__vector_p(v) == __FALSE__)
+        printf("Illegal vector\n");
     else {
         printf("Vector\n");
-        printf("size: %llu, addr: %llu\n", (bword_t)v->size, (bword_t)v);        
+        printf("size: %llu, addr: %llu\n", __unboxint(__vectorLength(v)), __unboxptd(v));        
     }
 }
 

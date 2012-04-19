@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "box.h"
 #include "sins_types.h"
 #include "sins_const.h"
@@ -22,7 +24,8 @@ __BWORD__ __box( __WORD__ v, __WORD__ type ) {
         return (v << __LAMBDA_SHFT__) + __LAMBDA_TYPE__;
         
     default:
-        break;
+        printf("Illegal box type\n");
+        exit(1);
     }
 }
 
@@ -43,19 +46,11 @@ __BWORD__ __boxlambda( __WORD__ v ) {
 }
 
 __WORD__ __boxtype( __BWORD__ v ) {
-    __WORD__ boxtype = v & __BOX_MASK__;
-    switch(boxtype) {
-    case __INT_TYPE__:
-    case __PAIR_TYPE__:
-    case __LAMBDA_TYPE__:
-        return boxtype;
-    case __PTD_TYPE__:
-        return __boxsubtype(v);
-    }
+    return (__WORD__)(v & __BOX_MASK__);
 }
 
 __WORD__ __boxsubtype( __BWORD__ v ) {
-    return (*(__unboxptd(v)) & __SUB_MASK__); 
+    return (((__ptd_hdr__*)__unboxptd(v))->hdr & __SUB_MASK__); 
 }
 
 /*              */
@@ -77,30 +72,38 @@ __WORD__ __unboxlambda( __BWORD__ v ) {
     return ((v - __LAMBDA_TYPE__) >> __LAMBDA_SHFT__);
 }
 
+char __unboxchar( __BWORD__ ch ) {
+    return (char)((((__char__*)__unboxptd(ch))->hdr >> __CHAR_LEN_SHFT__) & __CHAR_MASK__);
+}
+
 /*                        */
 /* Boxed types predicates */
 /*                        */
 int __boxint_p( __BWORD__ v ) {
-    return ((v & __BOX_MASK__) == __INT_TYPE__);
+    return (__boxtype(v) == __INT_TYPE__);
 }
 
 int __boxptd_p( __BWORD__ v ) {
-    return ((v & __BOX_MASK__) == __PTD_TYPE__);
+    return (__boxtype(v) == __PTD_TYPE__);
 }
 
 int __boxpair_p( __BWORD__ v ) {
-    return ((v & __BOX_MASK__) == __PAIR_TYPE__);
+    return (__boxtype(v) == __PAIR_TYPE__);
 }
 
 int __boxlambda_p( __BWORD__ v ) {
-    return ((v != __FALSE__) && (v & __BOX_MASK__) == __LAMBDA_TYPE__);
+    return (__boxtype(v) == __LAMBDA_TYPE__);    
 }
 
 int __boxvector_p( __BWORD__ v ) {
-    return (__boxptd_p(v) && (*((__WORD__*)__unboxptd(v)) & __SUB_MASK__ == __VEC_TYPE__));
+    return (__boxptd_p(v) && __boxsubtype(v) == __VEC_TYPE__);
 }
 
 int __boxstring_p( __BWORD__ v ) {
-    return 0; /* not yet */
-    /* return (__boxptd_p(v) && (*((void*)__unboxptd(v)) & __SUB_MASK__ == __STR_TYPE__)); */
+    return (__boxptd_p(v) && __boxsubtype(v) == __STR_TYPE__);
 }
+
+int __boxchar_p( __BWORD__ v ) {
+    return (__boxptd_p(v) && __boxsubtype(v) == __CHAR_TYPE__);
+}
+
