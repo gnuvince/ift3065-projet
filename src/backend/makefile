@@ -29,8 +29,11 @@ test_primitives:
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-check: $(OBJFILES) clean
-	-@echo "Nothing for now"
+# check: $(OBJFILES) clean
+# 	-@echo "Nothing for now"
+
+check:
+	python run_backend_tests.py
 
 clean:
 	-@rm ${CWD}/*.o

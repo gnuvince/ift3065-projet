@@ -129,3 +129,23 @@
   (if (> a b)
       '()
       (cons a (range (+ a 1) b))))
+
+
+(define (foldr fn init list)
+  (if (null? list)
+      init
+      (fn (car list)
+          (foldr fn init (cdr list)))))
+
+
+(define (foldl fn init list)
+  (if (null? list)
+      init
+      (foldl fn
+             (fn (car list) init)
+             (cdr list))))
+
+(define (-> datum . fns)
+  (foldl (lambda (fn acc) (fn acc))
+         datum
+         fns))
