@@ -54,8 +54,13 @@
 (define (compile expr)
   (let ((asm-code (compile-expr expr (make-env)))
         (delayed-asm (compile-delayed-lambdas)))
-    (list asm-code
-          delayed-asm)))
+    (list
+     ".text\n"
+     ".globl main\n"
+     "main:\n"
+     asm-code
+     "ret\n"
+     delayed-asm)))
 
 
 (define (compile-delayed-lambdas)
@@ -74,6 +79,7 @@
     (,s when (symbol? s) (gen-variable-access s env))
     (#f (gen-number *false*))
     ((let ,args ,body) (compile-let expr env))
+    ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
     ((if ,condition ,then ,else) (compile-if expr env))
     ((,f . ,args)
@@ -88,7 +94,11 @@
   (match fn
     ((lambda ,args ,body)
      (list "\n" sym ":\n"
-           (compile-expr body (env-update env args))
+           (compile-expr body
+                         ;; We increment fs because the return address is also pushed
+                         ;; onto the stack.
+                         (env-fs++
+                          (env-update env args)))
            "ret\n\n"))))
 
 (define (delay-lambda expr env)
@@ -168,7 +178,8 @@
          (cons (list (compile-expr (car args) env)
                      "pushl %eax\n")
                (loop (env-fs++ env) (cdr args)))))
-   (gen-variable-access f env)
+   ;(gen-variable-access f env)
+   (compile-expr f env)
    "call *%eax\n"
    "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
 

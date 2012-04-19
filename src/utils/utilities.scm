@@ -144,3 +144,8 @@
       (foldl fn
              (fn (car list) init)
              (cdr list))))
+
+(define (-> datum . fns)
+  (foldl (lambda (fn acc) (fn acc))
+         datum
+         fns))
