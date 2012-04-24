@@ -5,6 +5,7 @@
 #include "sins_const.h"
 #include "primitives.h"
 #include "primitives_utils.h"
+#include "bytefield.h"
 
 /*            */
 /* Boxing fns */
@@ -24,7 +25,7 @@ __BWORD__ __box( __WORD__ v, __WORD__ type ) {
         return (v << __LAMBDA_SHFT__) + __LAMBDA_TYPE__;
         
     default:
-        printf("Illegal box type\n");
+        printf("Unrecognized box type\n");
         exit(1);
     }
 }
@@ -53,6 +54,7 @@ __WORD__ __boxsubtype( __BWORD__ v ) {
     return (((__ptd_hdr__*)__unboxptd(v))->hdr & __SUB_MASK__); 
 }
 
+
 /*              */
 /* Unboxing fns */
 /*              */
@@ -72,8 +74,23 @@ __WORD__ __unboxlambda( __BWORD__ v ) {
     return ((v - __LAMBDA_TYPE__) >> __LAMBDA_SHFT__);
 }
 
+__WORD__ __unbox( __BWORD__ v ) {
+    switch (__boxtype(v)) {
+    case __INT_TYPE__:
+        return __unboxint(v);
+    case __PTD_TYPE__:
+        return __unboxptd(v);
+    case __PAIR_TYPE__:
+        return __unboxpair(v);
+    case __LAMBDA_TYPE__:
+    default:
+        printf("Unrecognized or unsupported box type\n");
+        exit(__FAIL__);        
+    }
+}
+
 char __unboxchar( __BWORD__ ch ) {
-    return (char)((((__char__*)__unboxptd(ch))->hdr >> __CHAR_LEN_SHFT__) & __CHAR_MASK__);
+    return (char)((((__char__*)__unboxptd(ch))->hdr >> __CHAR_VAL_SHFT__) & __CHAR_MASK__);
 }
 
 /*                        */
@@ -107,3 +124,44 @@ int __boxchar_p( __BWORD__ v ) {
     return (__boxptd_p(v) && __boxsubtype(v) == __CHAR_TYPE__);
 }
 
+/*                */
+/* Boxed obj size */
+/*                */
+__WORD__ __boxptdsize( __BWORD__ v ) { return 1; }
+/* __WORD__ __boxptdsize( __BWORD__ v ) { */
+/*     switch (__boxsubtype(v)) { */
+/*     case __VEC_TYPE__: */
+/*         return (__PTDHDRSIZE__ + (__vectorLength(v) * __BWORDSIZE__)); */
+    
+/*     case __STR_TYPE__: */
+/*         return (__PTDHDRSIZE__ + (__stringLength(v) + 1)); */
+    
+/*     case __CHAR_TYPE__: */
+/*         return (__PTDHDRSIZE__); */
+    
+/*     default: */
+/*         printf("Unrecognized or unsupported box type\n"); */
+/*         exit(__FAIL__); */
+/*     } */
+/* } */
+
+__WORD__ __boxsize( __BWORD__ v ) {
+    if (v == __NULL__)
+        return __BWORDSIZE__;
+    
+    switch (__boxtype(v)) {
+    case __INT_TYPE__:
+        return (__BWORDSIZE__);
+
+    case __PTD_TYPE__:
+        return (__boxptdsize(v));
+
+    case __PAIR_TYPE__:
+        return (__PAIRSIZE__);
+
+    case __LAMBDA_TYPE__:
+    default:
+        printf("Unrecognized or unsupported box type\n");
+        exit(__FAIL__);
+    }
+}

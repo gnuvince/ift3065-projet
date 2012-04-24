@@ -6,15 +6,7 @@
 #include "sins_const.h"
 #include "primitives_utils.h"
 #include "box.h"
-
-__bytefield__ f;
-__bytefield__ oldf;             /* For stop-and-copy GC */
-
-void allocByteField( size_t num, size_t size );
-
-void freeByteField();
-
-void* allocBlock( __WORD__ size );
+#include "bytefield.h"
 
 __BWORD__ __getCar( __BWORD__ p );
 

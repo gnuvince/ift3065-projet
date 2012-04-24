@@ -7,39 +7,7 @@
 #include "sins_const.h"
 #include "primitives_utils.h"
 #include "box.h"
-
-void allocByteField( size_t num, size_t size ) {
-    f.field = (void*)calloc(num, size);
-    if (f.field == NULL) {
-        printf("Out of memory\n");
-        exit(1);
-    }
-    f.fieldsize = num*size;
-    f.next = 0;
-}
-
-void freeByteField( ) {
-    free(f.field);
-}
-
-void* allocBlock( __WORD__ size ) {
-    void *b;
-    __WORD__ misalign;
-
-    if ((f.next + size) > f.fieldsize) {
-        return NULL;
-    }
-    else {
-        b = (void*)(f.field + f.next);
-        
-        f.next = f.next + size;
-        misalign = (f.next % __WORDSIZE__);
-        if (misalign != 0)
-            f.next = f.next + (__WORDSIZE__ - misalign);
-
-        return b;
-    }
-}
+#include "bytefield.h"
 
 __BWORD__ __getCar( __BWORD__ p ) {
     if (__pair_p(p) != __TRUE__) {
@@ -81,7 +49,8 @@ __BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
     
-    newpair = (__pair__*)allocBlock(__PAIRSIZE__);
+    newpair = (__pair__*)allocBlock(getHeap(), __PAIRSIZE__);
+    newpair->hdr = __PAIR_TYPE__;
     
     if (newpair == NULL) {
         printf("Out of memory\n");
@@ -98,7 +67,7 @@ __BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
 __BWORD__ __vector( __WORD__ size) {
     __vector__ *newvector = NULL;
     
-    newvector = (__vector__*)allocBlock(sizeof(__vector__) + (__WORDSIZE__ * size));
+    newvector = (__vector__*)allocBlock(getHeap(), sizeof(__vector__) + (__WORDSIZE__ * size));
 
     if (newvector == NULL) {
         printf("Out of memory\n");
@@ -335,7 +304,7 @@ __BWORD__ __string( char *s ) {
     __string__ *newstring = NULL;
     __WORD__ slen = (__WORD__)strlen(s);
 
-    newstring = (__string__*)allocBlock(sizeof(__string__) + slen + 1);
+    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
 
     if (newstring == NULL) {
         printf("Out of memory\n");
@@ -419,14 +388,14 @@ void __newline( ) {
 __BWORD__ __char( char ch ) {
     __char__ *newchar = NULL;
 
-    newchar = (__char__*)allocBlock(sizeof(__char__));
+    newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
 
     if (newchar == NULL) {
         printf("Out of memory\n");
         exit(1);
     }
     else {
-        newchar->hdr = ((__WORD__)ch << __CHAR_LEN_SHFT__) + __CHAR_TYPE__;
+        newchar->hdr = ((__WORD__)ch << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
         return __box((__WORD__)newchar, __PTD_TYPE__);
     }
 }
@@ -450,4 +419,3 @@ void __writeChar( __BWORD__ ch ) {
         exit(1);
     }
 }
-                                                    
