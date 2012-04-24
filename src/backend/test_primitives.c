@@ -11,7 +11,7 @@ int main(void)
     allocByteField(1024, __PAIRSIZE__);
 
     __newline(); __display(__string("** Pair **")); __newline();
-    __BWORD__ p1, p2, p3;    
+    __BWORD__ p1, p2, p3;
     p1 = __cons(4, __boxint(4));
     p2 = __cons(6, __boxint(6));
     p3 = __cons(8, __boxint(8));
@@ -37,7 +37,9 @@ int main(void)
     __BWORD__ s;
     s = __string("Allo les amis");
     __display(s); __newline();
-    
+
+    printf("%d\n", __TRUE__);
+
     freeByteField();
     return 0;
 }

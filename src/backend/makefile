@@ -4,7 +4,7 @@
 #             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 #             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
 #             -Wuninitialized -Wconversion -Wstrict-prototypes
-CFLAGS := -g -std=c99 $(WARNINGS)
+CFLAGS := -m32 -O0 -g -std=c99 $(WARNINGS)
 
 CC := gcc
 
@@ -19,7 +19,7 @@ OBJFILES := box.o primitives.o primitives_utils.o
 
 all: check
 
-devtest: $(OBJFILES) test_primitives clean
+devtest: $(OBJFILES) test_primitives
 	chmod +x ${CWD}/test_primitives
 	${CWD}/test_primitives
 

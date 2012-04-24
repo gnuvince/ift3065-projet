@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "sins_types.h"
 
-#define word_t  uint64_t
+#define word_t  uint32_t
 #define bword_t word_t
 
 typedef word_t __WORD__;

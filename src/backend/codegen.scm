@@ -3,12 +3,12 @@
 (include "../frontend/reader.scm")
 (include "../frontend/parser.scm")
 (include "../frontend/conversion.scm")
+(include "env.scm")
 ;(include "runtime.scm")
 
+(define *false* 1)
 
 (define delayed-functions '())
-
-(define *false* 12345678)
 
 (define primitive-funcs '(;symbol         # args primitive name
                           (%*                  2 "__mul")
@@ -45,14 +45,49 @@
                           (%write-list         1 "PRIM_WRITE_LIST")
                           ))
 
+
+(define (char->label-aux c)
+  (case c
+    ((#\!) "bang")
+    ((#\$) "dollar")
+    ((#\%) "percent")
+    ((#\&) "ampersand")
+    ((#\*) "star")
+    ((#\+) "plus")
+    ((#\-) "minus")
+    ((#\.) "dot")
+    ((#\/) "slash")
+    ((#\:) "colon")
+    ((#\<) "lt")
+    ((#\=) "eq")
+    ((#\>) "gt")
+    ((#\?) "interrogation")
+    ((#\@) "at")
+    ((#\^) "carret")
+    ((#\_) "underscore")
+    ((#\~) "tilde")
+    (else (make-string 1 c))))
+
+(define (symbol->label sym)
+  (let loop ((str (symbol->string sym)) (i 0) (acc ""))
+    (if (>= i (string-length str))
+        acc
+        (loop str
+              (+ i 1)
+              (string-append acc (char->label-aux (string-ref str i)))))))
+
+
+(define global-env (make-env))
+
+
 (define (gen-global-vars expr)
   (map (lambda (var)
-         `("glob_" ,var ": .long 0\n"))
+         `("glob_" ,(symbol->label var) ": .long 0\n"))
        (fv expr)))
 
 
 (define (compile expr)
-  (let ((asm-code (compile-expr expr (make-env)))
+  (let ((asm-code (compile-expr expr global-env))
         (delayed-asm (compile-delayed-lambdas)))
     (list
      ".text\n"
@@ -76,9 +111,8 @@
 (define (compile-expr expr env)
   (match expr
     (,n when (number? n) (gen-number n))
+    (,b when (boolean? b) (gen-bool b))
     (,s when (symbol? s) (gen-variable-access s env))
-    (#f (gen-number *false*))
-    (#t (gen-number 1))
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
@@ -149,16 +183,14 @@
 
 
 (define (gen-number n)
-  (list "movl $" n ", %eax\n"))
+  ;;(list "movl $" n ", %eax\n"))
 ;; Boxed version
-  ;; (list
-  ;;  "movl __INT_TYPE__, %eax  # begin_number\n"
-  ;;  "pushl %eax\n"
-  ;;  "movl $" n ", %eax\n"
-  ;;  "pushl %eax\n"
-  ;;  "call __box\n"
-  ;;  "addl $8, %esp            # end_numer\n"
-  ;;  ))
+  (list
+   "movl $" n ", %eax\n"
+   "pushl %eax\n"
+   "call __boxint\n"
+   "addl $4, %esp            # end_nubmer\n"
+   ))
 ;; More efficient version if we don't use the __box primitive.
 ;; (list
 ;;  "movl $" n ", %eax\n"
@@ -195,5 +227,12 @@
       (map (lambda (a)
              (list (compile-expr a env)
                    "pushl %eax\n")) args)
-      "call $" label "\n"
+      "call " label "\n"
       "addl $" (* 4 nb-args) ", %esp # cleaning up primitive\n"))))
+
+
+
+(define (gen-bool b)
+  (list "movl $"
+        (if b 0 *false*)
+        " ,%eax\n"))

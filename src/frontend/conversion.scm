@@ -123,14 +123,14 @@
     ((if . ,rest)
      (error "improper if"))
 
-    ;; ((begin ,E1)
-    ;;  (expand E1))
-    ;; ((begin ,E1 . ,Es)
-    ;;  (expand
-    ;;   (let ((v (gensym)))
-    ;;     `(let ((,v ,E1)) (begin ,@Es)))))
-    ;; ((begin . ,Es)
-    ;;  (error "improper begin"))
+    ((begin ,E1)
+     (expand E1))
+    ((begin ,E1 . ,Es)
+     (expand
+      (let ((v (gensym)))
+        `(let ((,v ,E1)) (begin ,@Es)))))
+    ((begin . ,Es)
+     (error "improper begin"))
 
     ((begin ,E1 . ,Es) `(begin ,@(map expand (cons E1 Es))))
 
@@ -233,7 +233,9 @@
 
 (define (primitive? op)
   (and (symbol? op)
-       (memq op primitives)))
+       (char=? #\% (car (string->list (symbol->string op))))))
+;       (memq op primitives)))
+
 
 ;;;----------------------------------------------------------------------------
 
