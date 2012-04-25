@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gc.h"
-#include "gc_utils.h"
 #include "sins_const.h"
 #include "sins_types.h"
 #include "primitives.h"
 #include "bytefield.h"
+#include "bytefield_utils.h"
 #include "box.h"
 
 
@@ -52,9 +52,9 @@ __BWORD__ gc_copyObject( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to )
             __setCdr(newobj, gc_copyObject(__getCdr(obj), from, to));
         }
 
-        else if (objtype == __VEC_TYPE__) {
-            for (__WORD__ i = 0; i < __vectorLength(obj); ++i)
-                __vectorSet(newobj, i, gc_copyObject(__vectorRef(obj, i), from, to));
+        else if ((objtype == __PTD_TYPE__) && (__boxsubtype(obj) == __VEC_TYPE__)) {
+            for (__WORD__ i = 0; i < __unboxint(__vectorLength(obj)); ++i)
+                __vectorSet(newobj, __boxint(i), gc_copyObject(__vectorRef(obj, __boxint(i)), from, to));
         }
         
         /* Tag object as moved */

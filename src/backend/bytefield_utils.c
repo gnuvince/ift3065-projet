@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "gc_utils.h"
+#include "bytefield_utils.h"
 #include "sins_const.h"
 #include "primitives.h"
 #include "primitives_utils.h"
@@ -119,7 +119,8 @@ void dumpStr( __bytefield__ *f, __WORD__ pos ) {
     dumpValue(f, phdr->hdr);
     
     /* Desc */
-    __WORD__ slen = (__WORD__)(phdr->hdr >> __STR_LEN_SHFT__);
+    /* __WORD__ slen = (__WORD__)(phdr->hdr >> __STR_LEN_SHFT__); */
+    __WORD__ slen = __unboxint(__stringLength(__boxptd(addr)));
     printf("string length: %llu\n", slen);
 
     /* State */
@@ -127,7 +128,7 @@ void dumpStr( __bytefield__ *f, __WORD__ pos ) {
 
     /* String content */
     __WORD__ wholelines = ((slen + 1) / __WORDSIZE__);
-    __WORD__ tailline = (slen % __WORDSIZE__);
+    __WORD__ tailline = ((slen + 1) % __WORDSIZE__);
     if (tailline != 0)
         tailline = 1;
     for (__WORD__ i = 0; i < (wholelines + tailline); ++i) {

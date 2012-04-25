@@ -5,12 +5,12 @@
 #include "box.h"
 #include "primitives.h"
 #include "primitives_utils.h"
-#include "gc_utils.h"
 #include "bytefield.h"
+#include "bytefield_utils.h"
 
 int main(void)
 {
-    allocByteField(getHeap(), __PAIRSIZE__); /* f @ bytefield.h */
+    allocByteField(getHeap(), __PAIRSIZE__);
 
     __newline(); __display(__string("** Pair **")); __newline();
 

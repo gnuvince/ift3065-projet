@@ -127,23 +127,23 @@ int __boxchar_p( __BWORD__ v ) {
 /*                */
 /* Boxed obj size */
 /*                */
-__WORD__ __boxptdsize( __BWORD__ v ) { return 1; }
-/* __WORD__ __boxptdsize( __BWORD__ v ) { */
-/*     switch (__boxsubtype(v)) { */
-/*     case __VEC_TYPE__: */
-/*         return (__PTDHDRSIZE__ + (__vectorLength(v) * __BWORDSIZE__)); */
+/* __WORD__ __boxptdsize( __BWORD__ v ) { return 1; } */
+__WORD__ __boxptdsize( __BWORD__ v ) {
+    switch (__boxsubtype(v)) {
+    case __VEC_TYPE__:
+        return (sizeof(__ptd_hdr__) + (__unboxint(__vectorLength(v)) * __BWORDSIZE__));
     
-/*     case __STR_TYPE__: */
-/*         return (__PTDHDRSIZE__ + (__stringLength(v) + 1)); */
+    case __STR_TYPE__:
+        return (sizeof(__ptd_hdr__) + (__unboxint(__stringLength(v)) + 1));
     
-/*     case __CHAR_TYPE__: */
-/*         return (__PTDHDRSIZE__); */
+    case __CHAR_TYPE__:
+        return (sizeof(__ptd_hdr__));
     
-/*     default: */
-/*         printf("Unrecognized or unsupported box type\n"); */
-/*         exit(__FAIL__); */
-/*     } */
-/* } */
+    default:
+        printf("Unrecognized or unsupported box type\n");
+        exit(__FAIL__);
+    }
+}
 
 __WORD__ __boxsize( __BWORD__ v ) {
     if (v == __NULL__)

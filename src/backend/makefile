@@ -14,7 +14,7 @@ CWD := `pwd`
 
 BUILDDIR := tests
 OBJDIR := tests
-OBJFILES := bytefield.o gc_utils.o box.o primitives.o primitives_utils.o gc.o
+OBJFILES := bytefield.o bytefield_utils.o box.o primitives.o primitives_utils.o gc.o
 
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test .c .o
@@ -29,7 +29,7 @@ test_primitives: $(OBJFILES)
 
 test_gc: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
-	$(CHMOD) +x $(CWD)/test_gc.exe
+	chmod +x $(CWD)/test_gc.exe
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -45,7 +45,7 @@ clean:
 	-rm $(CWD)/*.o
 	-rm -rf $(CWD)/*dSYM
 
-cleanall:
+cleanall: clean
 	-rm $(CWD)/*.exe
 
 .PHONY: clean check run cleanall
