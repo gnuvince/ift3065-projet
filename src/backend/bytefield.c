@@ -3,6 +3,7 @@
 #include "bytefield.h"
 #include "gc.h"
 #include "sins_types.h"
+#include "sins_const.h"
 
 __bytefield__ bf_A;
 __bytefield__ bf_B;
@@ -39,7 +40,7 @@ void allocByteField( __bytefield__ *f, size_t wordsize ) {
     f->field = (void*)calloc((size_t)__FIELDSIZE__, wordsize);
     if (f->field == NULL) {
         printf("Out of memory\n");
-        exit(1);
+        exit(__FAIL__);
     }
     f->fieldsize = __FIELDSIZE__ * wordsize;
     f->next = 0;
@@ -84,7 +85,7 @@ __VAR__ allocVar( ) {
     
     if (varnext >= __VARNUM__) {
         printf("Max variable number reached.");
-        exit(1);
+        exit(__FAIL__);
     } else {
         res = varnext;
         varnext += 1;
@@ -95,7 +96,7 @@ __VAR__ allocVar( ) {
 void setVar( __VAR__ var, __BWORD__ val ) {
     if ((int)var < 0 || (int)var >= varnext) {
         printf("Variable index %d does not exist.", (int)var);
-        exit(1);
+        exit(__FAIL__);
     } else {
         varroots[(int)var] = val;
     }
@@ -104,7 +105,7 @@ void setVar( __VAR__ var, __BWORD__ val ) {
 __BWORD__ getVar( __VAR__ var ) {
     if (var < 0 || var >= varnext) {
         printf("Variable index %d does not exist.", (int)var);
-        exit(1);
+        exit(__FAIL__);
     } else {
         return varroots[(int)var];
     }

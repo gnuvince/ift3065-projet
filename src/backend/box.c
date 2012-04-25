@@ -26,7 +26,7 @@ __BWORD__ __box( __WORD__ v, __WORD__ type ) {
         
     default:
         printf("Unrecognized box type\n");
-        exit(1);
+        exit(__FAIL__);
     }
 }
 
