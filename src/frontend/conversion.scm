@@ -112,7 +112,8 @@
     ((define (,v . ,params) . ,Es)
      `(define ,v ,(expand `(lambda ,params ,@Es))))
     ((define ,v ,E1)
-     `(define ,v ,(expand E1)))
+     ;`(define ,v ,(expand E1)))
+     (expand `(set! ,v ,E1)))
     ((define . ,rest)
      (error "improper define"))
 
@@ -236,13 +237,16 @@
          (boolean? x)
          (char? x)))))
 
-(define primitives '(+ - * / eq? = < > <= >= let
-                     null? pair? cons car cdr set-car! set-cdr! display))
+;; (define primitives '(+ - * / eq? = < > <= >= let
+;;                      null? pair? cons car cdr set-car! set-cdr! display))
+
+(define primitives '(%* %+ %- %< %<= %= %> %>= %car %cdr %cons %eq?
+                        %null? %number? %pair? %quotient %remainder
+                        %set-car! %set-cdr! %string? %write-char))
 
 (define (primitive? op)
   (and (symbol? op)
-       (char=? #\% (car (string->list (symbol->string op))))))
-;       (memq op primitives)))
+       (memq op primitives)))
 
 
 ;;;----------------------------------------------------------------------------

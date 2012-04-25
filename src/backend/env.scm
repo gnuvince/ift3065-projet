@@ -34,7 +34,7 @@
   (let ((x (assq s (env-symbols env))))
     (if x
         x
-        `(,s global ,(string-append "glob_" (symbol->string s))))))
+        `(,s global ,(string-append "glob_" (symbol->label s))))))
 
 
 ;; Add some local bindings to the environment.
@@ -42,3 +42,36 @@
   (foldr (lambda (sym env) (env-add-local-symbol env sym))
          env
          args))
+
+
+
+(define (char->label-aux c)
+  (case c
+    ((#\!) "bang")
+    ((#\$) "dollar")
+    ((#\%) "percent")
+    ((#\&) "ampersand")
+    ((#\*) "star")
+    ((#\+) "plus")
+    ((#\-) "minus")
+    ((#\.) "dot")
+    ((#\/) "slash")
+    ((#\:) "colon")
+    ((#\<) "lt")
+    ((#\=) "eq")
+    ((#\>) "gt")
+    ((#\?) "interrogation")
+    ((#\@) "at")
+    ((#\^) "carret")
+    ((#\_) "underscore")
+    ((#\~) "tilde")
+    (else (make-string 1 c))))
+
+;; Rename symbol into something acceptable to assembly.
+(define (symbol->label sym)
+  (let loop ((str (symbol->string sym)) (i 0) (acc ""))
+    (if (>= i (string-length str))
+        acc
+        (loop str
+              (+ i 1)
+              (string-append acc (char->label-aux (string-ref str i)))))))

@@ -5,3 +5,4 @@
 /scrap
 /scratch
 .DS_Store
+*.o

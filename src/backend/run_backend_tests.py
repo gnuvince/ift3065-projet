@@ -14,6 +14,9 @@ TESTS = [
     ("test_let2.scm", 7<<2),
     ("test_let3.scm", 7<<2),
     ("test_letstar.scm", 7<<2),
+    ("test_set.scm", 4<<2),
+    ("test_define.scm", 3<<2),
+    ("test_define2.scm", 3<<2),
 ]
 
 def main():

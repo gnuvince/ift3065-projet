@@ -35,37 +35,6 @@
                           ))
 
 
-(define (char->label-aux c)
-  (case c
-    ((#\!) "bang")
-    ((#\$) "dollar")
-    ((#\%) "percent")
-    ((#\&) "ampersand")
-    ((#\*) "star")
-    ((#\+) "plus")
-    ((#\-) "minus")
-    ((#\.) "dot")
-    ((#\/) "slash")
-    ((#\:) "colon")
-    ((#\<) "lt")
-    ((#\=) "eq")
-    ((#\>) "gt")
-    ((#\?) "interrogation")
-    ((#\@) "at")
-    ((#\^) "carret")
-    ((#\_) "underscore")
-    ((#\~) "tilde")
-    (else (make-string 1 c))))
-
-(define (symbol->label sym)
-  (let loop ((str (symbol->string sym)) (i 0) (acc ""))
-    (if (>= i (string-length str))
-        acc
-        (loop str
-              (+ i 1)
-              (string-append acc (char->label-aux (string-ref str i)))))))
-
-
 (define global-env (make-env))
 
 
@@ -84,7 +53,11 @@
      "main:\n"
      asm-code
      "ret\n"
-     delayed-asm)))
+     delayed-asm
+
+     "\n\n"
+     ".data\n"
+     (gen-global-vars expr))))
 
 
 (define (compile-delayed-lambdas)
@@ -107,12 +80,13 @@
     ((lambda ,args ,body) (delay-lambda expr env))
     ((if ,condition ,then) (compile-if (append expr '(#f)) env))
     ((if ,condition ,then ,else) (compile-if expr env))
+    ((set! ,var ,expr) (compile-set! env var expr))
     ((,f . ,args)
      (let ((primitive (assq f primitive-funcs)))
        (if primitive
            (gen-prim-call primitive args env)
            (gen-fun-call f args env))))
-    (,_ (error "unknown expression"))))
+    (,_ (error "unknown expression " expr))))
 
 
 (define (compile-lambda sym fn env)
@@ -227,3 +201,9 @@
   (list "movl $"
         (if b 0 *false*)
         " ,%eax\n"))
+
+
+(define (compile-set! env var expr)
+  (match (env-lookup env var)
+    ((,v global ,label) (list (compile-expr expr env)
+                              "movl %eax, " label "\n"))))
