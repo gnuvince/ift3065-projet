@@ -37,3 +37,10 @@ void print_vector(__BWORD__ v) {
     }
 }
 
+void setBit_word( __WORD__ *w, __WORD__ mask ) {
+    *w = (*w | mask);
+}
+
+void setBit_byte( char *b, char mask ) {
+    *b = (*b | mask);
+}

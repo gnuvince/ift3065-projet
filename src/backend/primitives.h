@@ -6,15 +6,7 @@
 #include "sins_const.h"
 #include "primitives_utils.h"
 #include "box.h"
-
-__bytefield__ f;
-__bytefield__ oldf;             /* For stop-and-copy GC */
-
-void allocByteField( size_t num, size_t size );
-
-void freeByteField();
-
-void* allocBlock( __WORD__ size );
+#include "bytefield.h"
 
 __BWORD__ __getCar( __BWORD__ p );
 
@@ -26,11 +18,11 @@ void __setCdr( __BWORD__ p, __BWORD__ newcdr );
 
 __BWORD__ __cons( __BWORD__ car, __BWORD__ cdr );
 
-__BWORD__ __vector( __WORD__ size);
+__BWORD__ __vector( __BWORD__ size);
 
-__BWORD__ __vectorRef( __BWORD__ v, __WORD__ ref);
+__BWORD__ __vectorRef( __BWORD__ v, __BWORD__ ref);
 
-void __vectorSet( __BWORD__ v, __WORD__ ref, __BWORD__ val);
+void __vectorSet( __BWORD__ v, __BWORD__ ref, __BWORD__ val);
 
 __BWORD__ __vectorLength( __BWORD__ v );
 
@@ -76,7 +68,7 @@ __BWORD__ __string_p( __BWORD__ s );
 
 __BWORD__ __stringLength( __BWORD__ s );
 
-__BWORD__ __stringRef( __BWORD__ s, __WORD__ ref);
+__BWORD__ __stringRef( __BWORD__ s, __BWORD__ ref);
 
 __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 );
 

@@ -5,6 +5,7 @@
 #             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
 #             -Wuninitialized -Wconversion -Wstrict-prototypes
 CFLAGS := -m32 -O0 -g -std=c99 $(WARNINGS)
+SHELL = /bin/sh
 
 CC := gcc
 
@@ -12,30 +13,40 @@ CWD := `pwd`
 
 BUILDDIR := tests
 OBJDIR := tests
-OBJFILES := box.o primitives.o primitives_utils.o
+OBJFILES := bytefield.o bytefield_utils.o box.o primitives.o primitives_utils.o gc.o
 
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test .c .o
 
 all: check
 
-devtest: $(OBJFILES) test_primitives
-	chmod +x ${CWD}/test_primitives
-	${CWD}/test_primitives
 
-test_primitives:
-	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives test_primitives.c
+devtest: $(TARGS)
+
+test_primitives: $(OBJFILES)
+	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives.exe test_primitives.c
+	$(CHMOD) +x $(CWD)/test_primitives.exe
+
+
+test_gc: $(OBJFILES)
+	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
+	chmod +x $(CWD)/test_gc.exe
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# check: $(OBJFILES) clean
-# 	-@echo "Nothing for now"
+run:
+	$(CWD)/test_gc.exe
+	$(CWD)/test_primitives.exe
 
 check:
 	python run_backend_tests.py
 
 clean:
-	-@rm ${CWD}/*.o
+	-rm $(CWD)/*.o
+	-rm -rf $(CWD)/*dSYM
 
-.PHONY: clean
+cleanall: clean
+	-rm $(CWD)/*.exe
+
+.PHONY: clean check run cleanall

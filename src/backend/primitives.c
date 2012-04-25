@@ -7,39 +7,7 @@
 #include "sins_const.h"
 #include "primitives_utils.h"
 #include "box.h"
-
-void allocByteField( size_t num, size_t size ) {
-    f.field = (void*)calloc(num, size);
-    if (f.field == NULL) {
-        printf("Out of memory\n");
-        exit(1);
-    }
-    f.fieldsize = num*size;
-    f.next = 0;
-}
-
-void freeByteField( ) {
-    free(f.field);
-}
-
-void* allocBlock( __WORD__ size ) {
-    void *b;
-    __WORD__ misalign;
-
-    if ((f.next + size) > f.fieldsize) {
-        return NULL;
-    }
-    else {
-        b = (void*)(f.field + f.next);
-        
-        f.next = f.next + size;
-        misalign = (f.next % __WORDSIZE__);
-        if (misalign != 0)
-            f.next = f.next + (__WORDSIZE__ - misalign);
-
-        return b;
-    }
-}
+#include "bytefield.h"
 
 __BWORD__ __getCar( __BWORD__ p ) {
     if (__pair_p(p) != __TRUE__) {
@@ -81,7 +49,8 @@ __BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
     
-    newpair = (__pair__*)allocBlock(__PAIRSIZE__);
+    newpair = (__pair__*)allocBlock(getHeap(), __PAIRSIZE__);
+    newpair->hdr = __PAIR_TYPE__;
     
     if (newpair == NULL) {
         printf("Out of memory\n");
@@ -95,47 +64,50 @@ __BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
     }
 }
 
-__BWORD__ __vector( __WORD__ size) {
+__BWORD__ __vector( __BWORD__ size) {
     __vector__ *newvector = NULL;
-    
-    newvector = (__vector__*)allocBlock(sizeof(__vector__) + (__WORDSIZE__ * size));
+
+    __WORD__ usize = __unboxint(size);
+    newvector = (__vector__*)allocBlock(getHeap(), sizeof(__vector__) + (__WORDSIZE__ * usize));
 
     if (newvector == NULL) {
         printf("Out of memory\n");
         exit(1);
     }
     else {
-        newvector->hdr = (size << __VEC_LEN_SHFT__) + __VEC_TYPE__;
+        newvector->hdr = (usize << __VEC_LEN_SHFT__) + __VEC_TYPE__;
         return __box((__WORD__)newvector, __PTD_TYPE__);
     }
 }
 
-__BWORD__ __vectorRef( __BWORD__ v, __WORD__ ref) {
+__BWORD__ __vectorRef( __BWORD__ v, __BWORD__ ref) {
     if (__vector_p(v) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(1);
     }
 
-    if ((ref < 0) || (ref >= __vectorLength(v))) {
+    __WORD__ uref = __unboxint(ref);
+    if ((uref < 0) || (uref >= __unboxint(__vectorLength(v)))) {
         printf("Error: Invalid vector index\n");
         exit(1);        
     }
     
-    return *((__BWORD__*)__unboxptd(v) + ref + 2);
+    return *((__BWORD__*)__unboxptd(v) + uref + 2);
 }
 
-void __vectorSet( __BWORD__ v, __WORD__ ref, __BWORD__ val) {
+void __vectorSet( __BWORD__ v, __BWORD__ ref, __BWORD__ val) {
     if (__vector_p(v) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(1);
     }
 
-    if ((ref < 0) || (ref >= __unboxint(__vectorLength(v)))) {
+    __WORD__ uref = __unboxint(ref);
+    if ((uref < 0) || (uref >= __unboxint(__vectorLength(v)))) {
         printf("Error: Invalid vector index\n");
         exit(1);        
     }
 
-    *((__BWORD__*)__unboxptd(v) + ref + 2) = val;
+    *((__BWORD__*)__unboxptd(v) + uref + 2) = val;
 }
 
 __BWORD__ __vectorLength( __BWORD__ v ) {
@@ -335,7 +307,7 @@ __BWORD__ __string( char *s ) {
     __string__ *newstring = NULL;
     __WORD__ slen = (__WORD__)strlen(s);
 
-    newstring = (__string__*)allocBlock(sizeof(__string__) + slen + 1);
+    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
 
     if (newstring == NULL) {
         printf("Out of memory\n");
@@ -364,18 +336,19 @@ __BWORD__ __stringLength( __BWORD__ s ) {
     return __box((((__string__*)(__unboxptd(s)))->hdr) >> __STR_LEN_SHFT__, __INT_TYPE__);
 }
 
-__BWORD__ __stringRef( __BWORD__ s, __WORD__ ref) {
+__BWORD__ __stringRef( __BWORD__ s, __BWORD__ ref) {
     if (__string_p(s) == __FALSE__) {
         printf("STRING expected\n");
         exit(1);
     }
 
-    if ((ref < 0) || (ref >= __stringLength(s))) {
-        printf("Error: Invalid vector index\n");
+    __WORD__ uref = __unboxint(ref);
+    if ((uref < 0) || (uref >= __stringLength(s))) {
+        printf("Error: Invalid string index\n");
         exit(1);        
     }
     
-    return *((char*)__unboxptd(s) + ref + sizeof(__char__));
+    return *((char*)__unboxptd(s) + uref + sizeof(__char__));
 }
 
 __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
@@ -389,13 +362,13 @@ __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
         exit(1);
     }
     
-    __WORD__ s1Len = __stringLength(s1);
+    __WORD__ s1Len = __unboxint(__stringLength(s1));
     
-    if (s1Len != __stringLength(s2))
+    if (s1Len != __unboxint(__stringLength(s2)))
         return __FALSE__;
 
     for (__WORD__ i = 0; i < s1Len; ++i) {
-        if (__stringRef(s1, i) != __stringRef(s2, i))
+        if (__stringRef(s1, __boxint(i)) != __stringRef(s2, __boxint(i)))
             return __FALSE__;
     }
     
@@ -419,14 +392,14 @@ void __newline( ) {
 __BWORD__ __char( char ch ) {
     __char__ *newchar = NULL;
 
-    newchar = (__char__*)allocBlock(sizeof(__char__));
+    newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
 
     if (newchar == NULL) {
         printf("Out of memory\n");
         exit(1);
     }
     else {
-        newchar->hdr = ((__WORD__)ch << __CHAR_LEN_SHFT__) + __CHAR_TYPE__;
+        newchar->hdr = ((__WORD__)ch << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
         return __box((__WORD__)newchar, __PTD_TYPE__);
     }
 }
@@ -450,4 +423,3 @@ void __writeChar( __BWORD__ ch ) {
         exit(1);
     }
 }
-                                                    

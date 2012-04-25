@@ -30,6 +30,8 @@ __WORD__ __unboxpair( __BWORD__ v );
 
 __WORD__ __unboxlambda( __BWORD__ v );
 
+__WORD__ __unbox( __BWORD__ v );
+
 char __unboxchar( __BWORD__ ch );
 
 /*                        */
@@ -48,5 +50,12 @@ int __boxvector_p( __BWORD__ v );
 int __boxstring_p( __BWORD__ v );
 
 int __boxchar_p( __BWORD__ v );
+
+/*                */
+/* Boxed obj size */
+/*                */
+__WORD__ __boxptdsize( __BWORD__ v );
+
+__WORD__ __boxsize( __BWORD__ v );
 
 #endif
