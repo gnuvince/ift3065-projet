@@ -12,7 +12,7 @@
 __BWORD__ __getCar( __BWORD__ p ) {
     if (__pair_p(p) != __TRUE__) {
         printf("PAIR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return ((__pair__*)__unboxpair(p))->car;
@@ -21,7 +21,7 @@ __BWORD__ __getCar( __BWORD__ p ) {
 __BWORD__ __getCdr( __BWORD__ p ) {
     if (__pair_p(p) != __TRUE__) {
         printf("PAIR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return ((__pair__*)__unboxpair(p))->cdr;
@@ -30,7 +30,7 @@ __BWORD__ __getCdr( __BWORD__ p ) {
 void __setCar( __BWORD__ p, __BWORD__ newcar ) {
     if (__pair_p(p) != __TRUE__) {
         printf("PAIR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     ((__pair__*)__unboxpair(p))->car = newcar;
@@ -39,7 +39,7 @@ void __setCar( __BWORD__ p, __BWORD__ newcar ) {
 void __setCdr( __BWORD__ p, __BWORD__ newcdr ) {
     if (__pair_p(p) != __TRUE__) {
         printf("PAIR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     ((__pair__*)__unboxpair(p))->cdr = newcdr;
@@ -54,7 +54,7 @@ __BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
     
     if (newpair == NULL) {
         printf("Out of memory\n");
-        exit(1);
+        exit(__FAIL__);
     }
     else {
         bpair = __box((__WORD__)newpair, __PAIR_TYPE__);
@@ -72,7 +72,7 @@ __BWORD__ __vector( __BWORD__ size) {
 
     if (newvector == NULL) {
         printf("Out of memory\n");
-        exit(1);
+        exit(__FAIL__);
     }
     else {
         newvector->hdr = (usize << __VEC_LEN_SHFT__) + __VEC_TYPE__;
@@ -83,13 +83,13 @@ __BWORD__ __vector( __BWORD__ size) {
 __BWORD__ __vectorRef( __BWORD__ v, __BWORD__ ref) {
     if (__vector_p(v) == __FALSE__) {
         printf("VECTOR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     __WORD__ uref = __unboxint(ref);
     if ((uref < 0) || (uref >= __unboxint(__vectorLength(v)))) {
         printf("Error: Invalid vector index\n");
-        exit(1);        
+        exit(__FAIL__);        
     }
     
     return *((__BWORD__*)__unboxptd(v) + uref + 2);
@@ -98,13 +98,13 @@ __BWORD__ __vectorRef( __BWORD__ v, __BWORD__ ref) {
 void __vectorSet( __BWORD__ v, __BWORD__ ref, __BWORD__ val) {
     if (__vector_p(v) == __FALSE__) {
         printf("VECTOR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     __WORD__ uref = __unboxint(ref);
     if ((uref < 0) || (uref >= __unboxint(__vectorLength(v)))) {
         printf("Error: Invalid vector index\n");
-        exit(1);        
+        exit(__FAIL__);        
     }
 
     *((__BWORD__*)__unboxptd(v) + uref + 2) = val;
@@ -113,7 +113,7 @@ void __vectorSet( __BWORD__ v, __BWORD__ ref, __BWORD__ val) {
 __BWORD__ __vectorLength( __BWORD__ v ) {
     if (__vector_p(v) == __FALSE__) {
         printf("VECTOR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return __box(((__vector__*)__unboxptd(v))->hdr >> __VEC_LEN_SHFT__, __INT_TYPE__);
@@ -122,12 +122,12 @@ __BWORD__ __vectorLength( __BWORD__ v ) {
 __BWORD__ __vectorEqual( __BWORD__ v1, __BWORD__ v2) {
     if (__vector_p(v1) == __FALSE__) {
         printf("VECTOR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     if (__vector_p(v2) == __FALSE__) {
         printf("VECTOR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
     
     __WORD__ v1Len = __vectorLength(v1);
@@ -153,7 +153,7 @@ __BWORD__ __vector_p( __BWORD__ v ) {
 __BWORD__ __add( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return (a + b);
@@ -162,7 +162,7 @@ __BWORD__ __add( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __sub( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return (a - b);
@@ -171,7 +171,7 @@ __BWORD__ __sub( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __mul( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return __box(__unboxint(a) * __unboxint(b), __INT_TYPE__);
@@ -180,7 +180,7 @@ __BWORD__ __mul( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __quotient( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return __box(__unboxint(a) / __unboxint(b), __INT_TYPE__);
@@ -189,7 +189,7 @@ __BWORD__ __quotient( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __remainder( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return __box(__unboxint(a) % __unboxint(b), __INT_TYPE__);
@@ -230,7 +230,7 @@ __BWORD__ __list_p( __BWORD__ p ) {
 __BWORD__ __lt( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     if (a < b)
@@ -242,7 +242,7 @@ __BWORD__ __lt( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __gt( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     if (a > b)
@@ -254,7 +254,7 @@ __BWORD__ __gt( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __ge( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     if (a >= b)
@@ -266,7 +266,7 @@ __BWORD__ __ge( __BWORD__ a, __BWORD__ b ) {
 __BWORD__ __le( __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(a) == __FALSE__) || (__number_p(b) == __FALSE__)) {
         printf("NUMBER expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     if (a <= b)
@@ -311,7 +311,7 @@ __BWORD__ __string( char *s ) {
 
     if (newstring == NULL) {
         printf("Out of memory\n");
-        exit(1);
+        exit(__FAIL__);
     }
     else {
         newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
@@ -330,7 +330,7 @@ __BWORD__ __string_p( __BWORD__ s ) {
 __BWORD__ __stringLength( __BWORD__ s ) {
     if (__string_p(s) == __FALSE__) {
         printf("STRING expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     return __box((((__string__*)(__unboxptd(s)))->hdr) >> __STR_LEN_SHFT__, __INT_TYPE__);
@@ -339,13 +339,13 @@ __BWORD__ __stringLength( __BWORD__ s ) {
 __BWORD__ __stringRef( __BWORD__ s, __BWORD__ ref) {
     if (__string_p(s) == __FALSE__) {
         printf("STRING expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     __WORD__ uref = __unboxint(ref);
     if ((uref < 0) || (uref >= __stringLength(s))) {
         printf("Error: Invalid string index\n");
-        exit(1);        
+        exit(__FAIL__);        
     }
     
     return *((char*)__unboxptd(s) + uref + sizeof(__char__));
@@ -354,12 +354,12 @@ __BWORD__ __stringRef( __BWORD__ s, __BWORD__ ref) {
 __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
     if (__string_p(s1) == __FALSE__) {
         printf("STRING expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     if (__string_p(s2) == __FALSE__) {
         printf("STRING expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
     
     __WORD__ s1Len = __unboxint(__stringLength(s1));
@@ -379,7 +379,7 @@ __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
 void __display( __BWORD__ s ) {
     if (__string_p(s) == __FALSE__) {
         printf("STRING expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     printf((char*)__unboxptd(s) + sizeof(__string__));
@@ -396,7 +396,7 @@ __BWORD__ __char( char ch ) {
 
     if (newchar == NULL) {
         printf("Out of memory\n");
-        exit(1);
+        exit(__FAIL__);
     }
     else {
         newchar->hdr = ((__WORD__)ch << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
@@ -414,12 +414,12 @@ __BWORD__ __char_p( __BWORD__ ch ) {
 void __writeChar( __BWORD__ ch ) {
     if (__char_p(ch) == __FALSE__) {
         printf("CHAR expected\n");
-        exit(1);
+        exit(__FAIL__);
     }
 
     int c = (int)__unboxchar(ch);
     if (putchar(c) != c) {
         printf("Error writing char\n");
-        exit(1);
+        exit(__FAIL__);
     }
 }

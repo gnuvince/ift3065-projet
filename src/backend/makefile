@@ -21,11 +21,17 @@ OBJFILES := bytefield.o bytefield_utils.o box.o primitives.o primitives_utils.o 
 
 all: check
 
-devtest: $(TARGS)
+test_primitives32: $(OBJFILES)
+	$(CC) $(CFLAGS) $(OBJFILES) -DARCH_32 -o test_primitives.exe test_primitives.c
+	chmod +x $(CWD)/test_primitives.exe
+
+test_gc32: $(OBJFILES)
+	$(CC) $(CFLAGS) $(OBJFILES) -DARCH_32 -o test_gc.exe test_gc.c
+	chmod +x $(CWD)/test_gc.exe
 
 test_primitives: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives.exe test_primitives.c
-	$(CHMOD) +x $(CWD)/test_primitives.exe
+	chmod +x $(CWD)/test_primitives.exe
 
 test_gc: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
@@ -34,8 +40,10 @@ test_gc: $(OBJFILES)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-run:
+run_gc:
 	$(CWD)/test_gc.exe
+
+run_prim:
 	$(CWD)/test_primitives.exe
 
 check:

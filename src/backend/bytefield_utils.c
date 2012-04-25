@@ -13,6 +13,7 @@ char *sline = "-----------------------------------------------------------------
 
 void dumpWord( __bytefield__ *f, __WORD__ w ) {
     printf("%016llx", w);
+    /* printf("%08lx", w); */
 }
 
 void dumpAddr( __bytefield__ *f, __WORD__ addr ) {
@@ -269,7 +270,7 @@ void dumpPtd( __bytefield__ *f, __WORD__ pos ) {
         
     default:
         printf("Unrecognized object type.");
-        exit(1);        
+        exit(__FAIL__);        
     }
 
     dumpObject(f, nextpos);
@@ -289,7 +290,7 @@ void dumpPair( __bytefield__ *f, __WORD__ pos ) {
 
 void dumpLambda( __bytefield__ *f, __WORD__ pos ) {
     printf("Lambda dump not yet available!");
-    exit(1);
+    exit(__FAIL__);
 }
 
 void dumpObject( __bytefield__ *f, __WORD__ pos ) {
@@ -318,7 +319,7 @@ void dumpObject( __bytefield__ *f, __WORD__ pos ) {
             
         default:
             printf("Unrecognized object type.\n");            
-            exit(1);
+            exit(__FAIL__);
         }
     }
 }
