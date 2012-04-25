@@ -164,6 +164,14 @@
     ((letrec . ,rest)
      (error "improper letrec"))
 
+    ((let* ,bindings . ,Es)
+     (match bindings
+       (() error "improper let*")
+       (((,var ,val)) `(let ((,var ,(expand val))) ,@(expand Es)))
+       (((,var ,val) . ,rest) (expand
+                               `(let ((,var ,val))
+                                  (let* (,@rest) ,@Es))))))
+
     ((cond)
      `#f)
     ((cond (else ,E1 . ,Es))
@@ -228,7 +236,7 @@
          (boolean? x)
          (char? x)))))
 
-(define primitives '(+ - * / eq? = < > <= >=
+(define primitives '(+ - * / eq? = < > <= >= let
                      null? pair? cons car cdr set-car! set-cdr! display))
 
 (define (primitive? op)

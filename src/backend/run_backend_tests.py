@@ -10,6 +10,10 @@ TESTS = [
     ("test_if_else.scm", 3<<2),
     ("test_if_1.scm", 4<<2),
     ("test_prim.scm", 7<<2),
+    ("test_let1.scm", 3<<2),
+    ("test_let2.scm", 7<<2),
+    ("test_let3.scm", 7<<2),
+    ("test_letstar.scm", 7<<2),
 ]
 
 def main():

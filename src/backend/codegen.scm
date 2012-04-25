@@ -201,7 +201,6 @@
          (cons (list (compile-expr (car args) env)
                      "pushl %eax\n")
                (loop (env-fs++ env) (cdr args)))))
-   ;(gen-variable-access f env)
    (compile-expr f env)
    "call *%eax\n"
    "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
@@ -213,9 +212,12 @@
   (match primitive
     ((,f ,nb-args ,label)
      (list
-      (map (lambda (a)
-             (list (compile-expr a env)
-                   "pushl %eax\n")) args)
+      (let loop ((env env) (args args))
+        (if (null? args)
+            '()
+            (cons (list (compile-expr (car args) env)
+                        "pushl %eax\n")
+                  (loop (env-fs++ env) (cdr args)))))
       "call " label "\n"
       "addl $" (* 4 nb-args) ", %esp # cleaning up primitive\n"))))
 

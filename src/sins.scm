@@ -15,6 +15,7 @@
   (let* ((asm-tree (-> src
                        lex-from-file
                        parse
+                       expand
                        compile))
          (asm-code (with-output-to-string "" (lambda () (print asm-tree)))))
     (call-with-output-file dest
