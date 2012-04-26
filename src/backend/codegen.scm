@@ -4,7 +4,6 @@
 (include "../frontend/parser.scm")
 (include "../frontend/conversion.scm")
 (include "env.scm")
-;(include "runtime.scm")
 
 (define *false* 1)
 
@@ -138,26 +137,26 @@
         "je    " else-label "\n"
         then-comp
         "jmp   " endif-label "\n"
-        else-label ":\n"
+        else-label ":   # ELSE\n"
         else-comp
-        endif-label ":\n"
+        endif-label ":  # ENDIF\n"
         )))))
 
 
 
 (define (gen-number n)
-  ;;(list "movl $" n ", %eax\n"))
+ ;; (list "movl $" n ", %eax\n"))
 ;; Boxed version
   (list
    "movl $" n ", %eax\n"
    "pushl %eax\n"
    "call __boxint\n"
-   "addl $4, %esp            # end_nubmer\n"
+   "addl $4, %esp            # end_number\n"
    ))
 ;; More efficient version if we don't use the __box primitive.
 ;; (list
 ;;  "movl $" n ", %eax\n"
-;;  "mul  $4, %eax\n"))
+;;  "mull  $4, %eax\n"))
 
 
 (define (gen-variable-access var env)
@@ -166,15 +165,20 @@
     ((,varname global ,label) (list "movl " label ", %eax\n"))))
 
 
+(define (push-args args env)
+  (let loop ((env env) (args (reverse args)) (acc '()))
+    (if (null? args)
+        acc
+        (loop (env-fs++ env)
+              (cdr args)
+              (append acc
+                      (list (compile-expr (car args) env)
+                            "pushl %eax\n"))))))
+
 
 (define (gen-fun-call f args env)
   (list
-   (let loop ((env env) (args args))
-     (if (null? args)
-         '()
-         (cons (list (compile-expr (car args) env)
-                     "pushl %eax\n")
-               (loop (env-fs++ env) (cdr args)))))
+   (push-args args env)
    (compile-expr f env)
    "call *%eax\n"
    "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
@@ -186,14 +190,9 @@
   (match primitive
     ((,f ,nb-args ,label)
      (list
-      (let loop ((env env) (args args))
-        (if (null? args)
-            '()
-            (cons (list (compile-expr (car args) env)
-                        "pushl %eax\n")
-                  (loop (env-fs++ env) (cdr args)))))
+      (push-args args env)
       "call " label "\n"
-      "addl $" (* 4 nb-args) ", %esp # cleaning up primitive\n"))))
+      "addl $" (* 4 nb-args) ", %esp\n"))))
 
 
 

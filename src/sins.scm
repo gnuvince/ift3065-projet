@@ -12,8 +12,9 @@
 
 
 (define (compile-file src dest)
-  (let* ((asm-tree (-> src
-                       lex-from-file
+  (let* ((runtime-tokenization (lex-from-file "runtime.scm"))
+         (program-tokenization (lex-from-file src))
+         (asm-tree (-> (append runtime-tokenization program-tokenization)
                        parse
                        expand
                        compile))

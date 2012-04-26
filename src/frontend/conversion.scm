@@ -110,7 +110,7 @@
      (error "improper set!"))
 
     ((define (,v . ,params) . ,Es)
-     `(define ,v ,(expand `(lambda ,params ,@Es))))
+     (expand `(define ,v (lambda ,params ,@Es))))
     ((define ,v ,E1)
      ;`(define ,v ,(expand E1)))
      (expand `(set! ,v ,E1)))
@@ -615,5 +615,5 @@
       expand
       alpha-conv
       assign-conv
-      closure-conv
+      ;closure-conv
       ))

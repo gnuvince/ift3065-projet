@@ -6,7 +6,7 @@
 #             -Wuninitialized -Wconversion -Wstrict-prototypes
 SHELL = /bin/sh
 
-CFLAGS := -g -std=c99 $(WARNINGS)
+CFLAGS := -m32 -O0 -g -std=c99 $(WARNINGS)
 
 CC := gcc
 
@@ -38,7 +38,8 @@ test_gc: $(OBJFILES)
 	chmod +x $(CWD)/test_gc.exe
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	#$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -DARCH_32 -c -o $@ $<
 
 run_gc:
 	$(CWD)/test_gc.exe
