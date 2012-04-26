@@ -14,7 +14,12 @@ char *line = "==================================================================
 int main(void)
 {
     allocByteField(getHeap(), __PAIRSIZE__);
+    dumpWord(getHeap(), (__WORD__)__TRUE__); printf("\n");
+    dumpWord(getHeap(), (__WORD__)__FALSE__); printf("\n");
+    dumpWord(getHeap(), (__WORD__)__NULL__); printf("\n");
 
+    dumpWord(getHeap(), __add(__boxint(3), __boxint(4))); printf("\n");
+    
     __VAR__ p1;
     p1 = allocVar();
 
@@ -98,7 +103,6 @@ int main(void)
     __gc(getHeap(), getNewHeap());
     dumpByteField(getHeap());
     printf(line);
-
     
     freeByteField(getHeap());
     
