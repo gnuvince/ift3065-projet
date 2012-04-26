@@ -19,13 +19,17 @@
         (env-symbols env)))
 
 
+(define (env-add-symbol env s scope value)
+  (list (+ (env-fs env) word-size)
+        (cons (list s scope value)
+              (env-symbols env))))
+
 ;; Add a local symbol tuple to the environment:
 ;; (<symbol> local <offset>)
 ;; Decrease the frame size.
 (define (env-add-local-symbol env s)
-  (list (+ (env-fs env) word-size)
-        (cons (list s 'local (env-fs env))
-              (env-symbols env))))
+  (env-add-symbol env s 'local (env-fs env)))
+
 
 
 ;; Find a symbol in the environment; if it doesn't exist, return a

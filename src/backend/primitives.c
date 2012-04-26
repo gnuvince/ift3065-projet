@@ -48,10 +48,10 @@ void __setCdr( __BWORD__ p, __BWORD__ newcdr ) {
 __BWORD__  __cons( __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
-    
+
     newpair = (__pair__*)allocBlock(getHeap(), __PAIRSIZE__);
     newpair->hdr = __PAIR_TYPE__;
-    
+
     if (newpair == NULL) {
         printf("Out of memory\n");
         exit(__FAIL__);
@@ -89,9 +89,9 @@ __BWORD__ __vectorRef( __BWORD__ v, __BWORD__ ref) {
     __WORD__ uref = __unboxint(ref);
     if ((uref < 0) || (uref >= __unboxint(__vectorLength(v)))) {
         printf("Error: Invalid vector index\n");
-        exit(__FAIL__);        
+        exit(__FAIL__);
     }
-    
+
     return *((__BWORD__*)__unboxptd(v) + uref + 2);
 }
 
@@ -104,7 +104,7 @@ void __vectorSet( __BWORD__ v, __BWORD__ ref, __BWORD__ val) {
     __WORD__ uref = __unboxint(ref);
     if ((uref < 0) || (uref >= __unboxint(__vectorLength(v)))) {
         printf("Error: Invalid vector index\n");
-        exit(__FAIL__);        
+        exit(__FAIL__);
     }
 
     *((__BWORD__*)__unboxptd(v) + uref + 2) = val;
@@ -129,9 +129,9 @@ __BWORD__ __vectorEqual( __BWORD__ v1, __BWORD__ v2) {
         printf("VECTOR expected\n");
         exit(__FAIL__);
     }
-    
+
     __WORD__ v1Len = __vectorLength(v1);
-    
+
     if (v1Len != __vectorLength(v2))
         return __FALSE__;
 
@@ -139,7 +139,7 @@ __BWORD__ __vectorEqual( __BWORD__ v1, __BWORD__ v2) {
         if (__vectorRef(v1, i) != __vectorRef(v2, i))
             return __FALSE__;
     }
-    
+
     return __TRUE__;
 }
 
@@ -220,7 +220,7 @@ __BWORD__ __pair_p( __BWORD__ p ) {
 __BWORD__ __list_p( __BWORD__ p ) {
     if (__null_p(p) == __TRUE__)
         return __TRUE__;
-    
+
     if(__boxpair_p(p))
         return __list_p(__getCdr(p));
     else
@@ -293,7 +293,7 @@ __BWORD__ __equal( __BWORD__ a, __BWORD__ b ) {
     if (__boxtype(a) == __PTD_TYPE__)
         return __equalPtd(a, b);
     else
-        return __eq(a, b);    
+        return __eq(a, b);
 }
 
 __BWORD__ __eq( __BWORD__ a, __BWORD__ b ) {
@@ -345,9 +345,9 @@ __BWORD__ __stringRef( __BWORD__ s, __BWORD__ ref) {
     __WORD__ uref = __unboxint(ref);
     if ((uref < 0) || (uref >= __stringLength(s))) {
         printf("Error: Invalid string index\n");
-        exit(__FAIL__);        
+        exit(__FAIL__);
     }
-    
+
     return *((char*)__unboxptd(s) + uref + sizeof(__char__));
 }
 
@@ -361,9 +361,9 @@ __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
         printf("STRING expected\n");
         exit(__FAIL__);
     }
-    
+
     __WORD__ s1Len = __unboxint(__stringLength(s1));
-    
+
     if (s1Len != __unboxint(__stringLength(s2)))
         return __FALSE__;
 
@@ -371,9 +371,9 @@ __BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 ) {
         if (__stringRef(s1, __boxint(i)) != __stringRef(s2, __boxint(i)))
             return __FALSE__;
     }
-    
+
     return __TRUE__;
-    
+
 }
 
 void __display( __BWORD__ s ) {
@@ -410,7 +410,7 @@ __BWORD__ __char_p( __BWORD__ ch ) {
     else
         return __FALSE__;
 }
- 
+
 void __writeChar( __BWORD__ ch ) {
     if (__char_p(ch) == __FALSE__) {
         printf("CHAR expected\n");

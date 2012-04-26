@@ -17,6 +17,16 @@ TESTS = [
     ("test_set.scm", 4<<2),
     ("test_define.scm", 3<<2),
     ("test_define2.scm", 3<<2),
+    ("test_func.scm", 3<<2),
+    ("test_func2.scm", 12<<2),
+    ("test_func3.scm", 6<<2),
+    ("test_rec.scm", 42<<2),
+    ("test_rec2.scm", 5<<2),
+    ("test_let_lambda_1.scm", 7<<2),
+    ("test_let_lambda_2.scm", 7<<2),
+
+    ("test_fib.scm", 13<<2),
+    ("test_fact.scm", 24<<2),
 ]
 
 def main():
