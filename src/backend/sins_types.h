@@ -4,13 +4,16 @@
 #include <stdint.h>
 
 #ifdef ARCH_32
-#define word_t  uint32_t
-#else
-#define word_t  uint64_t
-#endif
 
-/* et tu compiles avec gcc -DIS_32_BITS si tu veux 32 bits, et sans le */
-/* - -D... si tu veux 64 bits. */
+#define word_t  uint32_t
+#define wordFormat  "%08lx"
+
+#else
+
+#define word_t  uint64_t
+#define wordFormat  "%016llx"
+
+#endif
 
 #define bword_t word_t
 

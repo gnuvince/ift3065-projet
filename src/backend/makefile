@@ -4,9 +4,17 @@
 #             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
 #             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
 #             -Wuninitialized -Wconversion -Wstrict-prototypes
+
+ARCH32 ?= 1
+ifeq (ARCH32, 1)
+    CFLAGS =  -DARCH32 -m32 -g -std=c99 $(WARNINGS)
+else
+	CFLAGS =  -g -std=c99 $(WARNINGS)
+endif
+
 SHELL = /bin/sh
 
-CFLAGS := -g -std=c99 $(WARNINGS)
+#CFLAGS := -g -std=c99 $(WARNINGS)
 
 CC := gcc
 
@@ -22,11 +30,11 @@ OBJFILES := bytefield.o bytefield_utils.o box.o primitives.o primitives_utils.o 
 all: check
 
 test_primitives32: $(OBJFILES)
-	$(CC) $(CFLAGS) $(OBJFILES) -DARCH_32 -o test_primitives.exe test_primitives.c
+	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives.exe test_primitives.c
 	chmod +x $(CWD)/test_primitives.exe
 
 test_gc32: $(OBJFILES)
-	$(CC) $(CFLAGS) $(OBJFILES) -DARCH_32 -o test_gc.exe test_gc.c
+	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
 	chmod +x $(CWD)/test_gc.exe
 
 test_primitives: $(OBJFILES)
