@@ -17,6 +17,8 @@
          (asm-tree (-> (append runtime-tokenization program-tokenization)
                        parse
                        expand
+                       alpha-conv
+                       assign-conv
                        compile))
          (asm-code (with-output-to-string "" (lambda () (print asm-tree)))))
     (call-with-output-file dest
