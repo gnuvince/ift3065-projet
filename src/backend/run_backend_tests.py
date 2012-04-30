@@ -24,9 +24,9 @@ TESTS = [
     ("test_rec2.scm", 5<<2),
     ("test_let_lambda_1.scm", 7<<2),
     ("test_let_lambda_2.scm", 7<<2),
-
     ("test_fib.scm", 13<<2),
     ("test_fact.scm", 24<<2),
+    ("test_loop1.scm", 5<<2),
 ]
 
 def main():
