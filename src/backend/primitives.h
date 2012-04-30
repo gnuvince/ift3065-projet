@@ -76,7 +76,9 @@ void __display( _S_, __BWORD__ s );
 
 void __newline( );
 
-__BWORD__ __char( char ch );
+__BWORD__ __charToInteger( _S_, __BWORD__ ch );
+
+__BWORD__ __integerToChar( _S_, __BWORD__ ch );
 
 __BWORD__ __char_p( _S_, __BWORD__ c );
 

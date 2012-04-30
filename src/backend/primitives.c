@@ -386,10 +386,14 @@ void __display( _S_, __BWORD__ s ) {
 }
 
 void __newline( ) {
-    __writeChar(_A1_, __char(__CH_newline__));
+    __writeChar(_A1_, __char(_A1_, __CH_newline__));
 }
 
-__BWORD__ __char( char ch ) {
+__BWORD__ __charToInteger( _S_, __BWORD__ ch ) {
+    return __unboxchar(ch);
+}
+
+__BWORD__ __integerToChar( _S_, __BWORD__ i ) {
     __char__ *newchar = NULL;
 
     newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
@@ -399,7 +403,7 @@ __BWORD__ __char( char ch ) {
         exit(__FAIL__);
     }
     else {
-        newchar->hdr = ((__WORD__)ch << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
+        newchar->hdr = ((__BWORD__)i << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
         return __boxptd(_A1_, (__WORD__)newchar);
     }
 }

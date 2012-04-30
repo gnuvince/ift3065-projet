@@ -89,8 +89,8 @@ __WORD__ __unbox( _S_, __BWORD__ v ) {
     }
 }
 
-char __unboxchar( _S_, __BWORD__ ch ) {
-    return (char)((((__char__*)__unboxptd(_A1_, ch))->hdr >> __CHAR_VAL_SHFT__) & __CHAR_MASK__);
+__BWORD__ __unboxchar( _S_, __BWORD__ ch ) {
+    return __boxint(_A1_, ((((__char__*)__unboxptd(_A1_, ch))->hdr >> __CHAR_VAL_SHFT__) & __CHAR_MASK__));
 }
 
 /*                        */

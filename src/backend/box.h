@@ -33,7 +33,7 @@ __WORD__ __unboxlambda( _S_, __BWORD__ v );
 
 __WORD__ __unbox( _S_, __BWORD__ v );
 
-char __unboxchar( _S_, __BWORD__ ch );
+__BWORD__ __unboxchar( _S_, __BWORD__ ch );
 
 /*                        */
 /* Boxed types predicates */
