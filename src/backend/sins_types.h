@@ -3,16 +3,18 @@
 
 #include <stdint.h>
 
-#ifdef ARCH_32
+#ifdef ARCH32
 
 #define word_t      uint32_t
 #define wordFormat  "%08lx"
+#define intFormat  "%lu"
 #define pnum_t      int32_t
 
 #else
 
 #define word_t      uint64_t
 #define wordFormat  "%016llx"
+#define intFormat  "%llu"
 #define pnum_t      int64_t
 
 #endif

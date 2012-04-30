@@ -14,9 +14,9 @@ char *line = "==================================================================
 int main(void)
 {
     allocByteField(getHeap(), __PAIRSIZE__);
-    dumpWord(getHeap(), (__WORD__)__TRUE__); printf("\n");
-    dumpWord(getHeap(), (__WORD__)__FALSE__); printf("\n");
-    dumpWord(getHeap(), (__WORD__)__NULL__); printf("\n");
+    /* dumpWord(getHeap(), (__WORD__)__TRUE__); printf("\n"); */
+    /* dumpWord(getHeap(), (__WORD__)__FALSE__); printf("\n"); */
+    /* dumpWord(getHeap(), (__WORD__)__NULL__); printf("\n"); */
 
     dumpWord(getHeap(), __add(_A2_, __boxint(_A1_, 3), __boxint(_A1_, 4))); printf("\n");
     

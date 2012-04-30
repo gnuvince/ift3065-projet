@@ -15,6 +15,10 @@ void dumpWord( __bytefield__ *f, __WORD__ w ) {
     printf(wordFormat, w);
 }
 
+void dumpIntWord( __bytefield__ *f, __WORD__ w ) {
+    printf(intFormat, w);
+}
+
 void dumpAddr( __bytefield__ *f, __WORD__ addr ) {
     dumpWord(f, addr);
     printf("   ");
@@ -30,7 +34,7 @@ void dumpPtdState( __bytefield__ *f, __WORD__ pos ) {
     
     dumpAddr(f, addr);
     dumpValue(f, *(__WORD__*)addr);
-    printf("state: ");
+    printf("state: 0x");
     dumpWord(f, *(__WORD__*)addr);
     printf("\n");
 }
@@ -40,7 +44,7 @@ void dumpPairHdr( __bytefield__ *f, __WORD__ pos ) {
 
     dumpAddr(f, addr);
     dumpValue(f, *(__WORD__*)addr);
-    printf("pair at: ");
+    printf("pair at: 0x");
     dumpWord(f, addr);
     printf("\n");
 }
@@ -50,7 +54,7 @@ void dumpPairState( __bytefield__ *f, __WORD__ pos ) {
 
     dumpAddr(f, addr);
     dumpValue(f, *(__WORD__*)addr);
-    printf("state: ");
+    printf("state: 0x");
     dumpWord(f, *(__WORD__*)addr);
     printf("\n");
 }
@@ -65,7 +69,9 @@ void dumpVecIndex( __bytefield__ *f, __ptd_hdr__ *phdr, __WORD__ i ) {
     dumpValue(f, *(__WORD__*)cellAddr);
     
     /* Desc */
-    printf("v[%llu]: ", i);
+    printf("v[");
+    dumpIntWord(f, i);
+    printf("]: ");
     dumpWord(f, *(__WORD__*)cellAddr);
     printf("\n");
 }
@@ -82,7 +88,9 @@ void dumpVec( __bytefield__ *f, __WORD__ pos ) {
     
     /* Desc */
     __WORD__ vlen = (__WORD__)(phdr->hdr >> __VEC_LEN_SHFT__);
-    printf("vector size: %llu\n", vlen);
+    printf("vector size: ");
+    dumpIntWord(f, vlen);
+    printf("\n");
 
     /* State */
     dumpPtdState(f, pos + __WORDSIZE__);
@@ -121,7 +129,9 @@ void dumpStr( __bytefield__ *f, __WORD__ pos ) {
     /* Desc */
     /* __WORD__ slen = (__WORD__)(phdr->hdr >> __STR_LEN_SHFT__); */
     __WORD__ slen = __unboxint(_A1_, __stringLength(_A1_, __boxptd(_A1_, addr)));
-    printf("string length: %llu\n", slen);
+    printf("string length: ");
+    dumpIntWord(f, slen);
+    printf("\n");
 
     /* State */
     dumpPtdState(f, pos + __WORDSIZE__);
@@ -181,7 +191,7 @@ void dumpInt( __bytefield__ *f, __WORD__ pos ) {
                 
     /* Desc */
     printf("Boxed integer: ");
-    dumpWord(f, __unboxint(_A1_, val));
+    dumpIntWord(f, __unboxint(_A1_, val));
     printf("\n");
 }
 
@@ -330,10 +340,16 @@ void dumpByteField( __bytefield__ *f ) {
     __WORD__ size = f->fieldsize;
 
     printf(dline);
-    printf("ByteField\n");
-    printf("  start: %016llx\n", root);
-    printf("  size: %llu\n", size);
-    printf("  end: %llu\n", end);
+    printf("Heap\n");
+    printf("  start at: 0x");
+    dumpWord(f, root);
+    printf("\n");
+    printf("  size: ");
+    dumpIntWord(f, size);
+    printf("\n");
+    printf("  end: ");
+    dumpIntWord(f, end);
+    printf("\n");
 
     dumpObject(f, pos);
 
