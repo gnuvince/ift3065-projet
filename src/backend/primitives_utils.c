@@ -10,11 +10,11 @@ void print_bword(__BWORD__ v) {
 }
 
 void print_pair(__BWORD__ p) {
-    if (__null_p(p) == __TRUE__)
+    if (__null_p(_A1_, p) == __TRUE__)
         printf("()");
     else {
         printf("(");
-        printf("%llu . %llu", __getCar(p), __getCdr(p));
+        printf("%llu . %llu", __getCar(_A1_, p), __getCdr(_A1_, p));
         printf(")");
     }
 }
@@ -29,11 +29,11 @@ void print_byteField(__bytefield__ *f) {
 }
 
 void print_vector(__BWORD__ v) {
-    if (__vector_p(v) == __FALSE__)
+    if (__vector_p(_A1_, v) == __FALSE__)
         printf("Illegal vector\n");
     else {
         printf("Vector\n");
-        printf("size: %llu, addr: %llu\n", __unboxint(__vectorLength(v)), __unboxptd(v));        
+        printf("size: %llu, addr: %llu\n", __unboxint(_A1_, __vectorLength(_A1_, v)), __unboxptd(_A1_, v));        
     }
 }
 

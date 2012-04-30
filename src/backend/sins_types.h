@@ -3,15 +3,19 @@
 
 #include <stdint.h>
 
-#ifdef ARCH_32
+#ifdef ARCH32
 
-#define word_t  uint32_t
+#define word_t      uint32_t
 #define wordFormat  "%08lx"
+#define intFormat  "%lu"
+#define pnum_t      int32_t
 
 #else
 
-#define word_t  uint64_t
+#define word_t      uint64_t
 #define wordFormat  "%016llx"
+#define intFormat  "%llu"
+#define pnum_t      int64_t
 
 #endif
 
@@ -34,6 +38,7 @@ typedef struct {
 typedef __ptd_hdr__ __vector__;
 typedef __ptd_hdr__ __string__;
 typedef __ptd_hdr__ __char__;
+typedef __ptd_hdr__ __sym__;
 
 typedef struct {
     __WORD__  hdr;

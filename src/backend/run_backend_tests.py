@@ -33,7 +33,8 @@ def main():
     for filename, exp_result in TESTS:
         subprocess.call("gsi ../sins.scm -e '(compile-file \"tests/%s\" \"/tmp/compilation_test.s\")'" %
                         filename, shell=True)
-        subprocess.call("gcc -m32 -O0 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
+#        subprocess.call("gcc -m32 -O0 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
+        subprocess.call("gcc -O0 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
         result = subprocess.call("/tmp/compilation_test")
         if result == exp_result:
             print "%s: OK" % (filename)

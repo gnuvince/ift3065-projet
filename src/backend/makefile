@@ -9,7 +9,7 @@ ARCH32 ?= 1
 ifeq ($(ARCH32), 1)
     CFLAGS =  -DARCH32 -m32 -g -std=c99 $(WARNINGS)
 else
-	CFLAGS =  -g -std=c99 $(WARNINGS)
+    CFLAGS =  -g -std=c99 $(WARNINGS)
 endif
 
 SHELL = /bin/sh

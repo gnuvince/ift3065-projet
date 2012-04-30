@@ -22,13 +22,16 @@
 #define __SUB_MASK__       255
 #define __CHAR_MASK__      255
 
-#define __INT_TYPE__       0    /* x x 0 0 */
-#define __PTD_TYPE__       1    /* x x 0 1 */
-#define __PAIR_TYPE__      2    /* x x 1 0 */
-#define __LAMBDA_TYPE__    3    /* x x 1 1 */
-#define __VEC_TYPE__       5    /* 0 1 0 1 */
-#define __STR_TYPE__       9    /* 1 0 0 1 */
-#define __CHAR_TYPE__     13    /* 1 1 0 1 */
+/* Base types */
+#define __INT_TYPE__       0    /* x x x 0 0 */
+#define __PTD_TYPE__       1    /* x x x 0 1 */
+#define __PAIR_TYPE__      2    /* x x x 1 0 */
+#define __LAMBDA_TYPE__    3    /* x x x 1 1 */
+/* PTD subtypes */
+#define __VEC_TYPE__       5    /* 0 0 1 0 1 */
+#define __STR_TYPE__       9    /* 0 1 0 0 1 */
+#define __CHAR_TYPE__     13    /* 0 1 1 0 1 */
+#define __SYM_TYPE__      17    /* 1 0 0 0 1 */
 
 #define __INT_SHFT__       2
 #define __PTD_SHFT__       0
@@ -38,9 +41,14 @@
 #define __STR_LEN_SHFT__   8
 #define __CHAR_VAL_SHFT__  8
 
-#define __FALSE__ ((__BWORD__) __PTD_TYPE__)
-#define __TRUE__  (((__BWORD__)1 << ((__BWORDSIZE__ * 8) - 1)) + __PTD_TYPE__)
-#define __NULL__  ((__BWORD__) __PAIR_TYPE__)
+/* Std calling protocol dummy params */
+#define _A1_ __NULL__, 1
+#define _A2_ __NULL__, 2
+#define _S_ __BWORD__ clo, int num
+
+#define __FALSE__ ((__BWORD__) __PTD_TYPE__)                       /* 1 */
+#define __TRUE__  (((__BWORD__)1 << __BOX_SIZE__) + __PTD_TYPE__)  /* 5 */
+#define __NULL__  ((__BWORD__) __PAIR_TYPE__)                      /* 2 */
 
 /* ASCII chars */
 #define __CH_0__    48

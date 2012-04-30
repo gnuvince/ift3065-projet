@@ -17,7 +17,7 @@ void __gc( __bytefield__ *from, __bytefield__ *to ) {
     for (__VAR__ i = 0; i < getVarNext(); ++i) {
         obj = getVar(i);
         
-        if ((obj != __NULL__) && (__boxtype(obj) != __INT_TYPE__) && (gc_isAlive(obj))) {
+        if ((obj != __NULL__) && (__boxtype(_A1_, obj) != __INT_TYPE__) && (gc_isAlive(obj))) {
             setVar(i, gc_copyObject(obj, from, to));
         }
     }
@@ -27,8 +27,8 @@ void __gc( __bytefield__ *from, __bytefield__ *to ) {
 }
 
 __BWORD__ gc_copyObject( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to ) {
-    __WORD__ objsize = __boxsize(obj);
-    __WORD__ objtype = __boxtype(obj);
+    __WORD__ objsize = __boxsize(_A1_, obj);
+    __WORD__ objtype = __boxtype(_A1_, obj);
     __BWORD__ newobj;
     void *loc;
 
@@ -41,20 +41,20 @@ __BWORD__ gc_copyObject( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to )
         }
 
         /* Create new obj */
-        newobj = __box((__WORD__)loc, objtype);
+        newobj = __box(_A2_, (__WORD__)loc, objtype);
         
         /* Copy the object */
-        memcpy(loc, (void*)__unbox(obj), (size_t)objsize);
+        memcpy(loc, (void*)__unbox(_A1_, obj), (size_t)objsize);
 
         /* Copy the sub-objects */
         if (objtype == __PAIR_TYPE__) {
-            __setCar(newobj, gc_copyObject(__getCar(obj), from, to));
-            __setCdr(newobj, gc_copyObject(__getCdr(obj), from, to));
+            __setCar(_A2_, newobj, gc_copyObject(__getCar(_A1_, obj), from, to));
+            __setCdr(_A2_, newobj, gc_copyObject(__getCdr(_A1_, obj), from, to));
         }
 
-        else if ((objtype == __PTD_TYPE__) && (__boxsubtype(obj) == __VEC_TYPE__)) {
-            for (__WORD__ i = 0; i < __unboxint(__vectorLength(obj)); ++i)
-                __vectorSet(newobj, __boxint(i), gc_copyObject(__vectorRef(obj, __boxint(i)), from, to));
+        else if ((objtype == __PTD_TYPE__) && (__boxsubtype(_A1_, obj) == __VEC_TYPE__)) {
+            for (__WORD__ i = 0; i < __unboxint(_A1_, __vectorLength(_A1_, obj)); ++i)
+                __vectorSet(_A2_, newobj, __boxint(_A1_, i), gc_copyObject(__vectorRef(_A2_, obj, __boxint(_A1_, i)), from, to));
         }
         
         /* Tag object as moved */
@@ -67,7 +67,7 @@ __BWORD__ gc_copyObject( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to )
 }
 
 void gc_setFlags( __BWORD__ obj, __WORD__ flags ) {
-    __ptd_hdr__ *p = (__ptd_hdr__*)(__unbox(obj));
+    __ptd_hdr__ *p = (__ptd_hdr__*)(__unbox(_A1_, obj));
     p->state = (p->state | flags);
 }
 
@@ -80,9 +80,9 @@ void gc_setMoved( __BWORD__ obj ) {
 }
 
 int gc_isAlive( __BWORD__ obj ) {
-    return ((((__ptd_hdr__*)(__unbox(obj)))->state & __GC_MASK__) == __GC_ALIVE__);
+    return ((((__ptd_hdr__*)(__unbox(_A1_, obj)))->state & __GC_MASK__) == __GC_ALIVE__);
 }
 
 int gc_isMoved( __BWORD__ obj ) {
-    return ((((__ptd_hdr__*)(__unbox(obj)))->state & __GC_MASK__) == __GC_MOVED__);
+    return ((((__ptd_hdr__*)(__unbox(_A1_, obj)))->state & __GC_MASK__) == __GC_MOVED__);
 }
