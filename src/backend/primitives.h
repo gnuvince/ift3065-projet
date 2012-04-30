@@ -8,78 +8,78 @@
 #include "box.h"
 #include "bytefield.h"
 
-__BWORD__ __getCar( __BWORD__ p );
+__BWORD__ __getCar( _S_, __BWORD__ p );
 
-__BWORD__ __getCdr( __BWORD__ p );
+__BWORD__ __getCdr( _S_, __BWORD__ p );
 
-void __setCar( __BWORD__ p, __BWORD__ newcar );
+void __setCar( _S_, __BWORD__ p, __BWORD__ newcar );
 
-void __setCdr( __BWORD__ p, __BWORD__ newcdr );
+void __setCdr( _S_, __BWORD__ p, __BWORD__ newcdr );
 
-__BWORD__ __cons( __BWORD__ car, __BWORD__ cdr );
+__BWORD__ __cons( _S_, __BWORD__ car, __BWORD__ cdr );
 
-__BWORD__ __vector( __BWORD__ size);
+__BWORD__ __vector( _S_, __BWORD__ size);
 
-__BWORD__ __vectorRef( __BWORD__ v, __BWORD__ ref);
+__BWORD__ __vectorRef( _S_, __BWORD__ v, __BWORD__ ref);
 
-void __vectorSet( __BWORD__ v, __BWORD__ ref, __BWORD__ val);
+void __vectorSet( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val);
 
-__BWORD__ __vectorLength( __BWORD__ v );
+__BWORD__ __vectorLength( _S_, __BWORD__ v );
 
-__BWORD__ __vectorEqual( __BWORD__ v1, __BWORD__ v2);
+__BWORD__ __vectorEqual( _S_, __BWORD__ v1, __BWORD__ v2);
 
-__BWORD__ __vector_p( __BWORD__ v );
+__BWORD__ __vector_p( _S_, __BWORD__ v );
 
-__BWORD__ __add( __BWORD__ a, __BWORD__ b );
+__BWORD__ __add( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __sub( __BWORD__ a, __BWORD__ b );
+__BWORD__ __sub( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __mul( __BWORD__ a, __BWORD__ b );
+__BWORD__ __mul( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __quotient( __BWORD__ a, __BWORD__ b );
+__BWORD__ __quotient( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __remainder( __BWORD__ a, __BWORD__ b );
+__BWORD__ __remainder( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__  __number_p( __BWORD__ n );
+__BWORD__  __number_p( _S_, __BWORD__ n );
 
-__BWORD__  __null_p( __BWORD__ p );
+__BWORD__  __null_p( _S_, __BWORD__ p );
 
-__BWORD__ __pair_p( __BWORD__ p );
+__BWORD__ __pair_p( _S_, __BWORD__ p );
 
-__BWORD__ __list_p( __BWORD__ p );
+__BWORD__ __list_p( _S_, __BWORD__ p );
 
-__BWORD__ __lt( __BWORD__ a, __BWORD__ b );
+__BWORD__ __lt( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __gt( __BWORD__ a, __BWORD__ b );
+__BWORD__ __gt( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __ge( __BWORD__ a, __BWORD__ b );
+__BWORD__ __ge( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __le( __BWORD__ a, __BWORD__ b );
+__BWORD__ __le( _S_, __BWORD__ a, __BWORD__ b );
 
-__BWORD__ __equalPtd( __BWORD__ b1, __BWORD__ b2 );
+__BWORD__ __equalPtd( _S_, __BWORD__ b1, __BWORD__ b2 );
 
-__BWORD__ __equal( __BWORD__ b1, __BWORD__ b2 );
+__BWORD__ __equal( _S_, __BWORD__ b1, __BWORD__ b2 );
 
-__BWORD__ __eq( __BWORD__ b1, __BWORD__ b2 );
+__BWORD__ __eq( _S_, __BWORD__ b1, __BWORD__ b2 );
 
 __BWORD__ __string( char *s );
 
-__BWORD__ __string_p( __BWORD__ s );
+__BWORD__ __string_p( _S_, __BWORD__ s );
 
-__BWORD__ __stringLength( __BWORD__ s );
+__BWORD__ __stringLength( _S_, __BWORD__ s );
 
-__BWORD__ __stringRef( __BWORD__ s, __BWORD__ ref);
+__BWORD__ __stringRef( _S_, __BWORD__ s, __BWORD__ ref);
 
-__BWORD__ __stringEqual( __BWORD__ s1, __BWORD__ s2 );
+__BWORD__ __stringEqual( _S_, __BWORD__ s1, __BWORD__ s2 );
 
-void __display( __BWORD__ s );
+void __display( _S_, __BWORD__ s );
 
 void __newline( );
 
 __BWORD__ __char( char ch );
 
-__BWORD__ __char_p( __BWORD__ c );
+__BWORD__ __char_p( _S_, __BWORD__ c );
 
-void __writeChar( __BWORD__ c );
+void __writeChar( _S_, __BWORD__ c );
 
 #endif

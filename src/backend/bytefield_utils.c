@@ -120,7 +120,7 @@ void dumpStr( __bytefield__ *f, __WORD__ pos ) {
     
     /* Desc */
     /* __WORD__ slen = (__WORD__)(phdr->hdr >> __STR_LEN_SHFT__); */
-    __WORD__ slen = __unboxint(__stringLength(__boxptd(addr)));
+    __WORD__ slen = __unboxint(_A1_, __stringLength(_A1_, __boxptd(_A1_, addr)));
     printf("string length: %llu\n", slen);
 
     /* State */
@@ -181,7 +181,7 @@ void dumpInt( __bytefield__ *f, __WORD__ pos ) {
                 
     /* Desc */
     printf("Boxed integer: ");
-    dumpWord(f, __unboxint(val));
+    dumpWord(f, __unboxint(_A1_, val));
     printf("\n");
 }
 
@@ -189,7 +189,7 @@ void dumpBoxed( __bytefield__ *f, __WORD__ pos ) {
     /* Address */
     __WORD__ addr = ( __WORD__)f->field + pos;
     __BWORD__ bval = *(__BWORD__*)addr;
-    __WORD__ t = __boxtype(bval);
+    __WORD__ t = __boxtype(_A1_, bval);
     __WORD__ saddr = 0;
     __WORD__ subt;
 
@@ -205,8 +205,8 @@ void dumpBoxed( __bytefield__ *f, __WORD__ pos ) {
         printf ("Boxed ");
         switch (t) {
         case __PTD_TYPE__:
-            saddr = __unboxptd(bval);
-            subt = __boxsubtype(saddr);
+            saddr = __unboxptd(_A1_, bval);
+            subt = __boxsubtype(_A1_, saddr);
             if (subt == __VEC_TYPE__)
                 printf("vector at ");
             else if (subt == __STR_TYPE__)
@@ -216,12 +216,12 @@ void dumpBoxed( __bytefield__ *f, __WORD__ pos ) {
             break;
             
         case __PAIR_TYPE__:
-            saddr = __unboxpair(bval);
+            saddr = __unboxpair(_A1_, bval);
             printf("pair at ");
             break;
             
         case __LAMBDA_TYPE__:
-            saddr = __unboxlambda(bval);
+            saddr = __unboxlambda(_A1_, bval);
             printf("lambda at ");
             break;
             
@@ -237,23 +237,23 @@ void dumpBoxed( __bytefield__ *f, __WORD__ pos ) {
 
 void dumpPtd( __bytefield__ *f, __WORD__ pos ) {
     __WORD__ addr = (__WORD__)f->field + pos;
-    __BWORD__ bptd = __boxptd(addr);
+    __BWORD__ bptd = __boxptd(_A1_, addr);
     __WORD__ nextpos = pos;
     __WORD__ slen;
     __WORD__ stail;
     __WORD__ spad;
     
-    switch (__boxsubtype(bptd)) {
+    switch (__boxsubtype(_A1_, bptd)) {
     case __VEC_TYPE__:
         dumpVec(f, pos);
         
-        nextpos += (__unboxint(__vectorLength(bptd)) * __WORDSIZE__) + sizeof(__vector__);
+        nextpos += (__unboxint(_A1_, __vectorLength(_A1_, bptd)) * __WORDSIZE__) + sizeof(__vector__);
         break;
         
     case __STR_TYPE__:
         dumpStr(f, pos);
         
-        slen = __unboxint(__stringLength(bptd)) + 1;
+        slen = __unboxint(_A1_, __stringLength(_A1_, bptd)) + 1;
         stail = (slen % __WORDSIZE__);
         spad = 0;
         if (stail != 0)

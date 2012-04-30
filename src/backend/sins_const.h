@@ -41,6 +41,10 @@
 #define __STR_LEN_SHFT__   8
 #define __CHAR_VAL_SHFT__  8
 
+/* Std calling protocol dummy params */
+#define _A1_ __NULL__, 1
+#define _A2_ __NULL__, 2
+#define _S_ __BWORD__ clo, int num
 
 #define __FALSE__ ((__BWORD__) __PTD_TYPE__)                       /* 1 */
 #define __TRUE__  (((__BWORD__)1 << __BOX_SIZE__) + __PTD_TYPE__)  /* 5 */
