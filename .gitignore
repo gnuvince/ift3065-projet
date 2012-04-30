@@ -7,3 +7,7 @@
 .DS_Store
 *.o
 *.exe
+*.dSYM
+src/backend/makefile-orig
+src/backend/runtime-orig.scm
+
