@@ -130,22 +130,21 @@ retourne un \emph{stream}.  Un \emph{stream} est une structure de
 données possédant les 4 opérations suivantes:
 
 \begin{itemize}
-\item \emph{next}: cette fonction retourne le caractère courant du
+\item {\bf next}: cette fonction retourne le caractère courant du
   flux.  Si le flux est terminé, elle retourne le caractère nul.
-\item \emph{advance}: cette fonction fait avancer le curseur d'un
+\item {\bf advance}: cette fonction fait avancer le curseur d'un
   caractère dans le flux et met à jour les attributs \emph{line} et
   \emph{col}.  \emph{Advance} n'a pas de valeur de retour.
-\item \emph{line}: retourne la ligne courante.
-\item \emph{col}: retourne la colonne courante.
+\item {\bf line}: retourne la ligne courante.
+\item {\bf col}: retourne la colonne courante.
 \end{itemize}
-
 
 \subsection{Token}
 
 Un lexème est représenté par une liste ayant la forme suivante:
 
 \begin{verbatim}
-('token <(type . valeur)> <ligne> <colonne>)
+(token <(type . valeur)> <ligne> <colonne>)
 \end{verbatim}
 
 Le premier élément est une étiquette qui permet de distinguer un
@@ -159,25 +158,25 @@ Une erreur dans un lexème (par exemple: constante de caractère
 invalide) est représentée par une liste ayant la forme suivante:
 
 \begin{verbatim}
-('token-error <ligne> <colonne>)
+(token-error <ligne> <colonne>)
 \end{verbatim}
 
 
 On peut manipuler les lexèmes à l'aide des fonctions suivantes:
 
 \begin{itemize}
-\item \emph{make-token}: cette fonction permet de créer un lexème en
+\item {\bf make-token}: cette fonction permet de créer un lexème en
   donnant son type et sa valeur, sa ligne, et sa colonne.  Si
   type/valeur est \#f, \emph{make-token} retourne un erreur de lexème.
-\item \emph{token?}: un prédicat qui détermine si un objet représente
+\item {\bf token?}: un prédicat qui détermine si un objet représente
   un lexème.
-\item \emph{token-error?}: un prédicat qui détermine si un objet
+\item {\bf token-error?}: un prédicat qui détermine si un objet
   représente une erreur dans un lexème.
-\item \emph{token-type}: retourne le type du lexème.
-\item \emph{token-value}: retourne la valeur du lexème.
-\item \emph{token-symbol}: retourne le type et la valeur d'un lexème.
-\item \emph{token-line}: retourne la ligne où commence ce lexème.
-\item \emph{token-col}: retourne la colonne où commence ce lexème.
+\item {\bf token-type}: retourne le type du lexème.
+\item {\bf token-value}: retourne la valeur du lexème.
+\item {\bf token-symbol}: retourne le type et la valeur d'un lexème.
+\item {\bf token-line}: retourne la ligne où commence ce lexème.
+\item {\bf token-col}: retourne la colonne où commence ce lexème.
 \end{itemize}
 
 \section{Algorithme d'analyse}
@@ -300,12 +299,12 @@ données.  Cette fois, ce sont des lexèmes qui passent sur le flux de
 données.  Les opérations suivantes sont supportées:
 
 \begin{itemize}
-\item \emph{empty}: retourne vrai ou faux si le flux est vide ou terminé.
-\item \emph{next}: retourne le prochain lexème sans modifier le flux.
+\item {\bf empty}: retourne vrai ou faux si le flux est vide ou terminé.
+\item {\bf next}: retourne le prochain lexème sans modifier le flux.
   Si le flux est vide, la liste vide est retournée.
-\item \emph{advance}: consomme le lexème actuel et déplace le flux au
+\item {\bf advance}: consomme le lexème actuel et déplace le flux au
   prochain lexème.  Aucune donnée n'est retournée.
-\item \emph{pop}: consomme le lexème actuelle et déplace le flux au
+\item {\bf pop}: consomme le lexème actuelle et déplace le flux au
   prochain lexème.  Le lexème consommé est retourné.
 \end{itemize}
 
@@ -492,6 +491,101 @@ La forme {\tt and} est transformée en une imbrication de {\tt if}.
 (and e1 e2) => (if e1 (if e2 e2 #f) #f)
 \end{verbatim}
 
+
+
+\chapter{Environnement}
+
+Dans un compilateur, il est nécessaire de faire la gestion de
+l'environnement, des symboles qui sont accessibles ainsi que la façon
+de les trouver.  Dans \sins{}, la gestion de l'environnement est
+faite dans le module {\it backend/env.scm}.
+
+\section{Structures de données}
+
+L'environnement est représentée par une liste deux éléments. Le
+premier élément contient la distance en octets entre le prochain
+symbole local et le début du frame.  Le second élément est une liste
+de tuples contenant 3 informations:
+
+
+\begin{verbatim}
+(<symbole> <portée> <offset>)
+\end{verbatim}
+
+Dans le cas d'une variable locale ou d'un paramètre de fonction, la
+portée est représentée par le symbole {\it local} et l'offset est la
+distance entre le début du frame et la valeur du symbole.
+
+Dans le cas d'une variable capturée par une fermeture, la portée est
+représentée par le symbole {\it captured} et l'offset est l'index de
+la valeur du symbole dans la fermeture.
+
+Le module d'environnement fournit plusieurs fonctions pour manipuler
+un environnement.
+
+\begin{itemize}
+\item {\bf make-env}: crée et retourne un environnement vide.
+\item {\bf env-fs}: retourne la valeur du frame size (premier élément
+  de l'environnement).
+\item {\bf env-symbols}: retourne la liste des symboles (second
+  élément de l'environnement).
+\item {\bf env-fs++}: augmente d'un mot la valeur du frame size et
+  retourne le nouvel environnement modifié.
+\item {\bf env-fs+}: augmente d'un nombre spécifique de mots la valeur
+  du frame size et retourne le nouvel environnement modifié.
+\item {\bf env-add-symbol}: ajoute un symbole à la liste de symbole,
+  incrémente la valeur du frame size, et retourne le nouvel
+  environnement modifié.
+\item {\bf env-lookup}: tente de retourner le tuple d'un symbole.  Si
+  aucun tuple local ou capturé est trouvé, on retourne le tuple d'une
+  variable globale.
+\item {\bf env-update}: fonction utilitaire qui ajoute une liste de
+  symboles locaux dans l'environnement.
+\end{itemize}
+
+
+
+\chapter{Problèmes et solutions}
+
+\section{Analyse lexicale}
+
+L'analyse lexicale a probablement été la partie la plus facile à
+compléter. L'implantation suit de très près la théorie sur les
+automates à états finis et a été complétée et testée sans anicroche.
+
+\section{Analyse syntaxique}
+
+Une difficulté rencontrée dans l'analyse syntaxique a été la gestion
+de la valeur fausse (\#f).  En effet, il était initialement impossible
+de distinguer entre la valeur \#f lue lors de l'analyse lexicale et la
+valeur logique fausse.  Ainsi, un code comme ceci pouvait causer
+problème:
+
+
+\begin{verbatim}
+(define (<literal> ast)
+  (and (or (<quotation> ast)
+           (<self-evaluating> ast))
+       ast))
+\end{verbatim}
+
+Cette fonction est utilisée pour lire un litéral Scheme, dont \#f fait
+partie.  Cette fonction doit retourner l'arbre de syntaxe abstraite,
+mais comme celui-ci est \#f la fonction appelante n'a aucune façon de
+savoir si {\tt <literal>} a retourné \#f parce que c'est le litéral
+qui a été lu ou parce qu'il y a une erreur.
+
+Afin de régler ce problème, nous avons procédé en 2 étapes:
+
+\begin{enumerate}
+\item Dans la phase d'analyse lexicale, nous avons remplacé le lexème
+  pour la valeur fausse de {\tt (boolean . #f)} à {\tt ('boolean .
+    false)} où {\tt false} est un symbole unique généré par le
+  compilateur.
+\item Dans la phase d'analyse syntaxique, lorsque l'arbre est généré,
+  nous le parcourons et transformons toutes les feuilles {\tt false}
+  par \#f.
+\end{enumerate}
 
 
 

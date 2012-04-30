@@ -6,12 +6,14 @@
 (include "env.scm")
 
 (define *false* 1)
+(define *true* 2)
+(define *null* 5)
 
 (define delayed-functions '())
 
 (define primitive-funcs '(;symbol         # args primitive name
                           (%*                  2 "__mul")
-                          (%+                  2 "__add")
+                          (%+                  4 "__add")
                           (%-                  2 "__sub")
                           (%<                  2 "__lt")
                           (%<=                 2 "__le")
@@ -74,6 +76,7 @@
     (,n when (number? n) (gen-number n))
     (,b when (boolean? b) (gen-bool b))
     (,s when (symbol? s) (gen-variable-access s env))
+    (() "movl $" *null* ", %eax\n")
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
@@ -92,11 +95,14 @@
   (match fn
     ((lambda ,args ,body)
      (list "\n" sym ":\n"
+           "pushl %ebp\n"
+           "movl  %esp, %ebp\n"
            (compile-expr body
                          ;; We increment fs because the return address is also pushed
                          ;; onto the stack.
-                         (env-fs++
+                         (env-fs+ 4
                           (env-update env args)))
+           "addl $4, %esp    # clean ebp, etc.\n"
            "ret\n\n"))))
 
 (define (delay-lambda expr env)
@@ -166,14 +172,16 @@
 
 
 (define (push-args args env)
-  (let loop ((env env) (args (reverse args)) (acc '()))
-    (if (null? args)
-        acc
-        (loop (env-fs++ env)
-              (cdr args)
-              (append acc
-                      (list (compile-expr (car args) env)
-                            "pushl %eax\n"))))))
+  (list (let loop ((env env) (args (reverse args)) (acc '()))
+          (if (null? args)
+              acc
+              (loop (env-fs++ env)
+                    (cdr args)
+                    (append acc
+                            (list (compile-expr (car args) env)
+                                  "pushl %eax\n")))))
+        "pushl $" (length args) "   # num of args\n"
+        "pushl $" *null* "   # closure\n"))
 
 
 (define (gen-fun-call f args env)
@@ -181,7 +189,7 @@
    (push-args args env)
    (compile-expr f env)
    "call *%eax\n"
-   "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
+   "addl $" (* 4 (+ 2 (length args))) ", %esp # cleaning up function\n"))
 
 
 
@@ -198,7 +206,7 @@
 
 (define (gen-bool b)
   (list "movl $"
-        (if b 0 *false*)
+        (if b *true* *false*)
         " ,%eax\n"))
 
 

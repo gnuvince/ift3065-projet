@@ -15,7 +15,10 @@
   (cadr env))
 
 (define (env-fs++ env)
-  (list (+ (env-fs env) word-size)
+  (env-fs+ 1 env))
+
+(define (env-fs+ n env)
+  (list (+ (env-fs env) (* n word-size))
         (env-symbols env)))
 
 
