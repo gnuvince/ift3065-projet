@@ -74,7 +74,7 @@ __BWORD__ __stringEqual( _S_, __BWORD__ s1, __BWORD__ s2 );
 
 void __display( _S_, __BWORD__ s );
 
-void __newline( );
+void __newline( _S_ );
 
 __BWORD__ __charToInteger( _S_, __BWORD__ ch );
 
