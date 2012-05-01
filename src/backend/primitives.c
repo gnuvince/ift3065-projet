@@ -9,8 +9,7 @@
 #include "box.h"
 #include "bytefield.h"
 
-#define __prologue__ \
-    __ams__ ( "pushl "
+#define __prologue__  __asm__ ( "pushl %ebp;" );
 
 
 /* __asm__ ( "movl $10, %eax;" */
