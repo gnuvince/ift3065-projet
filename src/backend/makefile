@@ -22,20 +22,12 @@ CWD := `pwd`
 
 BUILDDIR := tests
 OBJDIR := tests
-OBJFILES := bytefield.o bytefield_utils.o box.o primitives.o primitives_utils.o gc.o
+OBJFILES := bytefield.o bytefield_utils.o box.o gc.o primitives.o primitives_utils.o
 
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test .c .o
 
 all: check
-
-test_primitives32: $(OBJFILES)
-	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives.exe test_primitives.c
-	chmod +x $(CWD)/test_primitives.exe
-
-test_gc32: $(OBJFILES)
-	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
-	chmod +x $(CWD)/test_gc.exe
 
 test_primitives: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives.exe test_primitives.c

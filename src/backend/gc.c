@@ -9,7 +9,7 @@
 #include "box.h"
 
 
-void __gc( __bytefield__ *from, __bytefield__ *to ) {
+void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     __BWORD__ obj;
     
     allocByteField(to, __PAIRSIZE__);
@@ -26,7 +26,7 @@ void __gc( __bytefield__ *from, __bytefield__ *to ) {
     freeByteField(from);
 }
 
-__BWORD__ gc_copyObject( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to ) {
+__BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to ) {
     __WORD__ objsize = __boxsize(_A1_, obj);
     __WORD__ objtype = __boxtype(_A1_, obj);
     __BWORD__ newobj;
@@ -66,23 +66,23 @@ __BWORD__ gc_copyObject( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to )
     return obj;
 }
 
-void gc_setFlags( __BWORD__ obj, __WORD__ flags ) {
+void gc_setFlags ( __BWORD__ obj, __WORD__ flags ) {
     __ptd_hdr__ *p = (__ptd_hdr__*)(__unbox(_A1_, obj));
     p->state = (p->state | flags);
 }
 
-void gc_setAlive( __BWORD__ obj ) {
+void gc_setAlive ( __BWORD__ obj ) {
     gc_setFlags(obj, __GC_ALIVE__);
 }
 
-void gc_setMoved( __BWORD__ obj ) {
+void gc_setMoved ( __BWORD__ obj ) {
     gc_setFlags(obj, __GC_MOVED__);
 }
 
-int gc_isAlive( __BWORD__ obj ) {
+int gc_isAlive ( __BWORD__ obj ) {
     return ((((__ptd_hdr__*)(__unbox(_A1_, obj)))->state & __GC_MASK__) == __GC_ALIVE__);
 }
 
-int gc_isMoved( __BWORD__ obj ) {
+int gc_isMoved ( __BWORD__ obj ) {
     return ((((__ptd_hdr__*)(__unbox(_A1_, obj)))->state & __GC_MASK__) == __GC_MOVED__);
 }

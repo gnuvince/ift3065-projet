@@ -9,6 +9,12 @@
 #define wordFormat  "%08lx"
 #define intFormat  "%lu"
 #define pnum_t      int32_t
+/* #define __prologue__  __asm__ ( "pushl   %ebp;" */
+/*                                 "movl    %esp, %ebp;" */
+/*                                 "pushl   %esp;" */
+/*                                 "call    __setLastFrame;" */
+/*                                 "addl    $4, %esp;" ); */
+#define __postlogue__  __asm__ ( "addl $4, %esp;" );
 
 #else
 
@@ -16,8 +22,21 @@
 #define wordFormat  "%016llx"
 #define intFormat  "%llu"
 #define pnum_t      int64_t
+/* #define __prologue__  __asm__ ( "pushq   %ebp;" */
+/*                                 "movq    %esp, %ebp;" */
+/*                                 "pushq   %esp;" */
+/*                                 "call    __setLastFrame;" */
+/*                                 "addq    $8, %esp;" ); */
+#define __postlogue__  __asm__ ( "addl $8, %esp;" );
 
 #endif
+
+/* __asm__ ( "movl $10, %eax;" */
+/*                 "movl $20, %ebx;" */
+/*                 "addl %ebx, %eax;" */
+/*     ); */
+
+
 
 #define bword_t word_t
 

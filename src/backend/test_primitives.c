@@ -10,7 +10,8 @@
 
 int main(void)
 {
-    allocByteField(getHeap(), __PAIRSIZE__);
+    __initHeap(_A_(0));
+    /* allocByteField(getHeap(), __PAIRSIZE__); */
 
     __newline(_A_(0)); __display(_A_(1), __string("** Pair **")); __newline(_A_(0));
 
@@ -34,7 +35,8 @@ int main(void)
     __display(_A_(1), __string("cdr(p1): ")); print_bword(b); __newline(_A_(0));
 
     __newline(_A_(0)); __display(_A_(1), __string("** Vector **")); __newline(_A_(0));
-    __BWORD__ v = __vector(_A_(1), __boxint(_A_(1), 10));
+    __BWORD__ v = __vector(_A_(1), __boxint(_A_(1), 1));
+    v = __vector(_A_(1), __boxint(_A_(1), 10));
     __display(_A_(1), __string("vectorLength(v): ")); print_bword(__unboxint(_A_(1), __vectorLength(_A_(1), v))); __newline(_A_(0));
     __display(_A_(1), __string("v[0] = 42")); __newline(_A_(0));
     __vectorSet(_A_(3), v, __boxint(_A_(1), 0), __boxint(_A_(1), 42));
