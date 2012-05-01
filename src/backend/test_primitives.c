@@ -10,7 +10,8 @@
 
 int main(void)
 {
-    allocByteField(getHeap(), __PAIRSIZE__);
+    __initHeap(_A_(0));
+    /* allocByteField(getHeap(), __PAIRSIZE__); */
 
     __newline(_A_(0)); __display(_A_(1), __string("** Pair **")); __newline(_A_(0));
 
