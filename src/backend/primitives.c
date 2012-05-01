@@ -11,6 +11,9 @@
 #include "bytefield_utils.h"
 #include "gc.h"
 
+void __initHeap( _S_ ) {
+    allocByteField(getHeap(), __PAIRSIZE__);
+}
 
 __BWORD__ __getCar ( _S_, __BWORD__ p ) {
     if (__pair_p(_A_(1), p) != __TRUE__) {
