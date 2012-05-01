@@ -12,27 +12,27 @@
 (define delayed-functions '())
 
 (define primitive-funcs '(;symbol         # args primitive name
-                          (%*                  2 "__mul")
+                          (%*                  4 "__mul")
                           (%+                  4 "__add")
-                          (%-                  2 "__sub")
-                          (%<                  2 "__lt")
-                          (%<=                 2 "__le")
-                          (%=                  2 "__eq")
-                          (%>                  2 "__gt")
-                          (%>=                 2 "__ge")
-                          (%car                1 "__getCar")
-                          (%cdr                1 "__getCdr")
-                          (%cons               2 "__cons")
-                          (%eq?                2 "__equal")
-                          (%null?              1 "__null_p")
-                          (%number?            1 "__number_p")
-                          (%pair?              1 "__pair_p")
-                          (%quotient           2 "__quotient")
-                          (%remainder          2 "__remainder")
-                          (%set-car!           2 "__setCar")
-                          (%set-cdr!           2 "__setCdr")
-                          (%string?            1 "__string_p")
-                          (%write-char         1 "__writeChar")
+                          (%-                  4 "__sub")
+                          (%<                  4 "__lt")
+                          (%<=                 4 "__le")
+                          (%=                  4 "__eq")
+                          (%>                  4 "__gt")
+                          (%>=                 4 "__ge")
+                          (%car                3 "__getCar")
+                          (%cdr                3 "__getCdr")
+                          (%cons               4 "__cons")
+                          (%eq?                4 "__equal")
+                          (%null?              3 "__null_p")
+                          (%number?            3 "__number_p")
+                          (%pair?              3 "__pair_p")
+                          (%quotient           4 "__quotient")
+                          (%remainder          4 "__remainder")
+                          (%set-car!           4 "__setCar")
+                          (%set-cdr!           4 "__setCdr")
+                          (%string?            3 "__string_p")
+                          (%write-char         3 "__writeChar")
                           ))
 
 
@@ -153,16 +153,16 @@
 (define (gen-number n)
  ;; (list "movl $" n ", %eax\n"))
 ;; Boxed version
-  (list
-   "movl $" n ", %eax\n"
-   "pushl %eax\n"
-   "call __boxint\n"
-   "addl $4, %esp            # end_number\n"
-   ))
+  ;; (list
+  ;;  "movl $" n ", %eax\n"
+  ;;  "pushl %eax\n"
+  ;;  "call __boxint\n"
+  ;;  "addl $4, %esp            # end_number\n"
+  ;;  ))
 ;; More efficient version if we don't use the __box primitive.
-;; (list
-;;  "movl $" n ", %eax\n"
-;;  "mull  $4, %eax\n"))
+(list
+ "movl $" n ", %eax\n"
+ "imull  $4, %eax\n"))
 
 
 (define (gen-variable-access var env)
