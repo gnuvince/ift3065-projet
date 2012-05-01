@@ -31,19 +31,19 @@ __BWORD__ __box( _S_, __WORD__ v, __WORD__ type ) {
 }
 
 __BWORD__ __boxint( _S_, __WORD__ v ) {
-    return __box(_A2_, v, __INT_TYPE__);
+    return __box(_A_(2), v, __INT_TYPE__);
 }
 
 __BWORD__ __boxptd( _S_, __WORD__ v ) {
-    return __box(_A2_, v, __PTD_TYPE__);
+    return __box(_A_(2), v, __PTD_TYPE__);
 }
 
 __BWORD__ __boxpair( _S_, __WORD__ v ) {
-    return __box(_A2_, v, __PAIR_TYPE__);
+    return __box(_A_(2), v, __PAIR_TYPE__);
 }
 
 __BWORD__ __boxlambda( _S_, __WORD__ v ) {
-    return __box(_A2_, v, __LAMBDA_TYPE__);
+    return __box(_A_(2), v, __LAMBDA_TYPE__);
 }
 
 __WORD__ __boxtype( _S_, __BWORD__ v ) {
@@ -51,7 +51,7 @@ __WORD__ __boxtype( _S_, __BWORD__ v ) {
 }
 
 __WORD__ __boxsubtype( _S_, __BWORD__ v ) {
-    return (((__ptd_hdr__*)__unboxptd(_A1_, v))->hdr & __SUB_MASK__); 
+    return (((__ptd_hdr__*)__unboxptd(_A_(1), v))->hdr & __SUB_MASK__); 
 }
 
 
@@ -75,13 +75,13 @@ __WORD__ __unboxlambda( _S_, __BWORD__ v ) {
 }
 
 __WORD__ __unbox( _S_, __BWORD__ v ) {
-    switch (__boxtype(_A1_, v)) {
+    switch (__boxtype(_A_(1), v)) {
     case __INT_TYPE__:
-        return __unboxint(_A1_, v);
+        return __unboxint(_A_(1), v);
     case __PTD_TYPE__:
-        return __unboxptd(_A1_, v);
+        return __unboxptd(_A_(1), v);
     case __PAIR_TYPE__:
-        return __unboxpair(_A1_, v);
+        return __unboxpair(_A_(1), v);
     case __LAMBDA_TYPE__:
     default:
         printf("Unrecognized or unsupported box type\n");
@@ -90,38 +90,38 @@ __WORD__ __unbox( _S_, __BWORD__ v ) {
 }
 
 __BWORD__ __unboxchar( _S_, __BWORD__ ch ) {
-    return __boxint(_A1_, ((((__char__*)__unboxptd(_A1_, ch))->hdr >> __CHAR_VAL_SHFT__) & __CHAR_MASK__));
+    return __boxint(_A_(1), ((((__char__*)__unboxptd(_A_(1), ch))->hdr >> __CHAR_VAL_SHFT__) & __CHAR_MASK__));
 }
 
 /*                        */
 /* Boxed types predicates */
 /*                        */
 int __boxint_p( _S_, __BWORD__ v ) {
-    return (__boxtype(_A1_, v) == __INT_TYPE__);
+    return (__boxtype(_A_(1), v) == __INT_TYPE__);
 }
 
 int __boxptd_p( _S_, __BWORD__ v ) {
-    return (__boxtype(_A1_, v) == __PTD_TYPE__);
+    return (__boxtype(_A_(1), v) == __PTD_TYPE__);
 }
 
 int __boxpair_p( _S_, __BWORD__ v ) {
-    return (__boxtype(_A1_, v) == __PAIR_TYPE__);
+    return (__boxtype(_A_(1), v) == __PAIR_TYPE__);
 }
 
 int __boxlambda_p( _S_, __BWORD__ v ) {
-    return (__boxtype(_A1_, v) == __LAMBDA_TYPE__);    
+    return (__boxtype(_A_(1), v) == __LAMBDA_TYPE__);    
 }
 
 int __boxvector_p( _S_, __BWORD__ v ) {
-    return (__boxptd_p(_A1_, v) && __boxsubtype(_A1_, v) == __VEC_TYPE__);
+    return (__boxptd_p(_A_(1), v) && __boxsubtype(_A_(1), v) == __VEC_TYPE__);
 }
 
 int __boxstring_p( _S_, __BWORD__ v ) {
-    return (__boxptd_p(_A1_, v) && __boxsubtype(_A1_, v) == __STR_TYPE__);
+    return (__boxptd_p(_A_(1), v) && __boxsubtype(_A_(1), v) == __STR_TYPE__);
 }
 
 int __boxchar_p( _S_, __BWORD__ v ) {
-    return (__boxptd_p(_A1_, v) && __boxsubtype(_A1_, v) == __CHAR_TYPE__);
+    return (__boxptd_p(_A_(1), v) && __boxsubtype(_A_(1), v) == __CHAR_TYPE__);
 }
 
 /*                */
@@ -129,12 +129,12 @@ int __boxchar_p( _S_, __BWORD__ v ) {
 /*                */
 /* __WORD__ __boxptdsize( _S_, __BWORD__ v ) { return 1; } */
 __WORD__ __boxptdsize( _S_, __BWORD__ v ) {
-    switch (__boxsubtype(_A1_, v)) {
+    switch (__boxsubtype(_A_(1), v)) {
     case __VEC_TYPE__:
-        return (sizeof(__ptd_hdr__) + (__unboxint(_A1_, __vectorLength(_A1_, v)) * __BWORDSIZE__));
+        return (sizeof(__ptd_hdr__) + (__unboxint(_A_(1), __vectorLength(_A_(1), v)) * __BWORDSIZE__));
     
     case __STR_TYPE__:
-        return (sizeof(__ptd_hdr__) + (__unboxint(_A1_, __stringLength(_A1_, v)) + 1));
+        return (sizeof(__ptd_hdr__) + (__unboxint(_A_(1), __stringLength(_A_(1), v)) + 1));
     
     case __CHAR_TYPE__:
         return (sizeof(__ptd_hdr__));
@@ -145,21 +145,27 @@ __WORD__ __boxptdsize( _S_, __BWORD__ v ) {
     }
 }
 
+__WORD__ __boxlambdasize( _S_, __BWORD__ v ) {
+    return (__WORD__)(((__string__*)(__unboxlambda(_A_(1), v)))->hdr) >> __STR_LEN_SHFT__;
+}
+
 __WORD__ __boxsize( _S_, __BWORD__ v ) {
     if (v == __NULL__)
         return __BWORDSIZE__;
     
-    switch (__boxtype(_A1_, v)) {
+    switch (__boxtype(_A_(1), v)) {
     case __INT_TYPE__:
         return (__BWORDSIZE__);
 
     case __PTD_TYPE__:
-        return (__boxptdsize(_A1_, v));
+        return (__boxptdsize(_A_(1), v));
 
     case __PAIR_TYPE__:
         return (__PAIRSIZE__);
 
     case __LAMBDA_TYPE__:
+        return (__boxlambdasize(_A_(1), v));
+        
     default:
         printf("Unrecognized or unsupported box type\n");
         exit(__FAIL__);

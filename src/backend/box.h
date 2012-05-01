@@ -57,6 +57,8 @@ int __boxchar_p( _S_, __BWORD__ v );
 /*                */
 __WORD__ __boxptdsize( _S_, __BWORD__ v );
 
+__WORD__ __boxlambdasize( _S_, __BWORD__ v );
+
 __WORD__ __boxsize( _S_, __BWORD__ v );
 
 #endif

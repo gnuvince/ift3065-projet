@@ -42,6 +42,7 @@
 #define __CHAR_VAL_SHFT__  8
 
 /* Std calling protocol dummy params */
+#define _A_(NUM_ARGS) __NULL__, NUM_ARGS
 #define _A1_ __NULL__, 1
 #define _A2_ __NULL__, 2
 #define _S_ __BWORD__ clo, int num
