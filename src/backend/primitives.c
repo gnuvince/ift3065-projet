@@ -90,6 +90,8 @@ __BWORD__ __vector( _S_, __BWORD__ size ) {
 }
 
 __BWORD__ __vectorRef( _S_, __BWORD__ v, __BWORD__ ref ) {
+    printf("%lu %lu\n", v, ref);
+
     if (__vector_p(_A_(1), v) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(__FAIL__);
@@ -174,7 +176,7 @@ __BWORD__ __sub( _S_, __BWORD__ a, __BWORD__ b ) {
         exit(__FAIL__);
     }
 
-    return __boxint(_A_(1), __unboxint(_A_(1), a) - __unboxint(_A_(1), b));    
+    return __boxint(_A_(1), __unboxint(_A_(1), a) - __unboxint(_A_(1), b));
 }
 
 __BWORD__ __mul( _S_, __BWORD__ a, __BWORD__ b ) {
@@ -405,7 +407,7 @@ __BWORD__ __charToInteger( _S_, __BWORD__ ch ) {
 }
 
 __BWORD__ __integerToChar( _S_, __BWORD__ i ) {
-    __char__ *newchar = NULL;    
+    __char__ *newchar = NULL;
 
     newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
 

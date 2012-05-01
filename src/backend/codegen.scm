@@ -56,6 +56,7 @@
      ".text\n"
      ".globl main\n"
      "main:\n"
+     "call initByteField\n"
      asm-code
      "ret\n"
      delayed-asm
@@ -230,6 +231,49 @@
   (list "movl $" *null* ", %eax\n"))
 
 
+(define (gen-make-closure fn captures env)
+  (let ((size (+ 1 (length captures))))
+    (list
+     ;; Create vector
+     "\n# make-closure\n"
+     (gen-number size)
+     "pushl %eax\n"
+     "pushl $1\n"
+     "pushl $5\n"
+     "call __vector\n"
+     "addl $12, %esp\n"
+     "pushl %eax\n"                     ; Push vector addr
+
+     ;; Compile function
+     (compile-expr fn env)
+     "pushl %eax\n"
+     (gen-number 0)
+     "pushl %eax\n"
+     "pushl 8(%esp)\n"
+     "pushl $3\n"
+     "pushl $5\n"
+     "call __vectorSet\n"
+     "addl $20, %esp\n"
+
+     ;; Add captured variables
+     (let loop ((i 1) (cs captures))
+       (if (null? cs)
+           '()
+           (cons (list (compile-expr (car cs) env)
+                       "pushl %eax\n"
+                       (gen-number i)
+                       "pushl %eax\n"
+                       "pushl 8(%esp)\n"
+                       "pushl $3\n"
+                       "pushl $5\n"
+                       "call __vectorSet\n"
+                       "addl $20, %esp\n")
+                 (loop (+ i 1) (cdr cs)))))
+     "movl 0(%esp), %eax\n"
+     "addl $4, %esp\n"                  ; Remove vector addr
+     "# end of make-closure\n\n")))
+
+
 ;; (define (gen-make-closure fn captures env)
 ;;   (let ((size (+ 1 (length captures)))
 ;;         (v (gensym))
@@ -245,6 +289,16 @@
 ;;                            (loop (+ i 1) (cdr cs)))))))
 ;;      env)))
 
+(define (gen-closure-code clo env)
+  (list
+   ;; "pushl $0\n"
+   ;; (compile-expr clo (env-fs++ env))
+   ;; "pushl %eax\n"
+   ;; "pushl $2\n"
+   ;; "pushl $5\n"
+   ;; "call __vectorRef\n"
+   ;; "addl $16, %esp\n"
+   ))
 
 ;; (define (gen-closure-code clo env)
 ;;   (list (compile-expr

@@ -5,7 +5,7 @@ import subprocess
 TESTS = [
     # filename    expected return value
     ("test1.scm"             , 3<<2),
-    # ("test2.scm"             , 3<<2),
+    ("test2.scm"             , 3<<2),
     # ("test_if_then.scm"      , 4<<2),
     # ("test_if_else.scm"      , 3<<2),
     # ("test_if_1.scm"         , 4<<2),
@@ -27,7 +27,7 @@ TESTS = [
     # ("test_fib.scm"          , 13<<2),
     # ("test_fact.scm"         , 24<<2),
     # ("test_loop1.scm"        , 5<<2),
-    # ("test_closure1.scm"       , 7<<2),
+    # ("test_closure1.scm"     , 7<<2),
 ]
 
 def main():
