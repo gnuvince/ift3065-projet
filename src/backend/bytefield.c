@@ -55,7 +55,7 @@ void* allocBlock( __bytefield__ *f, __WORD__ size ) {
     __WORD__ misalign;
 
     if ((f->next + size) > f->fieldsize) {
-        /* __gc(f, &newf); */
+        /* gc_run(f, getNewHeap()); */
         if ((f->next + size) > f->fieldsize) {
             return NULL;
         } else {

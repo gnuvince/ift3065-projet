@@ -8,17 +8,11 @@
 #include "primitives_utils.h"
 #include "box.h"
 #include "bytefield.h"
-
-#define __prologue__  __asm__ ( "pushl %ebp;" );
-
-
-/* __asm__ ( "movl $10, %eax;" */
-/*                 "movl $20, %ebx;" */
-/*                 "addl %ebx, %eax;" */
-/*     ); */
+#include "bytefield_utils.h"
+#include "gc.h"
 
 
-__BWORD__ __getCar( _S_, __BWORD__ p ) {
+__BWORD__ __getCar ( _S_, __BWORD__ p ) {
     if (__pair_p(_A_(1), p) != __TRUE__) {
         printf("PAIR expected\n");
         exit(__FAIL__);
@@ -27,7 +21,7 @@ __BWORD__ __getCar( _S_, __BWORD__ p ) {
     return ((__pair__*)__unboxpair(_A_(1), p))->car;
 }
 
-__BWORD__ __getCdr( _S_, __BWORD__ p ) {
+__BWORD__ __getCdr ( _S_, __BWORD__ p ) {
     if (__pair_p(_A_(1), p) != __TRUE__) {
         printf("PAIR expected\n");
         exit(__FAIL__);
@@ -36,7 +30,7 @@ __BWORD__ __getCdr( _S_, __BWORD__ p ) {
     return ((__pair__*)__unboxpair(_A_(1), p))->cdr;
 }
 
-void __setCar( _S_, __BWORD__ p, __BWORD__ newcar ) {
+void __setCar ( _S_, __BWORD__ p, __BWORD__ newcar ) {
     if (__pair_p(_A_(1), p) != __TRUE__) {
         printf("PAIR expected\n");
         exit(__FAIL__);
@@ -45,7 +39,7 @@ void __setCar( _S_, __BWORD__ p, __BWORD__ newcar ) {
     ((__pair__*)__unboxpair(_A_(1), p))->car = newcar;
 }
 
-void __setCdr( _S_, __BWORD__ p, __BWORD__ newcdr ) {
+void __setCdr ( _S_, __BWORD__ p, __BWORD__ newcdr ) {
     if (__pair_p(_A_(1), p) != __TRUE__) {
         printf("PAIR expected\n");
         exit(__FAIL__);
@@ -54,7 +48,7 @@ void __setCdr( _S_, __BWORD__ p, __BWORD__ newcdr ) {
     ((__pair__*)__unboxpair(_A_(1), p))->cdr = newcdr;
 }
 
-__BWORD__  __cons( _S_, __BWORD__ car, __BWORD__ cdr ) {
+__BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
 
@@ -73,7 +67,7 @@ __BWORD__  __cons( _S_, __BWORD__ car, __BWORD__ cdr ) {
     }
 }
 
-__BWORD__ __vector( _S_, __BWORD__ size ) {
+__BWORD__ __vector ( _S_, __BWORD__ size ) {
     __vector__ *newvector = NULL;
 
     __WORD__ usize = __unboxint(_A_(1), size);
@@ -89,7 +83,7 @@ __BWORD__ __vector( _S_, __BWORD__ size ) {
     }
 }
 
-__BWORD__ __vectorRef( _S_, __BWORD__ v, __BWORD__ ref ) {
+__BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref ) {
     if (__vector_p(_A_(1), v) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(__FAIL__);
@@ -104,7 +98,7 @@ __BWORD__ __vectorRef( _S_, __BWORD__ v, __BWORD__ ref ) {
     return *((__BWORD__*)__unboxptd(_A_(1), v) + uref + 2);
 }
 
-void __vectorSet( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val ) {
+void __vectorSet ( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val ) {
     if (__vector_p(_A_(1), v) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(__FAIL__);
@@ -119,7 +113,7 @@ void __vectorSet( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val ) {
     *((__BWORD__*)__unboxptd(_A_(1), v) + uref + 2) = val;
 }
 
-__BWORD__ __vectorLength( _S_, __BWORD__ v ) {
+__BWORD__ __vectorLength ( _S_, __BWORD__ v ) {
     if (__vector_p(_A_(1), v) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(__FAIL__);
@@ -128,7 +122,7 @@ __BWORD__ __vectorLength( _S_, __BWORD__ v ) {
     return __boxint(_A_(1), ((__vector__*)__unboxptd(_A_(1), v))->hdr >> __VEC_LEN_SHFT__);
 }
 
-__BWORD__ __vectorEqual( _S_, __BWORD__ v1, __BWORD__ v2 ) {
+__BWORD__ __vectorEqual ( _S_, __BWORD__ v1, __BWORD__ v2 ) {
     if (__vector_p(_A_(1), v1) == __FALSE__) {
         printf("VECTOR expected\n");
         exit(__FAIL__);
@@ -152,14 +146,14 @@ __BWORD__ __vectorEqual( _S_, __BWORD__ v1, __BWORD__ v2 ) {
     return __TRUE__;
 }
 
-__BWORD__ __vector_p( _S_, __BWORD__ v ) {
+__BWORD__ __vector_p ( _S_, __BWORD__ v ) {
     if (__boxvector_p(_A_(1), v))
         return __TRUE__;
     else
         return __FALSE__;
 }
 
-__BWORD__ __add( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __add ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -168,7 +162,7 @@ __BWORD__ __add( _S_, __BWORD__ a, __BWORD__ b ) {
     return (a + b);
 }
 
-__BWORD__ __sub( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __sub ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -177,7 +171,7 @@ __BWORD__ __sub( _S_, __BWORD__ a, __BWORD__ b ) {
     return __boxint(_A_(1), __unboxint(_A_(1), a) - __unboxint(_A_(1), b));    
 }
 
-__BWORD__ __mul( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __mul ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -186,7 +180,7 @@ __BWORD__ __mul( _S_, __BWORD__ a, __BWORD__ b ) {
     return __boxint(_A_(1), __unboxint(_A_(1), a) * __unboxint(_A_(1), b));
 }
 
-__BWORD__ __quotient( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __quotient ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -195,7 +189,7 @@ __BWORD__ __quotient( _S_, __BWORD__ a, __BWORD__ b ) {
     return __boxint(_A_(1), __unboxint(_A_(1), a) / __unboxint(_A_(1), b));
 }
 
-__BWORD__ __remainder( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __remainder ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -204,21 +198,21 @@ __BWORD__ __remainder( _S_, __BWORD__ a, __BWORD__ b ) {
     return __boxint(_A_(1), __unboxint(_A_(1), a) % __unboxint(_A_(1), b));
 }
 
-__BWORD__ __number_p( _S_, __BWORD__ n ) {
+__BWORD__ __number_p ( _S_, __BWORD__ n ) {
     if (__boxint_p(_A_(1), n))
         return __TRUE__;
     else
         return __FALSE__;
 }
 
-__BWORD__  __null_p( _S_, __BWORD__ p ) {
+__BWORD__  __null_p ( _S_, __BWORD__ p ) {
     if (p == __NULL__)
         return __TRUE__;
     else
         return __FALSE__;
 }
 
-__BWORD__ __pair_p( _S_, __BWORD__ p ) {
+__BWORD__ __pair_p ( _S_, __BWORD__ p ) {
     if(__boxpair_p(_A_(1), p) && (__null_p(_A_(1), p) == __FALSE__))
         return __TRUE__;
     else
@@ -226,7 +220,7 @@ __BWORD__ __pair_p( _S_, __BWORD__ p ) {
 }
 
 
-__BWORD__ __list_p( _S_, __BWORD__ p ) {
+__BWORD__ __list_p ( _S_, __BWORD__ p ) {
     if (__null_p(_A_(1), p) == __TRUE__)
         return __TRUE__;
 
@@ -236,7 +230,7 @@ __BWORD__ __list_p( _S_, __BWORD__ p ) {
         return __FALSE__;
 }
 
-__BWORD__ __lt( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __lt ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -248,7 +242,7 @@ __BWORD__ __lt( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
-__BWORD__ __gt( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __gt ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -260,7 +254,7 @@ __BWORD__ __gt( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
-__BWORD__ __ge( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __ge ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -272,7 +266,7 @@ __BWORD__ __ge( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
-__BWORD__ __le( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __le ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
         exit(__FAIL__);
@@ -284,7 +278,7 @@ __BWORD__ __le( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
-__BWORD__ __equalPtd( _S_, __BWORD__ b1, __BWORD__ b2 ) {
+__BWORD__ __equalPtd ( _S_, __BWORD__ b1, __BWORD__ b2 ) {
     switch(__boxsubtype(_A_(1), b1)) {
     case __VEC_TYPE__:
         return __vectorEqual(_A_(2), b1, b2);
@@ -295,7 +289,7 @@ __BWORD__ __equalPtd( _S_, __BWORD__ b1, __BWORD__ b2 ) {
     }
 }
 
-__BWORD__ __equal( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __equal ( _S_, __BWORD__ a, __BWORD__ b ) {
     if (__boxtype(_A_(1), a) != __boxtype(_A_(1), b))
         return __FALSE__;
 
@@ -305,14 +299,14 @@ __BWORD__ __equal( _S_, __BWORD__ a, __BWORD__ b ) {
         return __eq(_A_(2), a, b);
 }
 
-__BWORD__ __eq( _S_, __BWORD__ a, __BWORD__ b ) {
+__BWORD__ __eq ( _S_, __BWORD__ a, __BWORD__ b ) {
     if (a == b)
         return __TRUE__;
     else
         return __FALSE__;
 }
 
-__BWORD__ __string( char *s ) {
+__BWORD__ __string ( char *s ) {
     __string__ *newstring = NULL;
     __WORD__ slen = (__WORD__)strlen(s);
 
@@ -329,14 +323,14 @@ __BWORD__ __string( char *s ) {
     }
 }
 
-__BWORD__ __string_p( _S_, __BWORD__ s ) {
+__BWORD__ __string_p ( _S_, __BWORD__ s ) {
     if ((__boxtype(_A_(1), s) == __PTD_TYPE__) && (__boxsubtype(_A_(1), s) == __STR_TYPE__))
         return __TRUE__;
     else
         return __FALSE__;
 }
 
-__BWORD__ __stringLength( _S_, __BWORD__ s ) {
+__BWORD__ __stringLength ( _S_, __BWORD__ s ) {
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -345,7 +339,7 @@ __BWORD__ __stringLength( _S_, __BWORD__ s ) {
     return __boxint(_A_(1), (((__string__*)(__unboxptd(_A_(1), s)))->hdr) >> __STR_LEN_SHFT__);
 }
 
-__BWORD__ __stringRef( _S_, __BWORD__ s, __BWORD__ ref) {
+__BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref) {
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -360,7 +354,7 @@ __BWORD__ __stringRef( _S_, __BWORD__ s, __BWORD__ ref) {
     return *((char*)__unboxptd(_A_(1), s) + uref + sizeof(__char__));
 }
 
-__BWORD__ __stringEqual( _S_, __BWORD__ s1, __BWORD__ s2 ) {
+__BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
     if (__string_p(_A_(1), s1) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -385,7 +379,7 @@ __BWORD__ __stringEqual( _S_, __BWORD__ s1, __BWORD__ s2 ) {
 
 }
 
-void __display( _S_, __BWORD__ s ) {
+void __display ( _S_, __BWORD__ s ) {
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -394,17 +388,17 @@ void __display( _S_, __BWORD__ s ) {
     printf((char*)__unboxptd(_A_(1), s) + sizeof(__string__));
 }
 
-void __newline( _S_ ) {
+void __newline ( _S_ ) {
     __BWORD__ i = __integerToChar(_A_(1), __boxint(_A_(1), __CH_newline__));
 
     __writeChar(_A_(1), i);
 }
 
-__BWORD__ __charToInteger( _S_, __BWORD__ ch ) {
+__BWORD__ __charToInteger ( _S_, __BWORD__ ch ) {
     return __unboxchar(_A_(1), ch);
 }
 
-__BWORD__ __integerToChar( _S_, __BWORD__ i ) {
+__BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
     __char__ *newchar = NULL;    
 
     newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
@@ -419,14 +413,14 @@ __BWORD__ __integerToChar( _S_, __BWORD__ i ) {
     }
 }
 
-__BWORD__ __char_p( _S_, __BWORD__ ch ) {
+__BWORD__ __char_p ( _S_, __BWORD__ ch ) {
     if ((__boxtype(_A_(1), ch) == __PTD_TYPE__) && (__boxsubtype(_A_(1), ch) == __CHAR_TYPE__))
         return __TRUE__;
     else
         return __FALSE__;
 }
 
-void __writeChar( _S_, __BWORD__ ch ) {
+void __writeChar ( _S_, __BWORD__ ch ) {
     if (__char_p(_A_(1), ch) == __FALSE__) {
         printf("CHAR expected\n");
         exit(__FAIL__);
@@ -437,4 +431,12 @@ void __writeChar( _S_, __BWORD__ ch ) {
         printf("Error writing char\n");
         exit(__FAIL__);
     }
+}
+
+void __gc ( _S_ ) {
+    gc_run(getHeap(), getNewHeap());
+}
+
+void __dumpHeap ( _S_ ) {
+    dumpByteField(getHeap());
 }
