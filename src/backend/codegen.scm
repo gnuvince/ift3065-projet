@@ -33,6 +33,10 @@
                           (%set-cdr!           4 "__setCdr")
                           (%string?            3 "__string_p")
                           (%write-char         3 "__writeChar")
+
+                          (%vector             3 "__vector")
+                          (%vector-ref         4 "__vectorRef")
+                          (%vector-set!        5 "__vectorSet")
                           ))
 
 
@@ -76,13 +80,18 @@
     (,n when (number? n) (gen-number n))
     (,b when (boolean? b) (gen-bool b))
     (,s when (symbol? s) (gen-variable-access s env))
-    (() "movl $" *null* ", %eax\n")
+    (() (gen-null))
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
     ((if ,condition ,then) (compile-if (append expr '(#f)) env))
     ((if ,condition ,then ,else) (compile-if expr env))
     ((set! ,var ,expr) (compile-set! env var expr))
+
+    ((make-closure ,fn . ,captures) (gen-make-closure fn captures env))
+    ((closure-code ,clo) (gen-closure-code clo env))
+    ((closure-ref ,clo ,i) (gen-closure-ref clo i env))
+
     ((,f . ,args)
      (let ((primitive (assq f primitive-funcs)))
        (if primitive
@@ -160,9 +169,9 @@
   ;;  "addl $4, %esp            # end_number\n"
   ;;  ))
 ;; More efficient version if we don't use the __box primitive.
-(list
- "movl $" n ", %eax\n"
- "imull  $4, %eax\n"))
+  (list
+   "movl $" n ", %eax\n"
+   "imull  $4, %eax\n"))
 
 
 (define (gen-variable-access var env)
@@ -214,3 +223,35 @@
   (match (env-lookup env var)
     ((,v global ,label) (list (compile-expr expr env)
                               "movl %eax, " label "\n"))))
+
+
+
+(define (gen-null)
+  (list "movl $" *null* ", %eax\n"))
+
+
+;; (define (gen-make-closure fn captures env)
+;;   (let ((size (+ 1 (length captures)))
+;;         (v (gensym))
+;;         (loop (gensym)))
+;;     (compile-expr
+;;      `(let ((,v (%vector ,size)))
+;;         (begin
+;;           (%vector-set! ,v 0 ,fn)
+;;           ,@(let loop ((i 1) (cs captures))
+;;                  (if (null? cs)
+;;                      '()
+;;                      (cons `(%vector-set! ,v ,i ,(car cs))
+;;                            (loop (+ i 1) (cdr cs)))))))
+;;      env)))
+
+
+;; (define (gen-closure-code clo env)
+;;   (list (compile-expr
+;;          `(%vector-ref ,clo 0)
+;;          env)))
+
+;; (define (gen-closure-ref clo i env)
+;;   (list (compile-expr
+;;          `(%vector-ref ,clo ,(+ i 1))
+;;          env)))

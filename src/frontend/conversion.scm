@@ -505,8 +505,10 @@
                 (fv E0))
             (apply union (map fv Es))))
 
+    (() '())
+
     (,_
-     (error "unknown expression" expr))))
+     (error "[fv] unknown expression" expr))))
 
 (define (mv expr)
   (match expr
@@ -542,8 +544,10 @@
      (union (if (primitive? E0) '() (mv E0))
             (apply union (map mv Es))))
 
+    (() '())
+
     (,_
-     (error "unknown expression" expr))))
+     (error "[mv] unknown expression" expr))))
 
 ;;;----------------------------------------------------------------------------
 
@@ -594,12 +598,6 @@
 
 
 
-(define make-closure vector)
-(define closure-code
-  (lambda (clo) (vector-ref clo 0)))
-(define closure-ref
-  (lambda (clo i) (vector-ref clo (+ i 1))))
-
 
 (define (-> datum . fns)
   (define (loop fns)
@@ -615,5 +613,5 @@
       expand
       alpha-conv
       assign-conv
-      ;closure-conv
+      closure-conv
       ))
