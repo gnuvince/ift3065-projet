@@ -67,7 +67,7 @@ int main(void)
 
     printf(line);
     printf("3 vars. p1 == pair; p2 == vector; p3 == string. Heap should contain 5 pairs before and 3 after gc:\n");
-    setVar(p3, __string("**Variable p3**"));
+    setVar(p3, __createString("**Variable p3**"));
     setVar(p2, __createVector(_A_(1), __boxint(_A_(1), 12)));
 
     dumpByteField(getHeap());
@@ -94,7 +94,7 @@ int main(void)
     printf("p2 <= cons(5, 6)\n");
     printf("p3 <= vector(5)\n");
     setVar(p1, __createVector(_A_(1), __boxint(_A_(1), 3)));
-    __vectorSet(_A_(2), getVar(p1), __boxint(_A_(1), 0), __string("Allo"));
+    __vectorSet(_A_(2), getVar(p1), __boxint(_A_(1), 0), __createString("Allo"));
     setVar(p2, __cons(_A_(2), __boxint(_A_(1), 10), __boxint(_A_(1), 11)));
     __vectorSet(_A_(2), getVar(p1), __boxint(_A_(1), 1), getVar(p2));
     setVar(p2, __cons(_A_(2), __boxint(_A_(1), 5), __boxint(_A_(1), 6)));
