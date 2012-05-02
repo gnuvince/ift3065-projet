@@ -7,9 +7,9 @@
 
 ARCH32 ?= 1
 ifeq ($(ARCH32), 1)
-    CFLAGS =  -DARCH32 -m32 -g -std=c99 $(WARNINGS)
+    CFLAGS =  -O1 -mpreferred-stack-boundary=2 -DARCH32 -m32 -g -std=c99 $(WARNINGS)
 else
-    CFLAGS =  -g -std=c99 $(WARNINGS)
+    CFLAGS =  -O1 -mpreferred-stack-boundary=2 -g -std=c99 $(WARNINGS)
 endif
 
 SHELL = /bin/sh
@@ -29,6 +29,8 @@ OBJFILES := bytefield.o bytefield_utils.o box.o gc.o primitives.o primitives_uti
 
 all: check
 
+test_prim: test_primitives
+
 test_primitives: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_primitives.exe test_primitives.c
 	chmod +x $(CWD)/test_primitives.exe
@@ -36,6 +38,10 @@ test_primitives: $(OBJFILES)
 test_gc: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
 	chmod +x $(CWD)/test_gc.exe
+
+test_stack:
+	$(CC) -m32 -O1 -mpreferred-stack-boundary=2 -S -o testStack.S testStack.c
+	$(CC) -m32 -o testStack.exe testStack.S
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -46,11 +52,15 @@ run_gc:
 run_prim:
 	$(CWD)/test_primitives.exe
 
+run_stack:
+	$(CWD)/testStack.exe
+
 check:
 	python run_backend_tests.py
 
 clean:
 	-rm $(CWD)/*.o
+	-rm $(CWD)/*.s
 	-rm -rf $(CWD)/*dSYM
 
 cleanall: clean
