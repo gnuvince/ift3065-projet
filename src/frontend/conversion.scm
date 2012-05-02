@@ -441,7 +441,7 @@
     ((lambda ,params ,E)
      (let ((new-cenv (difference (fv expr) globals)))
        `(make-closure
-         (lambda ($this ,@params)
+         (lambda ($this $num ,@params)
            ,(closurec E new-cenv globals))
          ,@(map cc new-cenv))))
 
@@ -460,6 +460,7 @@
          `(let (($clo ,(cc E0)))
             ((closure-code $clo)
              $clo
+             ,(length Es)
              ,@(map cc Es)))))
 
     (,_

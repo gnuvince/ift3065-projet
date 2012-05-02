@@ -56,8 +56,11 @@
      ".text\n"
      ".globl main\n"
      "main:\n"
-     "call initByteField\n"
+     "pushl $0\n"
+     "pushl $5\n"
+     "call __initHeap\n"
      asm-code
+     "addl $8, %esp\n"
      "ret\n"
      delayed-asm
 
@@ -108,9 +111,9 @@
            "pushl %ebp\n"
            "movl  %esp, %ebp\n"
            (compile-expr body
-                         ;; We increment fs because the return address is also pushed
-                         ;; onto the stack.
-                         (env-fs+ 4
+                         ;; We increment fs because the epb and return
+                         ;; address are pushed onto the stack.
+                         (env-fs+ 2
                           (env-update env args)))
            "addl $4, %esp    # clean ebp, etc.\n"
            "ret\n\n"))))
@@ -189,17 +192,14 @@
                     (cdr args)
                     (append acc
                             (list (compile-expr (car args) env)
-                                  "pushl %eax\n")))))
-        "pushl $" (length args) "   # num of args\n"
-        "pushl $" *null* "   # closure\n"))
-
+                                  "pushl %eax\n")))))))
 
 (define (gen-fun-call f args env)
   (list
    (push-args args env)
-   (compile-expr f env)
+   (compile-expr f (env-fs+ (length args) env))
    "call *%eax\n"
-   "addl $" (* 4 (+ 2 (length args))) ", %esp # cleaning up function\n"))
+   "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
 
 
 
@@ -209,6 +209,8 @@
     ((,f ,nb-args ,label)
      (list
       (push-args args env)
+      "pushl $" nb-args "\n"
+      "pushl $5\n"
       "call " label "\n"
       "addl $" (* 4 nb-args) ", %esp\n"))))
 
@@ -238,25 +240,14 @@
      "\n# make-closure\n"
      (gen-number size)
      "pushl %eax\n"
-     "pushl $1\n"
-     "pushl $5\n"
+     "pushl $1\n"                       ; unused; for C compatibility
+     "pushl $5\n"                       ; unused; for C compatibility
      "call __vector\n"
      "addl $12, %esp\n"
      "pushl %eax\n"                     ; Push vector addr
 
-     ;; Compile function
-     (compile-expr fn env)
-     "pushl %eax\n"
-     (gen-number 0)
-     "pushl %eax\n"
-     "pushl 8(%esp)\n"
-     "pushl $3\n"
-     "pushl $5\n"
-     "call __vectorSet\n"
-     "addl $20, %esp\n"
-
-     ;; Add captured variables
-     (let loop ((i 1) (cs captures))
+     ;; Add function + captured variables
+     (let loop ((i 0) (cs (cons fn captures)))
        (if (null? cs)
            '()
            (cons (list (compile-expr (car cs) env)
@@ -264,8 +255,8 @@
                        (gen-number i)
                        "pushl %eax\n"
                        "pushl 8(%esp)\n"
-                       "pushl $3\n"
-                       "pushl $5\n"
+                       "pushl $3\n"     ; unused; for C compatibility
+                       "pushl $5\n"     ; unused; for C compatibility
                        "call __vectorSet\n"
                        "addl $20, %esp\n")
                  (loop (+ i 1) (cdr cs)))))
@@ -274,38 +265,26 @@
      "# end of make-closure\n\n")))
 
 
-;; (define (gen-make-closure fn captures env)
-;;   (let ((size (+ 1 (length captures)))
-;;         (v (gensym))
-;;         (loop (gensym)))
-;;     (compile-expr
-;;      `(let ((,v (%vector ,size)))
-;;         (begin
-;;           (%vector-set! ,v 0 ,fn)
-;;           ,@(let loop ((i 1) (cs captures))
-;;                  (if (null? cs)
-;;                      '()
-;;                      (cons `(%vector-set! ,v ,i ,(car cs))
-;;                            (loop (+ i 1) (cdr cs)))))))
-;;      env)))
-
 (define (gen-closure-code clo env)
   (list
-   ;; "pushl $0\n"
-   ;; (compile-expr clo (env-fs++ env))
-   ;; "pushl %eax\n"
-   ;; "pushl $2\n"
-   ;; "pushl $5\n"
-   ;; "call __vectorRef\n"
-   ;; "addl $16, %esp\n"
+   "pushl $0\n"
+   (compile-expr clo (env-fs++ env))
+   "pushl %eax\n"
+   "pushl $2\n"                         ; unused; for C compatibility
+   "pushl $5\n"                         ; unused; for C compatibility
+   "call __vectorRef\n"
+   "addl $16, %esp\n"
    ))
 
-;; (define (gen-closure-code clo env)
-;;   (list (compile-expr
-;;          `(%vector-ref ,clo 0)
-;;          env)))
 
-;; (define (gen-closure-ref clo i env)
-;;   (list (compile-expr
-;;          `(%vector-ref ,clo ,(+ i 1))
-;;          env)))
+(define (gen-closure-ref clo i env)
+  (list
+   (gen-number (+ 1 i))
+   "pushl %eax\n"
+   (compile-expr clo (env-fs++ env))
+   "pushl %eax\n"
+   "pushl $2\n"
+   "pushl $5\n"
+   "call __vectorRef\n"
+   "addl $16, %esp\n"
+   ))
