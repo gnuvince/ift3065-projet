@@ -11,6 +11,7 @@
 #include "bytefield_utils.h"
 #include "gc.h"
 
+
 /*                */
 /* Pair procedure */
 /*                */
@@ -69,6 +70,47 @@ __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
         __setCdr(_A_(2), bpair, cdr);
         return bpair;
     }
+}
+
+/*                   */
+/* Lambda procedures */
+/*                   */
+
+__BWORD__ __createLambda ( _S_, __BWORD__ size ) {
+    __lambda__ *newlambda = NULL;
+
+    __WORD__ usize = __unboxint(_A_(1), size);
+    newlambda = (__lambda__*)allocBlock(getHeap(), sizeof(__lambda__) + (__WORDSIZE__ * (usize + 1)));
+    
+    if (newlambda == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newlambda->hdr = (usize << __VEC_LEN_SHFT__) + __VEC_TYPE__; /* !! Vector disguised as a lambda !! */
+        return __boxlambda(_A_(1), (__WORD__)newlambda);
+    }
+}
+
+void  __lambdaSet ( _S_, __BWORD__ p, __BWORD__ ref, __BWORD__ val ) {
+    __vectorSet(_A_(3), __boxptd(_A_(1), __unboxlambda(_A_(1), p)), __inc(_A_(1), ref), val);
+}
+        
+__BWORD__ __lambdaRef ( _S_, __BWORD__ p, __BWORD__ ref ) {
+    return __vectorRef(_A_(2), __boxptd(_A_(1), __unboxlambda(_A_(1), p)), __inc(_A_(1), ref));
+}
+
+void __lambdaSetCode ( _S_, __BWORD__ p, __WORD__ code ) {
+    __vectorSet(_A_(3), __boxptd(_A_(1), __unboxlambda(_A_(1), p)), 0, code);
+}
+
+__WORD__ __lambdaGetCode ( _S_, __BWORD__ p ) {
+    if (__lambda_p(_A_(1), p) == __FALSE__) {
+        printf("Procedure expected\n");
+        exit(__FAIL__);
+    }
+
+    return __vectorRef(_A_(2), __boxptd(_A_(1), __unboxlambda(_A_(1), p)), 0);
 }
 
 /*                   */
@@ -162,6 +204,101 @@ __BWORD__ __vector_p ( _S_, __BWORD__ v ) {
         return __FALSE__;
 }
 
+/*                   */
+/* String procedures */
+/*                   */
+
+/* Constructor: __createString */
+__BWORD__ __createString ( char *s ) {
+    __string__ *newstring = NULL;
+    __WORD__ slen = (__WORD__)strlen(s);
+
+    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
+
+    if (newstring == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
+        strcpy((char*)newstring + sizeof(__string__), s);
+        return __boxptd(_A_(1), (__WORD__)newstring);
+    }
+}
+
+__BWORD__ __stringLength ( _S_, __BWORD__ s ) {
+    if (__string_p(_A_(1), s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    return __boxint(_A_(1), (((__string__*)(__unboxptd(_A_(1), s)))->hdr) >> __STR_LEN_SHFT__);
+}
+
+__BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref) {
+    if (__string_p(_A_(1), s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    __WORD__ uref = __unboxint(_A_(1), ref);
+    if ((uref < 0) || (uref >= __stringLength(_A_(1), s))) {
+        printf("Error: Invalid string index\n");
+        exit(__FAIL__);
+    }
+
+    return *((char*)__unboxptd(_A_(1), s) + uref + sizeof(__char__));
+}
+
+__BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
+    if (__string_p(_A_(1), s1) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    if (__string_p(_A_(1), s2) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    __WORD__ s1Len = __unboxint(_A_(1), __stringLength(_A_(1), s1));
+
+    if (s1Len != __unboxint(_A_(1), __stringLength(_A_(1), s2)))
+        return __FALSE__;
+
+    for (__WORD__ i = 0; i < s1Len; ++i) {
+        if (__stringRef(_A_(2), s1, __boxint(_A_(1), i)) != __stringRef(_A_(2), s2, __boxint(_A_(1), i)))
+            return __FALSE__;
+    }
+
+    return __TRUE__;
+
+}
+
+/*                 */
+/* Char procedures */
+/*                 */
+
+__BWORD__ __charToInteger ( _S_, __BWORD__ ch ) {
+    return __unboxchar(_A_(1), ch);
+}
+
+/* Constructor: __integerToChar */
+__BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
+    __char__ *newchar = NULL;    
+
+    newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
+
+    if (newchar == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newchar->hdr = ((__BWORD__)__unboxint(_A_(1), i) << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
+        return __boxptd(_A_(1), (__WORD__)newchar);
+    }
+}
+
 /*                       */
 /* Arithmetic procedures */
 /*                       */
@@ -173,6 +310,10 @@ __BWORD__ __add ( _S_, __BWORD__ a, __BWORD__ b ) {
     }
 
     return (a + b);
+}
+
+__BWORD__ __inc ( _S_, __BWORD__ a ) {
+    return __add(_A_(2), a, __boxint(_A_(1), 1));
 }
 
 __BWORD__ __sub ( _S_, __BWORD__ a, __BWORD__ b ) {
@@ -224,6 +365,13 @@ __BWORD__ __number_p ( _S_, __BWORD__ n ) {
 
 __BWORD__  __null_p ( _S_, __BWORD__ p ) {
     if (p == __NULL__)
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+__BWORD__ __lambda_p ( _S_, __BWORD__ p ) {
+    if(__boxlambda_p(_A_(1), p))
         return __TRUE__;
     else
         return __FALSE__;
@@ -345,100 +493,6 @@ __BWORD__ __eq ( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
-/*                   */
-/* String procedures */
-/*                   */
-
-/* Constructor: __createString */
-__BWORD__ __createString ( char *s ) {
-    __string__ *newstring = NULL;
-    __WORD__ slen = (__WORD__)strlen(s);
-
-    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
-
-    if (newstring == NULL) {
-        printf("Out of memory\n");
-        exit(__FAIL__);
-    }
-    else {
-        newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
-        strcpy((char*)newstring + sizeof(__string__), s);
-        return __boxptd(_A_(1), (__WORD__)newstring);
-    }
-}
-
-__BWORD__ __stringLength ( _S_, __BWORD__ s ) {
-    if (__string_p(_A_(1), s) == __FALSE__) {
-        printf("STRING expected\n");
-        exit(__FAIL__);
-    }
-
-    return __boxint(_A_(1), (((__string__*)(__unboxptd(_A_(1), s)))->hdr) >> __STR_LEN_SHFT__);
-}
-
-__BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref) {
-    if (__string_p(_A_(1), s) == __FALSE__) {
-        printf("STRING expected\n");
-        exit(__FAIL__);
-    }
-
-    __WORD__ uref = __unboxint(_A_(1), ref);
-    if ((uref < 0) || (uref >= __stringLength(_A_(1), s))) {
-        printf("Error: Invalid string index\n");
-        exit(__FAIL__);
-    }
-
-    return *((char*)__unboxptd(_A_(1), s) + uref + sizeof(__char__));
-}
-
-__BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
-    if (__string_p(_A_(1), s1) == __FALSE__) {
-        printf("STRING expected\n");
-        exit(__FAIL__);
-    }
-
-    if (__string_p(_A_(1), s2) == __FALSE__) {
-        printf("STRING expected\n");
-        exit(__FAIL__);
-    }
-
-    __WORD__ s1Len = __unboxint(_A_(1), __stringLength(_A_(1), s1));
-
-    if (s1Len != __unboxint(_A_(1), __stringLength(_A_(1), s2)))
-        return __FALSE__;
-
-    for (__WORD__ i = 0; i < s1Len; ++i) {
-        if (__stringRef(_A_(2), s1, __boxint(_A_(1), i)) != __stringRef(_A_(2), s2, __boxint(_A_(1), i)))
-            return __FALSE__;
-    }
-
-    return __TRUE__;
-
-}
-
-/*                 */
-/* Char procedures */
-/*                 */
-
-__BWORD__ __charToInteger ( _S_, __BWORD__ ch ) {
-    return __unboxchar(_A_(1), ch);
-}
-
-/* Constructor: __integerToChar */
-__BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
-    __char__ *newchar = NULL;    
-
-    newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
-
-    if (newchar == NULL) {
-        printf("Out of memory\n");
-        exit(__FAIL__);
-    }
-    else {
-        newchar->hdr = ((__BWORD__)__unboxint(_A_(1), i) << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
-        return __boxptd(_A_(1), (__WORD__)newchar);
-    }
-}
 
 /*                   */
 /* Output procedures */
