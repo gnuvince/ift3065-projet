@@ -8,6 +8,7 @@
 *.o
 *.exe
 *.dSYM
+*.S
 src/backend/makefile-orig
 src/backend/runtime-orig.scm
 

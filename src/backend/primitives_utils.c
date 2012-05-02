@@ -6,7 +6,7 @@
 #include "box.h"
 
 void print_bword(__BWORD__ v) {
-    printf("%llu", (bword_t)v);
+    printf(wordFormat, (bword_t)v);
 }
 
 void print_pair(__BWORD__ p) {
@@ -14,7 +14,9 @@ void print_pair(__BWORD__ p) {
         printf("()");
     else {
         printf("(");
-        printf("%llu . %llu", __getCar(_A1_, p), __getCdr(_A1_, p));
+        printf(wordFormat, __getCar(_A_(1), p));
+        printf(" . ");
+        printf(wordFormat, __getCdr(_A_(1), p));
         printf(")");
     }
 }

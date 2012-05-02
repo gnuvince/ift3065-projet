@@ -11,9 +11,9 @@
 #include "bytefield_utils.h"
 #include "gc.h"
 
-void __initHeap( _S_ ) {
-    allocByteField(getHeap(), __PAIRSIZE__);
-}
+/*                */
+/* Pair procedure */
+/*                */
 
 __BWORD__ __getCar ( _S_, __BWORD__ p ) {
     if (__pair_p(_A_(1), p) != __TRUE__) {
@@ -51,6 +51,7 @@ void __setCdr ( _S_, __BWORD__ p, __BWORD__ newcdr ) {
     ((__pair__*)__unboxpair(_A_(1), p))->cdr = newcdr;
 }
 
+/* Constructor: __cons */
 __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
@@ -70,7 +71,12 @@ __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
     }
 }
 
-__BWORD__ __vector ( _S_, __BWORD__ size ) {
+/*                   */
+/* Vector procedures */
+/*                   */
+
+/* constructor: __createVector */
+__BWORD__ __createVector ( _S_, __BWORD__ size ) {
     __vector__ *newvector = NULL;
 
     __WORD__ usize = __unboxint(_A_(1), size);
@@ -156,6 +162,10 @@ __BWORD__ __vector_p ( _S_, __BWORD__ v ) {
         return __FALSE__;
 }
 
+/*                       */
+/* Arithmetic procedures */
+/*                       */
+
 __BWORD__ __add ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
         printf("NUMBER expected\n");
@@ -201,6 +211,10 @@ __BWORD__ __remainder ( _S_, __BWORD__ a, __BWORD__ b ) {
     return __boxint(_A_(1), __unboxint(_A_(1), a) % __unboxint(_A_(1), b));
 }
 
+/*                      */
+/* Predicate procedures */
+/*                      */
+
 __BWORD__ __number_p ( _S_, __BWORD__ n ) {
     if (__boxint_p(_A_(1), n))
         return __TRUE__;
@@ -232,6 +246,24 @@ __BWORD__ __list_p ( _S_, __BWORD__ p ) {
     else
         return __FALSE__;
 }
+
+__BWORD__ __string_p ( _S_, __BWORD__ s ) {
+    if ((__boxtype(_A_(1), s) == __PTD_TYPE__) && (__boxsubtype(_A_(1), s) == __STR_TYPE__))
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+__BWORD__ __char_p ( _S_, __BWORD__ ch ) {
+    if ((__boxtype(_A_(1), ch) == __PTD_TYPE__) && (__boxsubtype(_A_(1), ch) == __CHAR_TYPE__))
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+/*                        */
+/* Logical ops procedures */
+/*                        */
 
 __BWORD__ __lt ( _S_, __BWORD__ a, __BWORD__ b ) {
     if ((__number_p(_A_(1), a) == __FALSE__) || (__number_p(_A_(1), b) == __FALSE__)) {
@@ -281,6 +313,10 @@ __BWORD__ __le ( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
+/*                   */
+/* Object procedures */
+/*                   */
+
 __BWORD__ __equalPtd ( _S_, __BWORD__ b1, __BWORD__ b2 ) {
     switch(__boxsubtype(_A_(1), b1)) {
     case __VEC_TYPE__:
@@ -309,7 +345,12 @@ __BWORD__ __eq ( _S_, __BWORD__ a, __BWORD__ b ) {
         return __FALSE__;
 }
 
-__BWORD__ __string ( char *s ) {
+/*                   */
+/* String procedures */
+/*                   */
+
+/* Constructor: __createString */
+__BWORD__ __createString ( char *s ) {
     __string__ *newstring = NULL;
     __WORD__ slen = (__WORD__)strlen(s);
 
@@ -324,13 +365,6 @@ __BWORD__ __string ( char *s ) {
         strcpy((char*)newstring + sizeof(__string__), s);
         return __boxptd(_A_(1), (__WORD__)newstring);
     }
-}
-
-__BWORD__ __string_p ( _S_, __BWORD__ s ) {
-    if ((__boxtype(_A_(1), s) == __PTD_TYPE__) && (__boxsubtype(_A_(1), s) == __STR_TYPE__))
-        return __TRUE__;
-    else
-        return __FALSE__;
 }
 
 __BWORD__ __stringLength ( _S_, __BWORD__ s ) {
@@ -382,25 +416,15 @@ __BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
 
 }
 
-void __display ( _S_, __BWORD__ s ) {
-    if (__string_p(_A_(1), s) == __FALSE__) {
-        printf("STRING expected\n");
-        exit(__FAIL__);
-    }
-
-    printf((char*)__unboxptd(_A_(1), s) + sizeof(__string__));
-}
-
-void __newline ( _S_ ) {
-    __BWORD__ i = __integerToChar(_A_(1), __boxint(_A_(1), __CH_newline__));
-
-    __writeChar(_A_(1), i);
-}
+/*                 */
+/* Char procedures */
+/*                 */
 
 __BWORD__ __charToInteger ( _S_, __BWORD__ ch ) {
     return __unboxchar(_A_(1), ch);
 }
 
+/* Constructor: __integerToChar */
 __BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
     __char__ *newchar = NULL;    
 
@@ -416,11 +440,23 @@ __BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
     }
 }
 
-__BWORD__ __char_p ( _S_, __BWORD__ ch ) {
-    if ((__boxtype(_A_(1), ch) == __PTD_TYPE__) && (__boxsubtype(_A_(1), ch) == __CHAR_TYPE__))
-        return __TRUE__;
-    else
-        return __FALSE__;
+/*                   */
+/* Output procedures */
+/*                   */
+
+void __display ( _S_, __BWORD__ s ) {
+    if (__string_p(_A_(1), s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    printf((char*)__unboxptd(_A_(1), s) + sizeof(__string__));
+}
+
+void __newline ( _S_ ) {
+    __BWORD__ i = __integerToChar(_A_(1), __boxint(_A_(1), __CH_newline__));
+
+    __writeChar(_A_(1), i);
 }
 
 void __writeChar ( _S_, __BWORD__ ch ) {
@@ -434,6 +470,14 @@ void __writeChar ( _S_, __BWORD__ ch ) {
         printf("Error writing char\n");
         exit(__FAIL__);
     }
+}
+
+/*                 */
+/* Misc procedures */
+/*                 */
+
+void __initHeap( _S_ ) {
+    allocByteField(getHeap(), __PAIRSIZE__);
 }
 
 void __gc ( _S_ ) {
