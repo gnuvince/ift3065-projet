@@ -66,4 +66,4 @@ clean:
 cleanall: clean
 	-rm $(CWD)/*.exe
 
-.PHONY: clean check run cleanall
+.PHONY: clean check run cleanall run_gc run_prim run_stack test_prim test_primitives test_gc test_stack

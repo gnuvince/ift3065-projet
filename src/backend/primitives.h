@@ -20,7 +20,7 @@ void __setCdr ( _S_, __BWORD__ p, __BWORD__ newcdr );
 
 __BWORD__ __cons ( _S_, __BWORD__ car, __BWORD__ cdr );
 
-__BWORD__ __vector ( _S_, __BWORD__ size);
+__BWORD__ __createVector ( _S_, __BWORD__ size);
 
 __BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref);
 

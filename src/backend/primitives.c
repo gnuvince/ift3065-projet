@@ -51,6 +51,7 @@ void __setCdr ( _S_, __BWORD__ p, __BWORD__ newcdr ) {
     ((__pair__*)__unboxpair(_A_(1), p))->cdr = newcdr;
 }
 
+/* Constructor: __cons */
 __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
@@ -70,7 +71,7 @@ __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
     }
 }
 
-__BWORD__ __vector ( _S_, __BWORD__ size ) {
+__BWORD__ __createVector ( _S_, __BWORD__ size ) {
     __vector__ *newvector = NULL;
 
     __WORD__ usize = __unboxint(_A_(1), size);
