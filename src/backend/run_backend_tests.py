@@ -27,7 +27,9 @@ TESTS = [
     ("test_fib.scm"          , 13<<2),
     ("test_fact.scm"         , 24<<2),
     # ("test_loop1.scm"        , 5<<2),
-    # ("test_closure1.scm"     , 3<<2),
+    ("test_closure1.scm"     , 3<<2),
+    ("test_closure2.scm"     , 7<<2),
+    ("test_closure3.scm"     , 7<<2),
 ]
 
 def main():

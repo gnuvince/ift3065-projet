@@ -250,7 +250,7 @@
      (let loop ((i 0) (cs (cons fn captures)))
        (if (null? cs)
            '()
-           (cons (list (compile-expr (car cs) env)
+           (cons (list (compile-expr (car cs) (env-fs++ env))
                        "pushl %eax\n"
                        (gen-number i)
                        "pushl %eax\n"
