@@ -5,12 +5,16 @@
 (include "../frontend/conversion.scm")
 (include "env.scm")
 
+;; Value of Scheme constants as defined in primitives.h
 (define *false* 1)
 (define *true* 2)
 (define *null* 5)
 
+;; Queue of functions that will be compiled after the current
+;; function is done.
 (define delayed-functions '())
 
+;; List of the different primitives
 (define primitive-funcs '(;symbol         # args primitive name
                           (%*                  4 "__mul")
                           (%+                  4 "__add")
@@ -33,22 +37,21 @@
                           (%set-cdr!           4 "__setCdr")
                           (%string?            3 "__string_p")
                           (%write-char         3 "__writeChar")
-
-                          (%vector             3 "__vector")
-                          (%vector-ref         4 "__vectorRef")
-                          (%vector-set!        5 "__vectorSet")
                           ))
 
 
+;; The global environment starts empty.
 (define global-env (make-env))
 
 
+;; Global variables are represented by "glob_" followed by their symbol.
 (define (gen-global-vars expr)
   (map (lambda (var)
          `("glob_" ,(symbol->label var) ": .long 0\n"))
        (fv expr)))
 
 
+;; Compile an expression into a program.
 (define (compile expr)
   (let ((asm-code (compile-expr expr global-env))
         (delayed-asm (compile-delayed-lambdas)))
@@ -69,6 +72,8 @@
      (gen-global-vars expr))))
 
 
+;; Loop through the queue of delayed functions, compiling them.  More lambdas
+;; may be added as they are found (lambda inside a lambda).
 (define (compile-delayed-lambdas)
   (let loop ((acc '()))
     (match delayed-functions
@@ -79,6 +84,7 @@
          (loop (cons (compile-lambda sym fn env) acc)))))))
 
 
+;; Compile an expression.
 (define (compile-expr expr env)
   (match expr
     (,n when (number? n) (gen-number n))
@@ -104,6 +110,7 @@
     (,_ (error "unknown expression " expr))))
 
 
+;; Compile a lambda into an assembly function with its unique label.
 (define (compile-lambda sym fn env)
   (match fn
     ((lambda ,args ,body)
@@ -118,6 +125,9 @@
            "addl $4, %esp    # clean ebp, etc.\n"
            "ret\n\n"))))
 
+
+;; When a lambda is encountered, push it to the delayed-functions queue
+;; and move its label into %eax.
 (define (delay-lambda expr env)
   (match expr
     ((lambda ,args ,body)
@@ -128,6 +138,9 @@
         "movl $" g ", %eax  # lambda pointer\n")))))
 
 
+;; From left to right, compile the expressions with the current environment,
+;; push the results onto the stack, then compile the body with the new
+;; environment (old + new bindings).
 (define (compile-let expr env)
   (match expr
     ((let ,bindings ,body)
@@ -142,6 +155,7 @@
         "addl $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
 
 
+;; Compile a conditional.
 (define (compile-if expr env)
   (match expr
     ((if ,condition ,then ,else)
@@ -162,9 +176,8 @@
         )))))
 
 
-
+;; Generate a number.
 (define (gen-number n)
- ;; (list "movl $" n ", %eax\n"))
 ;; Boxed version
   ;; (list
   ;;  "movl $" n ", %eax\n"
@@ -178,12 +191,27 @@
    "imull  $4, %eax\n"))
 
 
+;; Generate a boolean.
+(define (gen-bool b)
+  (list "movl $"
+        (if b *true* *false*)
+        " ,%eax\n"))
+
+
+;; Generate null.
+(define (gen-null)
+  (list "movl $" *null* ", %eax\n"))
+
+
+;; Accessing a local variable is done through the stack.
+;; Accessing a global variable is done with its label in the .data section.
 (define (gen-variable-access var env)
   (match (env-lookup env var)
     ((,varname local ,offset) (list "movl " (- (env-fs env) offset word-size) "(%esp), %eax\n"))
     ((,varname global ,label) (list "movl " label ", %eax\n"))))
 
 
+;; Push (in reverse order) the arguments of a function.
 (define (push-args args env)
   (list (let loop ((env env) (args (reverse args)) (acc '()))
           (if (null? args)
@@ -194,6 +222,7 @@
                             (list (compile-expr (car args) env)
                                   "pushl %eax\n")))))))
 
+;; Generate a call to a Scheme function.
 (define (gen-fun-call f args env)
   (list
    (push-args args env)
@@ -203,25 +232,22 @@
 
 
 
-
+;; Generate a call to a primitive (C) function.
 (define (gen-prim-call primitive args env)
   (match primitive
     ((,f ,nb-args ,label)
      (list
       (push-args args env)
-      "pushl $" nb-args "\n"
+      (gen-number nb-args)
+      "pushl %eax\n"
       "pushl $5\n"
       "call " label "\n"
       "addl $" (* 4 nb-args) ", %esp\n"))))
 
 
 
-(define (gen-bool b)
-  (list "movl $"
-        (if b *true* *false*)
-        " ,%eax\n"))
-
-
+;; A set! for a global variable is translated into a move
+;; from %eax to the label.
 (define (compile-set! env var expr)
   (match (env-lookup env var)
     ((,v global ,label) (list (compile-expr expr env)
@@ -229,10 +255,10 @@
 
 
 
-(define (gen-null)
-  (list "movl $" *null* ", %eax\n"))
-
-
+;; To make a closure:
+;; 1. Create a vector length n+1 (where n is the number of free variables).
+;; 2. Copy the lambda pointer into the first cell.
+;; 3. Copy the free variables into the remaining cells.
 (define (gen-make-closure fn captures env)
   (let ((size (+ 1 (length captures))))
     (list
@@ -250,7 +276,7 @@
      (let loop ((i 0) (cs (cons fn captures)))
        (if (null? cs)
            '()
-           (cons (list (compile-expr (car cs) (env-fs++ env))
+           (cons (list (compile-expr (car cs) (env-fs++ env)) ; don't forget env-fs++, we pushed.
                        "pushl %eax\n"
                        (gen-number i)
                        "pushl %eax\n"
@@ -265,6 +291,8 @@
      "# end of make-closure\n\n")))
 
 
+;; Accessing the code of a closure is done by indexing the first cell of
+;; the closure vector.
 (define (gen-closure-code clo env)
   (list
    "pushl $0\n"
@@ -277,6 +305,8 @@
    ))
 
 
+;; Accessing the i'th variable of a closure is done by indexing the i+1'th
+;; cell of the closure vector.
 (define (gen-closure-ref clo i env)
   (list
    (gen-number (+ 1 i))
