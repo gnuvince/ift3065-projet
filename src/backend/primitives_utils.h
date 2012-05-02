@@ -8,12 +8,12 @@ void print_bword(__BWORD__ v);
 
 void print_pair(__BWORD__ p);
 
-void print_byteField(__bytefield__ *f);
+/* void print_byteField(__bytefield__ *f); */
 
-void print_vector(__BWORD__ v);
+/* void print_vector(__BWORD__ v); */
 
-void setBit_word( __WORD__ *w, __WORD__ mask );
+/* void setBit_word( __WORD__ *w, __WORD__ mask ); */
 
-void setBit_byte( char *b, char mask );
+/* void setBit_byte( char *b, char mask ); */
 
 #endif

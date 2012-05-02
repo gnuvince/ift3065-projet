@@ -54,6 +54,7 @@ typedef __ptd_hdr__ __vector__;
 typedef __ptd_hdr__ __string__;
 typedef __ptd_hdr__ __char__;
 typedef __ptd_hdr__ __sym__;
+typedef __ptd_hdr__ __lambda__;
 
 typedef struct {
     __WORD__  hdr;

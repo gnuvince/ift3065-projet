@@ -1,14 +1,21 @@
-int foo(int x, int y, int z) {
-    return x + y + z;
+#include <stdio.h>
+#include <stdint.h>
+
+uint32_t globX = 123;
+
+void foo ( ) {
+    __asm__ ( "movl %ebp, _globX;" );
 }
 
-int main() {
-    int x;
-    int y;
-    int z;
-    x = 42;
-    y = 37;
-    z = 29;
+void __bar ( uint32_t x ) {
+    printf("d: %lu\n", x);
+}
 
-    return foo(x, y, z);
+
+
+int main() {
+    __asm__ ( "movl %ebp, _globX;" );
+    foo();
+    __bar(globX);
+    return 0;
 }

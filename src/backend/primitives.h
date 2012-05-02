@@ -20,6 +20,16 @@ void __setCdr ( _S_, __BWORD__ p, __BWORD__ newcdr );
 
 __BWORD__ __cons ( _S_, __BWORD__ car, __BWORD__ cdr );
 
+__BWORD__ __createLambda ( _S_, __BWORD__ size );
+
+void  __lambdaSet ( _S_, __BWORD__ p, __BWORD__ ref, __BWORD__ val );
+        
+__BWORD__ __lambdaRef ( _S_, __BWORD__ v, __BWORD__ ref );
+
+void __lambdaSetCode ( _S_, __BWORD__ p, __WORD__ code );
+
+__WORD__ __lambdaGetCode ( _S_, __BWORD__ p );
+
 __BWORD__ __createVector ( _S_, __BWORD__ size);
 
 __BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref);
@@ -34,6 +44,8 @@ __BWORD__ __vector_p ( _S_, __BWORD__ v );
 
 __BWORD__ __add ( _S_, __BWORD__ a, __BWORD__ b );
 
+__BWORD__ __inc ( _S_, __BWORD__ a );
+
 __BWORD__ __sub ( _S_, __BWORD__ a, __BWORD__ b );
 
 __BWORD__ __mul ( _S_, __BWORD__ a, __BWORD__ b );
@@ -45,6 +57,8 @@ __BWORD__ __remainder ( _S_, __BWORD__ a, __BWORD__ b );
 __BWORD__  __number_p ( _S_, __BWORD__ n );
 
 __BWORD__  __null_p ( _S_, __BWORD__ p );
+
+__BWORD__ __lambda_p ( _S_, __BWORD__ p );
 
 __BWORD__ __pair_p ( _S_, __BWORD__ p );
 
