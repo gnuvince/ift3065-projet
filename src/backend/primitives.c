@@ -81,7 +81,7 @@ __BWORD__ __createLambda ( _S_, __BWORD__ size ) {
 
     __WORD__ usize = __unboxint(_A_(1), size);
     newlambda = (__lambda__*)allocBlock(getHeap(), sizeof(__lambda__) + (__WORDSIZE__ * (usize + 1)));
-    
+
     if (newlambda == NULL) {
         printf("Out of memory\n");
         exit(__FAIL__);
@@ -95,7 +95,7 @@ __BWORD__ __createLambda ( _S_, __BWORD__ size ) {
 void  __lambdaSet ( _S_, __BWORD__ p, __BWORD__ ref, __BWORD__ val ) {
     __vectorSet(_A_(3), __boxptd(_A_(1), __unboxlambda(_A_(1), p)), __inc(_A_(1), ref), val);
 }
-        
+
 __BWORD__ __lambdaRef ( _S_, __BWORD__ p, __BWORD__ ref ) {
     return __vectorRef(_A_(2), __boxptd(_A_(1), __unboxlambda(_A_(1), p)), __inc(_A_(1), ref));
 }
@@ -285,7 +285,7 @@ __BWORD__ __charToInteger ( _S_, __BWORD__ ch ) {
 
 /* Constructor: __integerToChar */
 __BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
-    __char__ *newchar = NULL;    
+    __char__ *newchar = NULL;
 
     newchar = (__char__*)allocBlock(getHeap(), sizeof(__char__));
 
@@ -322,7 +322,7 @@ __BWORD__ __sub ( _S_, __BWORD__ a, __BWORD__ b ) {
         exit(__FAIL__);
     }
 
-    return __boxint(_A_(1), __unboxint(_A_(1), a) - __unboxint(_A_(1), b));    
+    return __boxint(_A_(1), __unboxint(_A_(1), a) - __unboxint(_A_(1), b));
 }
 
 __BWORD__ __mul ( _S_, __BWORD__ a, __BWORD__ b ) {

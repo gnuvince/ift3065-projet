@@ -268,12 +268,20 @@
      "pushl %eax\n"
      "pushl $1\n"                       ; unused; for C compatibility
      "pushl $5\n"                       ; unused; for C compatibility
-     "call __vector\n"
+     "call __createLambda\n"
      "addl $12, %esp\n"
-     "pushl %eax\n"                     ; Push vector addr
+     "pushl %eax\n"                     ; Push lambda addr
+
+     (compile-expr fn (env-fs++ env))
+     "pushl %eax\n"
+     "pushl 4(%esp)\n"
+     "pushl $3\n"     ; unused; for C compatibility
+     "pushl $5\n"     ; unused; for C compatibility
+     "call __lambdaSetCode\n"
+     "addl $16, %esp\n"
 
      ;; Add function + captured variables
-     (let loop ((i 0) (cs (cons fn captures)))
+     (let loop ((i 0) (cs captures))
        (if (null? cs)
            '()
            (cons (list (compile-expr (car cs) (env-fs++ env)) ; don't forget env-fs++, we pushed.
@@ -283,7 +291,7 @@
                        "pushl 8(%esp)\n"
                        "pushl $3\n"     ; unused; for C compatibility
                        "pushl $5\n"     ; unused; for C compatibility
-                       "call __vectorSet\n"
+                       "call __lambdaSet\n"
                        "addl $20, %esp\n")
                  (loop (+ i 1) (cdr cs)))))
      "movl 0(%esp), %eax\n"
@@ -295,13 +303,12 @@
 ;; the closure vector.
 (define (gen-closure-code clo env)
   (list
-   "pushl $0\n"
-   (compile-expr clo (env-fs++ env))
+   (compile-expr clo env)
    "pushl %eax\n"
    "pushl $2\n"                         ; unused; for C compatibility
    "pushl $5\n"                         ; unused; for C compatibility
-   "call __vectorRef\n"
-   "addl $16, %esp\n"
+   "call __lambdaGetCode\n"
+   "addl $12, %esp\n"
    ))
 
 
@@ -309,12 +316,12 @@
 ;; cell of the closure vector.
 (define (gen-closure-ref clo i env)
   (list
-   (gen-number (+ 1 i))
+   (gen-number i)
    "pushl %eax\n"
    (compile-expr clo (env-fs++ env))
    "pushl %eax\n"
    "pushl $2\n"
    "pushl $5\n"
-   "call __vectorRef\n"
+   "call __lambdaRef\n"
    "addl $16, %esp\n"
    ))

@@ -8,20 +8,20 @@
 #include "bytefield_utils.h"
 #include "box.h"
 
-void *globEBP;
+/* void *globEBP; */
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
-    __asm__ ( "movl   %ebp, _globEBP" );
+    /* __asm__ ( "movl   %ebp, _globEBP" ); */
 
-    printf("gc_run: %lu\n", (__WORD__)globEBP);
-    
+    /* printf("gc_run: %lu\n", (__WORD__)globEBP); */
+
     __BWORD__ obj;
-    
+
     allocByteField(to, __PAIRSIZE__);
-    
+
     for (__VAR__ i = 0; i < getVarNext(); ++i) {
         obj = getVar(i);
-        
+
         if ((obj != __NULL__) && (__boxtype(_A1_, obj) != __INT_TYPE__) && (gc_isAlive(obj))) {
             setVar(i, gc_copyObject(obj, from, to));
         }
@@ -39,7 +39,7 @@ __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to 
 
     if ((obj != __NULL__) && (objtype != __INT_TYPE__) && (gc_isAlive(obj))) {
         /* Reserve space in new heap */
-        loc = allocBlock(to, objsize);        
+        loc = allocBlock(to, objsize);
         if (loc == NULL) {
             printf("Out of memory");
             exit(__FAIL__);
@@ -47,7 +47,7 @@ __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to 
 
         /* Create new obj */
         newobj = __box(_A2_, (__WORD__)loc, objtype);
-        
+
         /* Copy the object */
         memcpy(loc, (void*)__unbox(_A1_, obj), (size_t)objsize);
 
@@ -61,7 +61,7 @@ __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to 
             for (__WORD__ i = 0; i < __unboxint(_A1_, __vectorLength(_A1_, obj)); ++i)
                 __vectorSet(_A2_, newobj, __boxint(_A1_, i), gc_copyObject(__vectorRef(_A2_, obj, __boxint(_A1_, i)), from, to));
         }
-        
+
         /* Tag object as moved */
         gc_setMoved(obj);
 
