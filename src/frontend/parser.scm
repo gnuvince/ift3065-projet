@@ -269,10 +269,10 @@
 
 (define (<lambda-expression> ast)
   (and (list? ast)
-       (= (length ast) 3)
+       (>= (length ast) 3)
        (eq? (car ast) 'lambda)
        (<formals> (cadr ast))
-       (<body> (caddr ast))
+       (<expression>+ (cddr ast))
        ast))
 
 (define (<conditional> ast)

@@ -68,8 +68,9 @@ __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
         bpair = __boxpair(_A_(1), (__WORD__)newpair);
         __setCar(_A_(2), bpair, car);
         __setCdr(_A_(2), bpair, cdr);
-        return bpair;
     }
+
+    return bpair;
 }
 
 /*                   */

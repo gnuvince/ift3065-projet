@@ -60,6 +60,7 @@
 (make-test unquote-splicing-prefix ',@a '(unquote-splicing-prefix a))
 (make-test lambda0 '(lambda (x) x) '(lambda (x) x))
 (make-test lambda1 '(lambda (x) (+ x 2)) '(lambda (x) (+ x 2)))
+(make-test lambda2 '(lambda (x) (+ x 2) (* x 3)) '(lambda (x) (+ x 2) (* x 3)))
 (make-test lambda-mult '(lambda (x y) (+ x y)) '(lambda (x y) (+ x y)))
 (make-test lambda-null '(lambda () (+ 1 2)) '(lambda () (+ 1 2)))
 (make-test lambda-list '(lambda L (+ 1 2)) '(lambda L (+ 1 2)))
