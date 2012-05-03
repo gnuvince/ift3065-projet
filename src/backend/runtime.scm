@@ -81,8 +81,10 @@
   (lambda (x)
     (if x #f #t)))
 
-;; (define list
-;;   (lambda lst lst))
+
+
+(define list
+  (lambda lst lst))
 
 ;; (define length
 ;;   (lambda (lst)

@@ -1,3 +1,16 @@
+(define (improper->proper xs)
+  (cond
+   ((pair? (cdr xs)) (cons (car xs) (improper->proper (cdr xs))))
+   (else (list (car xs) (cdr xs)))))
+
+(define (proper->improper xs)
+  (cond
+   ((null? (cdr xs)) (car xs))
+   (else (cons (car xs)
+               (proper->improper (cdr xs))))))
+
+
+
 ;;;----------------------------------------------------------------------------
 
 ;; Define some special forms to define macros that are usable
@@ -282,13 +295,21 @@
     ((define ,v ,E1)
      `(define ,(rename v) ,(ac E1)))
 
+    ((lambda ,params ,E) when (symbol? params)
+     (let* ((g (gensym))
+            (new-env (cons (cons params g) env)))
+     `(lambda ,g ,(alphac E new-env))))
+
     ((lambda ,params ,E)
-     (let* ((fresh-params
+     (let* ((params-proper (if (list? params) params (improper->proper params)))
+            (fresh-params
              (map (lambda (p) (cons p (gensym)))
-                  params))
+                  params-proper))
             (new-env
              (append fresh-params env)))
-       `(lambda ,(map cdr fresh-params)
+       `(lambda ,(if (list? params)
+                     (map cdr fresh-params)
+                     (proper->improper (map cdr fresh-params)))
           ,(alphac E new-env))))
 
     ((let ,bindings ,E)
@@ -349,17 +370,39 @@
     ((define ,v ,E1)
      `(define ,v ,(ac E1)))
 
-    ((lambda ,params ,E)
+
+    ((lambda ,params ,E) when (symbol? params)
      (let* ((mut-params
              (map (lambda (p) (cons p (gensym)))
-                  (keep mutable? params)))
+                  (keep mutable? (list params))))
             (params2
              (map (lambda (p)
                     (if (mutable? p)
                         (cdr (assq p mut-params))
                         p))
-                  params)))
-       `(lambda ,params2
+                  (list params))))
+       `(lambda ,@params2
+          ,(if (null? mut-params)
+               (ac E)
+               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) '())))
+                           mut-params)
+                   ,(ac E))))))
+
+
+    ((lambda ,params ,E)
+     (let* ((proper-params (if (list? params) params (improper->proper params)))
+            (mut-params
+             (map (lambda (p) (cons p (gensym)))
+                  (keep mutable? proper-params)))
+            (params2
+             (map (lambda (p)
+                    (if (mutable? p)
+                        (cdr (assq p mut-params))
+                        p))
+                  proper-params)))
+       `(lambda ,(if (list? params)
+                     params2
+                     (proper->improper params2))
           ,(if (null? mut-params)
                (ac E)
                `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) '())))
@@ -489,7 +532,10 @@
      (union (list v) (fv E1)))
 
     ((lambda ,params ,E)
-     (difference (fv E) params))
+     (cond
+      ((symbol? params) (difference (fv E) (list params)))
+      ((list? params) (difference (fv E) params))
+      (else (difference (fv E) (improper->proper params)))))
 
     ((let ,bindings ,E)
      (union (apply union (map (lambda (b) (fv (cadr b))) bindings))

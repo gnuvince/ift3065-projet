@@ -5,10 +5,10 @@
 (include "../frontend/conversion.scm")
 (include "env.scm")
 
-;; Value of Scheme constants as defined in primitives.h
+;; Value of Scheme constants as defined in sins_const.h
 (define *false* 1)
-(define *true* 2)
-(define *null* 5)
+(define *true* 5)
+(define *null* 2)
 
 ;; Queue of functions that will be compiled after the current
 ;; function is done.
@@ -60,7 +60,7 @@
      ".globl main\n"
      "main:\n"
      "pushl $0\n"
-     "pushl $5\n"
+     "pushl $2\n"
      "call __initHeap\n"
      asm-code
      "addl $8, %esp\n"
@@ -110,10 +110,12 @@
     (,_ (error "unknown expression " expr))))
 
 
+
 ;; Compile a lambda into an assembly function with its unique label.
 (define (compile-lambda sym fn env)
   (match fn
-    ((lambda ,args ,body)
+    ;; Fixed parameters
+    ((lambda ,params ,body) when (list? params)
      (list "\n" sym ":\n"
            "pushl %ebp\n"
            "movl  %esp, %ebp\n"
@@ -121,9 +123,61 @@
                          ;; We increment fs because the epb and return
                          ;; address are pushed onto the stack.
                          (env-fs+ 2
-                          (env-update env args)))
-           "addl $4, %esp    # clean ebp, etc.\n"
-           "ret\n\n"))))
+                          (env-update env params)))
+           "popl %ebp\n"
+           "ret\n\n"))
+
+    ;; Rest parameter
+    ((lambda ,params ,body)
+     (let* ((proper-params (improper->proper params))
+            (nb-fixed-params (- (length proper-params) 3))
+            (new-env (env-fs+ 2 (env-update env proper-params)))
+            (loop-label (gensym))
+            (end-loop-label (gensym)))
+       (list
+        "\n" sym ":\n"
+        "pushl %ebp\n"
+        "movl  %esp, %ebp\n"
+        (gen-number nb-fixed-params)
+        "movl %eax, %ebx\n"
+        (compile-expr '$num (env-fs++ new-env))
+        "subl %ebx, %eax\n"
+        "movl %eax, %ecx\n"
+        (gen-null)
+
+        loop-label ":\n"
+        "cmp $0, %ecx\n"
+        "je " end-loop-label "\n"
+        "pushl %eax\n"
+        "movl %esp, %ebx\n"
+        "addl %ecx, %ebx\n"
+        "addl $24, %ebx\n"
+        "push %ecx\n"
+        "pushl (%ebx)\n"
+        (gen-number 2)
+        "pushl %eax\n"
+        (gen-null)
+        "pushl %eax\n"
+        "call __cons\n"
+        "addl $16, %esp\n"
+        "popl %ecx\n"
+        "subl $4, %ecx\n"
+        "jmp " loop-label "\n"
+        end-loop-label ":\n"
+
+        "pushl %eax\n"
+        "movl %esp, %ebx\n"
+        (gen-number nb-fixed-params)
+        "addl %eax, %ebx\n"
+        "addl $12, %ebx\n"
+        "popl %eax\n"
+        "movl %eax, (%ebx)\n"
+
+        (compile-expr body new-env)
+        "popl %ebp\n"
+        "ret\n\n")))))
+
+
 
 
 ;; When a lambda is encountered, push it to the delayed-functions queue
@@ -240,7 +294,7 @@
       (push-args args env)
       (gen-number nb-args)
       "pushl %eax\n"
-      "pushl $5\n"
+      "pushl $2\n"
       "call " label "\n"
       "addl $" (* 4 nb-args) ", %esp\n"))))
 
@@ -267,7 +321,7 @@
      (gen-number size)
      "pushl %eax\n"
      "pushl $1\n"                       ; unused; for C compatibility
-     "pushl $5\n"                       ; unused; for C compatibility
+     "pushl $2\n"                       ; unused; for C compatibility
      "call __createLambda\n"
      "addl $12, %esp\n"
      "pushl %eax\n"                     ; Push lambda addr
@@ -276,7 +330,7 @@
      "pushl %eax\n"
      "pushl 4(%esp)\n"
      "pushl $3\n"     ; unused; for C compatibility
-     "pushl $5\n"     ; unused; for C compatibility
+     "pushl $2\n"     ; unused; for C compatibility
      "call __lambdaSetCode\n"
      "addl $16, %esp\n"
 
@@ -290,7 +344,7 @@
                        "pushl %eax\n"
                        "pushl 8(%esp)\n"
                        "pushl $3\n"     ; unused; for C compatibility
-                       "pushl $5\n"     ; unused; for C compatibility
+                       "pushl $2\n"     ; unused; for C compatibility
                        "call __lambdaSet\n"
                        "addl $20, %esp\n")
                  (loop (+ i 1) (cdr cs)))))
@@ -306,7 +360,7 @@
    (compile-expr clo env)
    "pushl %eax\n"
    "pushl $2\n"                         ; unused; for C compatibility
-   "pushl $5\n"                         ; unused; for C compatibility
+   "pushl $2\n"                         ; unused; for C compatibility
    "call __lambdaGetCode\n"
    "addl $12, %esp\n"
    ))
@@ -321,7 +375,7 @@
    (compile-expr clo (env-fs++ env))
    "pushl %eax\n"
    "pushl $2\n"
-   "pushl $5\n"
+   "pushl $2\n"
    "call __lambdaRef\n"
    "addl $16, %esp\n"
    ))
