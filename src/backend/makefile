@@ -22,7 +22,7 @@ CWD := `pwd`
 
 BUILDDIR := tests
 OBJDIR := tests
-OBJFILES := bytefield.o bytefield_utils.o box.o gc.o primitives.o primitives_utils.o
+OBJFILES := bytefield.o bytefield_utils.o box.o gc.o primitives.o primitives_utils.o stack.o
 
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test .c .o
@@ -39,9 +39,9 @@ test_gc: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -o test_gc.exe test_gc.c
 	chmod +x $(CWD)/test_gc.exe
 
-test_stack:
-	$(CC) -m32 -O1 -mpreferred-stack-boundary=2 -S -o testStack.S testStack.c
-	$(CC) -m32 -o testStack.exe testStack.S
+test_stack: $(OBJFILES)
+	$(CC) $(CFLAGS) $(OBJFILES) -fPIE -Wl,-pie -o test_stack.exe test_stack.c
+	chmod +x $(CWD)/test_stack.exe
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

@@ -47,7 +47,7 @@
 #define _A_(NUM_ARGS) __NULL__, NUM_ARGS
 #define _A1_ __NULL__, 1
 #define _A2_ __NULL__, 2
-#define _S_ __BWORD__ clo, int num
+#define _S_ __BWORD__ this, int num
 
 #define __FALSE__ ((__BWORD__) __PTD_TYPE__)                       /* 1 */
 #define __TRUE__  (((__BWORD__)1 << __BOX_SIZE__) + __PTD_TYPE__)  /* 5 */

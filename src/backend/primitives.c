@@ -10,7 +10,7 @@
 #include "bytefield.h"
 #include "bytefield_utils.h"
 #include "gc.h"
-
+#include "stack.h"
 
 /*                */
 /* Pair procedure */
@@ -107,7 +107,7 @@ __BWORD__ __symbolToString ( _S_, __BWORD__ sym ) {
     __string__ *newstring = NULL;
     __BWORD__ slen = __symbolLength(_A_(1), sym);
 
-    if (__string_p(_A_(1), s) != __TRUE__) {
+    if (__string_p(_A_(1), sym) != __TRUE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
     }
@@ -583,6 +583,10 @@ void __writeChar ( _S_, __BWORD__ ch ) {
 /*                 */
 /* Misc procedures */
 /*                 */
+
+void __initStack( _S_ ) {
+    allocStack();
+}
 
 void __initHeap( _S_ ) {
     allocByteField(getHeap(), __PAIRSIZE__);
