@@ -96,49 +96,49 @@
 ;;         (%length-aux lst (%+ n 1))
 ;;         n)))
 
-;; (define append
-;;   (lambda (lst1 lst2)
-;;     (if (%pair? lst1)
-;;         (%cons (%car lst1) (append (%cdr lst1) lst2))
-;;         lst2)))
+(define append
+  (lambda (lst1 lst2)
+    (if (%pair? lst1)
+        (%cons (%car lst1) (append (%cdr lst1) lst2))
+        lst2)))
 
-;; (define reverse
-;;   (lambda (lst)
-;;     (reverse-aux lst '())))
+(define reverse
+  (lambda (lst)
+    (reverse-aux lst (list))))
 
-;; (define reverse-aux
-;;   (lambda (lst rev)
-;;     (if (%pair? lst)
-;;         (reverse-aux (%cdr lst) (%cons (%car lst) rev))
-;;         rev)))
+(define reverse-aux
+  (lambda (lst rev)
+    (if (%pair? lst)
+        (reverse-aux (%cdr lst) (%cons (%car lst) rev))
+        rev)))
 
-;; (define list-ref
-;;   (lambda (lst i)
-;;     (if (%= i 0)
-;;         (%car lst)
-;;         (list-ref (%cdr lst) (%- i 1)))))
+(define list-ref
+  (lambda (lst i)
+    (if (%= i 0)
+        (%car lst)
+        (list-ref (%cdr lst) (%- i 1)))))
 
-;; (define list-set!
-;;   (lambda (lst i x)
-;;     (if (%= i 0)
-;;         (%set-car! lst x)
-;;         (list-set! (%cdr lst) (%- i 1) x))))
+(define list-set!
+  (lambda (lst i x)
+    (if (%= i 0)
+        (%set-car! lst x)
+        (list-set! (%cdr lst) (%- i 1) x))))
 
-;; (define max
-;;   (lambda (x y)
-;;     (if (%> x y) x y)))
+(define max
+  (lambda (x y)
+    (if (%> x y) x y)))
 
-;; (define min
-;;   (lambda (x y)
-;;     (if (%< x y) x y)))
+(define min
+  (lambda (x y)
+    (if (%< x y) x y)))
 
-;; (define abs
-;;   (lambda (x)
-;;     (if (%< x 0) (%- 0 x) x)))
+(define abs
+  (lambda (x)
+    (if (%< x 0) (%- 0 x) x)))
 
-;; (define modulo
-;;   (lambda (x y)
-;;     (%remainder x y)))
+(define modulo
+  (lambda (x y)
+    (%remainder x y)))
 
 ;; (define string
 ;;   (lambda chars

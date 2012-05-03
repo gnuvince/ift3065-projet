@@ -140,7 +140,7 @@
         "movl  %esp, %ebp\n"
         (gen-number nb-fixed-params)
         "movl %eax, %ebx\n"
-        (compile-expr '$num (env-fs++ new-env))
+        (compile-expr '$num new-env)
         "subl %ebx, %eax\n"
         "movl %eax, %ecx\n"
         (gen-null)
@@ -148,11 +148,11 @@
         loop-label ":\n"
         "cmp $0, %ecx\n"
         "je " end-loop-label "\n"
+        "pushl %ecx\n"
         "pushl %eax\n"
         "movl %esp, %ebx\n"
         "addl %ecx, %ebx\n"
-        "addl $24, %ebx\n"
-        "push %ecx\n"
+        "addl $20, %ebx\n"
         "pushl (%ebx)\n"
         (gen-number 2)
         "pushl %eax\n"
@@ -165,11 +165,11 @@
         "jmp " loop-label "\n"
         end-loop-label ":\n"
 
-        "pushl %eax\n"
         "movl %esp, %ebx\n"
+        "pushl %eax\n"
+        "addl $16, %ebx\n"              ; Skip over epb, RA, $clo and $num.
         (gen-number nb-fixed-params)
         "addl %eax, %ebx\n"
-        "addl $12, %ebx\n"
         "popl %eax\n"
         "movl %eax, (%ebx)\n"
 
