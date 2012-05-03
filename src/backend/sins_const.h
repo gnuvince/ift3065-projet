@@ -23,23 +23,25 @@
 #define __CHAR_MASK__      255
 
 /* Base types */
-#define __INT_TYPE__       0    /* x x x 0 0 */
-#define __PTD_TYPE__       1    /* x x x 0 1 */
-#define __PAIR_TYPE__      2    /* x x x 1 0 */
-#define __LAMBDA_TYPE__    3    /* x x x 1 1 */
+#define __INT_TYPE__           0    /* x x x 0 0 */
+#define __PTD_TYPE__           1    /* x x x 0 1 */
+#define __PAIR_TYPE__          2    /* x x x 1 0 */
+#define __LAMBDA_TYPE__        3    /* x x x 1 1 */
 /* PTD subtypes */
-#define __VEC_TYPE__       5    /* 0 0 1 0 1 */
-#define __STR_TYPE__       9    /* 0 1 0 0 1 */
-#define __CHAR_TYPE__     13    /* 0 1 1 0 1 */
-#define __SYM_TYPE__      17    /* 1 0 0 0 1 */
+#define __VEC_TYPE__           5    /* 0 0 1 0 1 */
+#define __STR_TYPE__           9    /* 0 1 0 0 1 */
+#define __CHAR_TYPE__         13    /* 0 1 1 0 1 */
+#define __SYM_TYPE__          17    /* 1 0 0 0 1 */
 
-#define __INT_SHFT__       2
-#define __PTD_SHFT__       0
-#define __PAIR_SHFT__      0
-#define __LAMBDA_SHFT__    0
-#define __VEC_LEN_SHFT__   8
-#define __STR_LEN_SHFT__   8
-#define __CHAR_VAL_SHFT__  8
+#define __INT_SHFT__          2
+#define __PTD_SHFT__          0
+#define __PAIR_SHFT__         0
+#define __LAMBDA_SHFT__       0
+#define __VEC_LEN_SHFT__      8
+#define __LAMBDA_LEN_SHFT__   8
+#define __STR_LEN_SHFT__      8
+#define __SYM_LEN_SHFT__      8
+#define __CHAR_VAL_SHFT__     8
 
 /* Std calling protocol dummy params */
 #define _A_(NUM_ARGS) __NULL__, NUM_ARGS

@@ -8,12 +8,12 @@
 #include "bytefield_utils.h"
 #include "box.h"
 
-void *globEBP;
+/* void *globEBP; */
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
-    __asm__ ( "movl   %ebp, _globEBP" );
+    /* __asm__ ( "movl   %ebp, _globEBP" ); */
 
-    printf("gc_run: %lu\n", (__WORD__)globEBP);
+    /* printf("gc_run: %lu\n", (__WORD__)globEBP); */
     
     __BWORD__ obj;
     
