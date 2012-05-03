@@ -516,10 +516,6 @@ Dans le cas d'une variable locale ou d'un paramètre de fonction, la
 portée est représentée par le symbole {\it local} et l'offset est la
 distance entre le début du frame et la valeur du symbole.
 
-Dans le cas d'une variable capturée par une fermeture, la portée est
-représentée par le symbole {\it captured} et l'offset est l'index de
-la valeur du symbole dans la fermeture.
-
 Le module d'environnement fournit plusieurs fonctions pour manipuler
 un environnement.
 
@@ -536,9 +532,9 @@ un environnement.
 \item {\bf env-add-symbol}: ajoute un symbole à la liste de symbole,
   incrémente la valeur du frame size, et retourne le nouvel
   environnement modifié.
-\item {\bf env-lookup}: tente de retourner le tuple d'un symbole.  Si
-  aucun tuple local ou capturé est trouvé, on retourne le tuple d'une
-  variable globale.
+\item {\bf env-lookup}: tente de retourner le tuple d'un symbole. Si
+  aucun tuple local est trouvé, on retourne le tuple d'une variable
+  globale.
 \item {\bf env-update}: fonction utilitaire qui ajoute une liste de
   symboles locaux dans l'environnement.
 \end{itemize}
@@ -579,13 +575,58 @@ Afin de régler ce problème, nous avons procédé en 2 étapes:
 
 \begin{enumerate}
 \item Dans la phase d'analyse lexicale, nous avons remplacé le lexème
-  pour la valeur fausse de {\tt (boolean . #f)} à {\tt ('boolean .
+  pour la valeur fausse de {\tt (boolean . \#f)} à {\tt ('boolean .
     false)} où {\tt false} est un symbole unique généré par le
   compilateur.
 \item Dans la phase d'analyse syntaxique, lorsque l'arbre est généré,
   nous le parcourons et transformons toutes les feuilles {\tt false}
   par \#f.
 \end{enumerate}
+
+\section{Génération de code}
+
+\subsection{Paramètre reste}
+
+En Scheme, on peut définir des fonctions qui prennent un nombre
+variable de paramètres des façons suivantes:
+
+\begin{verbatim}
+(lambda args ...) ;; Tous les paramètres sont optionnels
+(lambda (a1 a2 . rest) ...) ;; a1 et a2 sont obligatoires
+\end{verbatim}
+
+Réussir à faire fonctionner ces appels de fonction a été plus
+difficile que la tâche peut le sembler.
+
+Dans un premier temps, il est impossible à la compilation de savoir
+combien de paramètres actuels ont été envoyés.  Afin de connaître
+cette information, un paramètre supplémentaire est envoyé à la lambda,
+le nombre de paramètres actuels.  Donc, la signature des deux
+fonctions ci-haut est changée ainsi:
+
+\begin{verbatim}
+(lambda ($clo $num . args) ...)
+(lambda ($clo $num a1 a2 . rest) ...)
+\end{verbatim}
+
+Maintenant qu'on connait le nombre de paramètres actuels, on peut
+regrouper dans une liste tous les arguments qui ne sont pas associés
+à un paramètre ``fixe''.  Voici comment on procède:
+
+\begin{enumerate}
+\item On fait la différence entre le nombre de paramètres actuels et
+  le nombre de paramètres formels.
+\item On crée une boucle qui construira la liste des arguments restants.
+\item Une fois que la liste est créée, on l'insère dans la pile à
+  l'emplacement du premier paramètre restant.  En faisant ce
+  remplacement, lors des accès au paramètre reste, l'environnement
+  trouvera la liste au bon emplacement.
+\end{enumerate}
+
+Bien que la stratégie soit simple, la gestion des différents détails
+d'implantation a fait en sorte que la complétion de cette
+fonctionnalité a pris environ 5 heures.
+
 
 
 

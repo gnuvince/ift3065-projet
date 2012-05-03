@@ -36,6 +36,7 @@ TESTS = [
     ("test_listset.scm"      , 4<<2),
     ("test_car.scm"          , 1<<2),
     ("test_cdr.scm"          , 2<<2),
+    ("test_map.scm"          , 12<<2),
 ]
 
 def main():
