@@ -73,9 +73,63 @@ __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
 }
 
 /*                   */
+/* Symbol procedures */
+/*                   */
+
+/* Constructor: stringToSymbol */
+__BWORD__ __stringToSymbol ( _S_, __BWORD__ s ) {
+    __symbol__ *newsymbol = NULL;
+    __WORD__ slen = __unboxint(_A_(1), __stringLength(_A_(1), s));
+
+    if (__string_p(_A_(1), s) != __TRUE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    newsymbol = (__symbol__*)allocBlock(getHeap(), sizeof(__symbol__) + slen + 1);
+
+    if (newsymbol == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newsymbol->hdr = (slen << __SYM_LEN_SHFT__) + __SYM_TYPE__;
+        strcpy((char*)s + sizeof(__string__), (char*)newsymbol + sizeof(__symbol__));
+        return __boxptd(_A_(1), (__WORD__)newsymbol);
+    }
+}
+
+__BWORD__ __symbolLength ( _S_, __BWORD__ sym ) {
+    return __boxint(_A_(1), (__WORD__)(((__symbol__*)__unboxptd(_A_(1), sym))->hdr >> __SYM_LEN_SHFT__));
+}
+
+__BWORD__ __symbolToString ( _S_, __BWORD__ sym ) {
+    __string__ *newstring = NULL;
+    __BWORD__ slen = __symbolLength(_A_(1), sym);
+
+    if (__string_p(_A_(1), s) != __TRUE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
+
+    if (newstring == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newstring->hdr = (slen << __SYM_LEN_SHFT__) + __STR_TYPE__;
+        strcpy((char*)sym + sizeof(__symbol__), (char*)newstring + sizeof(__string__));
+        return __boxptd(_A_(1), (__WORD__)newstring);
+    }
+}
+
+/*                   */
 /* Lambda procedures */
 /*                   */
 
+/* Constructor: lambda */
 __BWORD__ __createLambda ( _S_, __BWORD__ size ) {
     __lambda__ *newlambda = NULL;
 

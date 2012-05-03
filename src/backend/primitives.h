@@ -22,6 +22,12 @@ __BWORD__ __cons ( _S_, __BWORD__ car, __BWORD__ cdr );
 
 __BWORD__ __createLambda ( _S_, __BWORD__ size );
 
+__BWORD__ __stringToSymbol ( _S_, __BWORD__ s );
+
+__BWORD__ __symbolLength ( _S_, __BWORD__ sym );
+
+__BWORD__ __symbolToString ( _S_, __BWORD__ sym );
+
 void  __lambdaSet ( _S_, __BWORD__ p, __BWORD__ ref, __BWORD__ val );
         
 __BWORD__ __lambdaRef ( _S_, __BWORD__ v, __BWORD__ ref );
@@ -30,11 +36,11 @@ void __lambdaSetCode ( _S_, __BWORD__ p, __WORD__ code );
 
 __WORD__ __lambdaGetCode ( _S_, __BWORD__ p );
 
-__BWORD__ __createVector ( _S_, __BWORD__ size);
+__BWORD__ __createVector ( _S_, __BWORD__ size );
 
-__BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref);
+__BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref );
 
-void __vectorSet ( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val);
+void __vectorSet ( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val );
 
 __BWORD__ __vectorLength ( _S_, __BWORD__ v );
 
