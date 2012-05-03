@@ -8,6 +8,8 @@
 #include "box.h"
 #include "bytefield.h"
 
+void __initStack( _S_ );
+
 void __initHeap ( _S_ );
 
 __BWORD__ __getCar ( _S_, __BWORD__ p );

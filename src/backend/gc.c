@@ -11,83 +11,101 @@
 /* void *globEBP; */
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
-    /* __asm__ ( "movl   %ebp, _globEBP" ); */
-
-    /* printf("gc_run: %lu\n", (__WORD__)globEBP); */
-    
     __BWORD__ obj;
     
     allocByteField(to, __PAIRSIZE__);
-    
+
     for (__VAR__ i = 0; i < getVarNext(); ++i) {
         obj = getVar(i);
         
-        if ((obj != __NULL__) && (__boxtype(_A1_, obj) != __INT_TYPE__) && (gc_isAlive(obj))) {
+        if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
             setVar(i, gc_copyObject(obj, from, to));
         }
     }
 
+    /* Uncomment to see the results */
+    /* printf("Dest heap:\n"); */
+    /* dumpByteField(to); */
+    /* printf("From heap:\n"); */
+    /* dumpByteField(from); */
+    
     swapHeap();
     freeByteField(from);
 }
 
 __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to ) {
-    __WORD__ objsize = __boxsize(_A1_, obj);
-    __WORD__ objtype = __boxtype(_A1_, obj);
+    __WORD__ objsize = __boxsize(_A_(1), obj);
+    __WORD__ objtype = __boxtype(_A_(1), obj);
     __BWORD__ newobj;
     void *loc;
 
-    if ((obj != __NULL__) && (objtype != __INT_TYPE__) && (gc_isAlive(obj))) {
-        /* Reserve space in new heap */
-        loc = allocBlock(to, objsize);        
-        if (loc == NULL) {
-            printf("Out of memory");
-            exit(__FAIL__);
-        }
-
-        /* Create new obj */
-        newobj = __box(_A2_, (__WORD__)loc, objtype);
+    if ((obj != __NULL__) && (objtype != __INT_TYPE__)) {
         
-        /* Copy the object */
-        memcpy(loc, (void*)__unbox(_A1_, obj), (size_t)objsize);
+        if (gc_isMoved(obj)) {
 
-        /* Copy the sub-objects */
-        if (objtype == __PAIR_TYPE__) {
-            __setCar(_A2_, newobj, gc_copyObject(__getCar(_A1_, obj), from, to));
-            __setCdr(_A2_, newobj, gc_copyObject(__getCdr(_A1_, obj), from, to));
-        }
+            /* point to new obj location */
+            return gc_getState(obj);
+            
+        }  else  {            
 
-        else if ((objtype == __PTD_TYPE__) && (__boxsubtype(_A1_, obj) == __VEC_TYPE__)) {
-            for (__WORD__ i = 0; i < __unboxint(_A1_, __vectorLength(_A1_, obj)); ++i)
-                __vectorSet(_A2_, newobj, __boxint(_A1_, i), gc_copyObject(__vectorRef(_A2_, obj, __boxint(_A1_, i)), from, to));
+            /* Reserve space in new heap */
+            loc = allocBlock(to, objsize);        
+            if (loc == NULL) {
+                printf("Out of memory");
+                exit(__FAIL__);
+            }
+
+            /* Create new obj */
+            newobj = __box(_A_(2), (__WORD__)loc, objtype);
+        
+            /* Copy the object */
+            memcpy(loc, (void*)__unbox(_A_(1), obj), (size_t)objsize);
+
+            /* Copy pair sub-objects */
+            if (objtype == __PAIR_TYPE__) {
+                __setCar(_A_(2), newobj, gc_copyObject(__getCar(_A_(1), obj), from, to));
+                __setCdr(_A_(2), newobj, gc_copyObject(__getCdr(_A_(1), obj), from, to));
+            }
+        
+            /* Copy vector sub-objects */
+            else if ((objtype == __PTD_TYPE__) && (__boxsubtype(_A_(1), obj) == __VEC_TYPE__)) {
+                for (__WORD__ i = 0; i < __unboxint(_A_(1), __vectorLength(_A_(1), obj)); ++i)
+                    __vectorSet(_A_(2), newobj, __boxint(_A_(1), i), gc_copyObject(__vectorRef(_A_(2), obj, __boxint(_A_(1), i)), from, to));
+            }
+            
+            /* Tag object as moved */
+            gc_setMoved(obj, newobj);
+            return newobj;
+            
         }
         
-        /* Tag object as moved */
-        gc_setMoved(obj);
-
-        return newobj;
+    }  else  {
+        /* null or int returned as is */
+        return obj;        
     }
-
-    return obj;
 }
 
-void gc_setFlags ( __BWORD__ obj, __WORD__ flags ) {
-    __ptd_hdr__ *p = (__ptd_hdr__*)(__unbox(_A1_, obj));
-    p->state = (p->state | flags);
+void gc_setState ( __BWORD__ obj, __BWORD__ state ) {
+    __ptd_hdr__ *p = (__ptd_hdr__*)(__unbox(_A_(1), obj));
+    p->state = state;
+}
+
+__BWORD__ gc_getState ( __BWORD__ obj ) {
+    return ((__ptd_hdr__*)(__unbox(_A_(1), obj)))->state;
 }
 
 void gc_setAlive ( __BWORD__ obj ) {
-    gc_setFlags(obj, __GC_ALIVE__);
+    gc_setState(obj, 0);
 }
 
-void gc_setMoved ( __BWORD__ obj ) {
-    gc_setFlags(obj, __GC_MOVED__);
+void gc_setMoved ( __BWORD__ obj, __WORD__ dest) {
+    gc_setState(obj, dest);
 }
 
 int gc_isAlive ( __BWORD__ obj ) {
-    return ((((__ptd_hdr__*)(__unbox(_A1_, obj)))->state & __GC_MASK__) == __GC_ALIVE__);
+    return (((__ptd_hdr__*)(__unbox(_A_(1), obj)))->state == 0);
 }
 
 int gc_isMoved ( __BWORD__ obj ) {
-    return ((((__ptd_hdr__*)(__unbox(_A1_, obj)))->state & __GC_MASK__) == __GC_MOVED__);
+    return (((__ptd_hdr__*)(__unbox(_A_(1), obj)))->state != 0);
 }
