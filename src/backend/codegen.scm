@@ -90,7 +90,6 @@
     (,n when (number? n) (gen-number n))
     (,b when (boolean? b) (gen-bool b))
     (,s when (symbol? s) (gen-variable-access s env))
-    (() (gen-null))
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))

@@ -86,15 +86,17 @@
 (define list
   (lambda lst lst))
 
-;; (define length
-;;   (lambda (lst)
-;;     (%length-aux lst 0)))
+(define length
+  (lambda (lst)
+    (if (%pair? lst)
+        (+ 1 (length (cdr lst)))
+        0)))
 
-;; (define %length-aux
-;;   (lambda (lst n)
-;;     (if (%pair? lst)
-;;         (%length-aux lst (%+ n 1))
-;;         n)))
+(define list?
+  (lambda (lst)
+    (if (%null? lst)
+        #t
+        (and (%pair? lst) (list? (cdr lst))))))
 
 (define append
   (lambda (lst1 lst2)

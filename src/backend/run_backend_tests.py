@@ -32,6 +32,8 @@ TESTS = [
     ("test_closure3.scm"     , 7<<2),
     ("test_list1.scm"        , 1<<2),
     ("test_list2.scm"        , 10<<2),
+    ("test_list_length.scm"  , 3<<2),
+    ("test_list_p.scm"       , 1<<2),
     ("test_listref.scm"      , 4<<2),
     ("test_listset.scm"      , 4<<2),
     ("test_car.scm"          , 1<<2),
@@ -40,11 +42,11 @@ TESTS = [
 ]
 
 def main():
+    print "\nCODE GENERATION TESTS"
     for filename, exp_result in TESTS:
         subprocess.call("gsi ../sins.scm -e '(compile-file \"tests/%s\" \"/tmp/compilation_test.s\")'" %
                         filename, shell=True)
         subprocess.call("gcc -m32 -O1 -mpreferred-stack-boundary=2 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
-#        subprocess.call("gcc -O0 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
         result = subprocess.call("/tmp/compilation_test")
         if result == exp_result:
             print "%s: OK" % (filename)
