@@ -47,9 +47,11 @@
 
 ;; Global variables are represented by "glob_" followed by their symbol.
 (define (gen-global-vars expr)
-  (map (lambda (var)
-         `("glob_" ,(symbol->label var) ": .long 0\n"))
-       (fv expr)))
+  (let ((free-vars (fv expr)))
+    (list "_TOTAL_VARIABLES_: .long " (length free-vars) "\n"
+          (map (lambda (var)
+                 `("glob_" ,(symbol->label var) ": .long 0\n"))
+               free-vars))))
 
 
 ;; Compile an expression into a program.
@@ -63,8 +65,10 @@
      "pushl $0\n"
      "pushl $2\n"
      "call __initHeap\n"
+     (push-frame)
      asm-code
      "addl $8, %esp\n"
+;     (pop-frame)
      "ret\n"
      delayed-asm
 
@@ -205,9 +209,11 @@
         "                            # begin let\n"
         (map (lambda (b)
                (list (compile-expr (cadr b) env) ; Use the old env
-                     "pushl %eax\n"))
+                     "pushl %eax\n"
+                     (push-root)))
              bindings)
         (compile-expr body new-env)
+        (map (lambda (x) (pop-root)) bindings)
         "addl $" (* 4 (length bindings)) ", %esp  # exiting let\n")))))
 
 
@@ -246,9 +252,8 @@
 
 ;; Generate a boolean.
 (define (gen-bool b)
-  (list "movl $"
-        (if b *true* *false*)
-        " ,%eax\n"))
+  (list
+   "movl $" (if b *true* *false*) " ,%eax\n"))
 
 (define (gen-char c)
   (list
@@ -289,15 +294,52 @@
                     (cdr args)
                     (append acc
                             (list (compile-expr (car args) env)
-                                  "pushl %eax\n")))))))
+                                  "pushl %eax\n"
+                                  (push-root))))))))
+
+;; Uncomment these to deactivate all the GC routine calls.
+(define (push-root) "")
+(define (pop-root) "")
+(define (push-frame) "")
+(define (pop-frame) "")
+
+;; (define (push-root)
+;;   (list
+;;    "pushl %eax\n"
+;;    "pushl %esp\n"
+;;    "call pushRoot\n"
+;;    "addl $4, %esp\n"
+;;    "popl %eax\n"))
+
+;; (define (pop-root)
+;;   (list
+;;    "pushl %eax\n"
+;;    "call popRoot\n"
+;;    "popl %eax\n"))
+
+;; (define (push-frame)
+;;   (list
+;;    "pushl %eax\n"
+;;    "call pushFrame\n"
+;;    "popl %eax\n"))
+
+;; (define (pop-frame)
+;;   (list
+;;    "pushl %eax\n"
+;;    "call popFrame\n"
+;;    "popl %eax\n"))
+
 
 ;; Generate a call to a Scheme function.
 (define (gen-fun-call f args env)
   (list
+   (push-frame)
    (push-args args env)
    (compile-expr f (env-fs+ (length args) env))
    "call *%eax\n"
-   "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"))
+   (map (lambda (x) (pop-root)) args)
+   "addl $" (* 4 (length args)) ", %esp # cleaning up function\n"
+   (pop-frame)))
 
 
 
@@ -306,12 +348,15 @@
   (match primitive
     ((,f ,nb-args ,label)
      (list
+      (push-frame)
       (push-args args env)
       (gen-number nb-args)
       "pushl %eax\n"
       "pushl $2\n"
       "call " label "\n"
-      "addl $" (* 4 nb-args) ", %esp\n"))))
+      (map (lambda (x) (pop-root)) args)
+      "addl $" (* 4 nb-args) ", %esp\n"
+      (pop-frame)))))
 
 
 

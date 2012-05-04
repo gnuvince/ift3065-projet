@@ -4,6 +4,7 @@ import subprocess
 
 TESTS = [
     # filename    expected return value
+
     ("test1.scm"             , 3<<2),
     ("test2.scm"             , 3<<2),
     ("test_if_then.scm"      , 4<<2),
@@ -38,7 +39,7 @@ TESTS = [
     ("test_listset.scm"      , 4<<2),
     ("test_car.scm"          , 1<<2),
     ("test_cdr.scm"          , 2<<2),
-    ("test_my_map.scm"          , 12<<2),
+    ("test_my_map.scm"       , 12<<2),
     ("test_map.scm"          , 3<<2),
     # ("test_hello.scm"        , 1<<2),
     ("test_char1.scm"        , 10<<2),
@@ -48,7 +49,7 @@ TESTS = [
 def main():
     print "\nCODE GENERATION TESTS"
     for filename, exp_result in TESTS:
-        subprocess.call("gsi ../../sins.scm -e '(compile-file \"tests/%s\" \"/tmp/compilation_test\" #f)'" %
+        subprocess.call("gsi ../../sins.scm -e '(compile-file \"tests/%s\" \"/tmp/compilation_test\" #t)'" %
                         filename, shell=True)
         #subprocess.call("gcc -m32 -O1 -mpreferred-stack-boundary=2 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
         result = subprocess.call("/tmp/compilation_test")

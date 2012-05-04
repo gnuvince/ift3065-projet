@@ -68,6 +68,7 @@ check:
 clean:
 	-rm $(CWD)/*.o
 	-rm $(CWD)/*.s
+	-rm $(CWD)/tests/*.s
 	-rm $(CWD)/*.S
 	-rm -rf $(CWD)/*dSYM
 
