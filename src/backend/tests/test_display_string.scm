@@ -1,0 +1,2 @@
+(display "string      ")
+0

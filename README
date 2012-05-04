@@ -3,3 +3,42 @@ Eric Thivierge        (THIE09016601)
 Hiver 2012
 
 Compilateur pour le projet du cours IFT3065.
+
+
+COMPILATION
+===========
+
+$ make
+
+
+
+TESTS
+=====
+
+$ make check
+
+
+
+UTILISATION
+===========
+
+Tout d'abord, il est important d'ouvrir et de modifier le fichier
+sins.scm; dans la variable `sins-path`, mettre le chemin absolu vers
+le dossier de SINS.
+
+$ cat > hello.scm
+(display "hello, world!\n")
+^D
+$ gsi sins.scm -e '(compile-file "hello.scm" "hello.exe" #f)'
+$ ./hello.exe
+hello, world!
+$
+
+La fonction `compile-file` prend 3 paramètres:
+1. Le nom du fichier source en entrée
+2. Le nom du fichier exécutable en sortie
+3. Un paramètre qui indique si SINS doit conserver ou pas le fichier
+assembleur intermédiaire.
+
+
+SINS n'est pas autogène.

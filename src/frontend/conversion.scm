@@ -256,7 +256,8 @@
 (define primitives '(%* %+ %- %< %<= %= %> %>= %car %cdr %cons %eq?
                         %null? %number? %pair? %quotient %remainder
                         %set-car! %set-cdr! %string? %write-char
-                        %display %make-string %string-set! %string-ref))
+                        %display %make-string %string-set! %string-ref
+                        %string->list %string-length))
 
 (define (primitive? op)
   (and (symbol? op)

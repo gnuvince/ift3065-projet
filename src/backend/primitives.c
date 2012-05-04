@@ -649,12 +649,17 @@ __BWORD__ __eq ( _S_, __BWORD__ a, __BWORD__ b ) {
 /*                   */
 
 void __display ( _S_, __BWORD__ s ) {
-    if (__string_p(_A_(1), s) == __FALSE__) {
-        printf("STRING expected\n");
-        exit(__FAIL__);
-    }
+    /* if (__string_p(_A_(1), s) == __FALSE__) { */
+    /*     printf("STRING expected\n"); */
+    /*     exit(__FAIL__); */
+    /* } */
 
-    printf((char*)__unboxptd(_A_(1), s) + sizeof(__string__));
+    if (__string_p(_A_(1), s) == __TRUE__) {
+        printf("%s", (char*)__unboxptd(_A_(1), s) + sizeof(__string__));
+    }
+    else if (__number_p(_A_(1), s) == __TRUE__) {
+        printf("%d", (int)__unboxint(_A_(1), s));
+    }
 }
 
 void __newline ( _S_ ) {

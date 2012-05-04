@@ -169,17 +169,17 @@
   (lambda (s i c)
     (%string-set! s i c)))
 
-;; (define string->list
-;;   (lambda (str)
-;;     (%string->list str)))
+(define string->list
+  (lambda (str)
+    (%string->list str)))
 
 ;; (define list->string
 ;;   (lambda (chars)
 ;;     (%list->string chars)))
 
-;; (define string-length
-;;   (lambda (str)
-;;     (length (%string->list str))))
+(define string-length
+  (lambda (str)
+    (%string-length str)))
 
 ;; (define string-append
 ;;   (lambda (str1 str2)

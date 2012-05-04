@@ -41,6 +41,8 @@
                           (%make-string        3 "__makeString")
                           (%string-ref         3 "__stringRef")
                           (%string-set!        4 "__stringSet")
+                          (%string->list       3 "__stringToList")
+                          (%string-length      3 "__stringLength")
                           ))
 
 
