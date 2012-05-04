@@ -191,7 +191,7 @@ __BWORD__ __createVector ( _S_, __BWORD__ size ) {
 
 __BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref ) {
     if (__vector_p(_A_(1), v) == __FALSE__) {
-        printf("VECTOR expected\n");
+        printf("vectorRef: VECTOR expected\n");
         exit(__FAIL__);
     }
 
@@ -206,7 +206,7 @@ __BWORD__ __vectorRef ( _S_, __BWORD__ v, __BWORD__ ref ) {
 
 void __vectorSet ( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val ) {
     if (__vector_p(_A_(1), v) == __FALSE__) {
-        printf("VECTOR expected\n");
+        printf("vectorSet: VECTOR expected\n");
         exit(__FAIL__);
     }
 
@@ -221,7 +221,7 @@ void __vectorSet ( _S_, __BWORD__ v, __BWORD__ ref, __BWORD__ val ) {
 
 __BWORD__ __vectorLength ( _S_, __BWORD__ v ) {
     if (__vector_p(_A_(1), v) == __FALSE__) {
-        printf("VECTOR expected\n");
+        printf("vectorLength: VECTOR expected\n");
         exit(__FAIL__);
     }
 
@@ -230,7 +230,7 @@ __BWORD__ __vectorLength ( _S_, __BWORD__ v ) {
 
 __BWORD__ __vectorEqual ( _S_, __BWORD__ v1, __BWORD__ v2 ) {
     if (__vector_p(_A_(1), v1) == __FALSE__) {
-        printf("VECTOR expected\n");
+        printf("vectorEqual: VECTOR expected\n");
         exit(__FAIL__);
     }
 
@@ -277,24 +277,6 @@ __BWORD__ __createString ( char *s ) {
     else {
         newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
         strcpy((char*)newstring + sizeof(__string__), s);
-        return __boxptd(_A_(1), (__WORD__)newstring);
-    }
-}
-
-
-__BWORD__ __makeString(_S_, __BWORD__ len) {
-   __string__ *newstring = NULL;
-   __WORD__ slen = (__WORD__)__unboxint(_A_(1), len);
-
-    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
-
-    if (newstring == NULL) {
-        printf("Out of memory\n");
-        exit(__FAIL__);
-    }
-    else {
-        newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
-        memset(newstring + sizeof(__string__), 0, slen+1);
         return __boxptd(_A_(1), (__WORD__)newstring);
     }
 }

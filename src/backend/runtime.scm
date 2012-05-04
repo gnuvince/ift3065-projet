@@ -161,6 +161,9 @@
               (%string-set! s i (car chars))
               (loop (+ i 1) (cdr chars))))))))
 
+(define string-ref
+  (lambda (s i)
+    (%string-ref s i)))
 
 (define string-set!
   (lambda (s i c)

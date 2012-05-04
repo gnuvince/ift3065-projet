@@ -88,8 +88,6 @@ __BWORD__ __eq ( _S_, __BWORD__ b1, __BWORD__ b2 );
 
 __BWORD__ __createString ( char *s );
 
-__BWORD__ __makeString(_S_, __BWORD__ len);
-
 __BWORD__ __string_p ( _S_, __BWORD__ s );
 
 __BWORD__ __stringLength ( _S_, __BWORD__ s );

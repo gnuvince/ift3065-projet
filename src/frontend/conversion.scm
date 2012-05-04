@@ -114,6 +114,9 @@
     (,v when (symbol? v)
      v)
 
+    ;; (,s when (string? s)
+    ;;     `(string ,@(string->list s)))
+
     ((quote ,x)
      `(quote ,x))
 
@@ -253,7 +256,7 @@
 (define primitives '(%* %+ %- %< %<= %= %> %>= %car %cdr %cons %eq?
                         %null? %number? %pair? %quotient %remainder
                         %set-car! %set-cdr! %string? %write-char
-                        %display %make-string %string-set!))
+                        %display %make-string %string-set! %string-ref))
 
 (define (primitive? op)
   (and (symbol? op)
