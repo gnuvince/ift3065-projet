@@ -22,13 +22,13 @@ void allocStack ( ) {
     stack.size = __STACKSIZE__;
     esp_s = stack.top + stack.size;
     ebp_s = esp_s;
-    /* printf("allocStack:\n"); */
-    /* printf("stack.top: 0x%08lx\n", (__WORD__)stack.top); */
-    /* printf("stack.size: 0x%08lx\n", (__WORD__)stack.size); */
-    /* printf("esp_c: 0x%08lx\n", (__WORD__)esp_c); */
-    /* printf("ebp_c: 0x%08lx\n", (__WORD__)ebp_c); */
-    /* printf("esp_s: 0x%08lx\n", (__WORD__)esp_s); */
-    /* printf("ebp_s: 0x%08lx\n", (__WORD__)ebp_s); */
+    printf("allocStack:\n");
+    printf("stack.top: 0x%08lx\n", (__WORD__)stack.top);
+    printf("stack.size: 0x%08lx\n", (__WORD__)stack.size);
+    printf("esp_c: 0x%08lx\n", (__WORD__)esp_c);
+    printf("ebp_c: 0x%08lx\n", (__WORD__)ebp_c);
+    printf("esp_s: 0x%08lx\n", (__WORD__)esp_s);
+    printf("ebp_s: 0x%08lx\n", (__WORD__)ebp_s);
 }
 
 void freeStack ( ) {

@@ -12,6 +12,12 @@
 
 char *line = "======================================================================================\n";
 __bytefield__ *heap;
+__VAR__ p1;
+
+int f (int x) {
+    return x + 3;
+}
+
 int main(void)
 {
     __initHeap(_A_(0));
@@ -21,40 +27,61 @@ int main(void)
     printf("Inits done\n");
 
     printf("&esp_c: 0x");  dumpWord(heap, (__WORD__)get_esp_c());  printf("\n");
-    printf("*esp_c: 0x");  dumpWord(heap, *(__WORD__*)get_esp_c());  printf("\n");
     printf("&ebp_c: 0x");  dumpWord(heap, (__WORD__)get_ebp_c());  printf("\n");
-    printf("*ebp_c: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_c());  printf("\n");
     printf("&esp_s: 0x");  dumpWord(heap, (__WORD__)get_esp_s());  printf("\n");
-    printf("*esp_s: 0x");  dumpWord(heap, *(__WORD__*)get_esp_s());  printf("\n");    
     printf("&ebp_s: 0x");  dumpWord(heap, (__WORD__)get_ebp_s());  printf("\n");
+    printf("*esp_c: 0x");  dumpWord(heap, *(__WORD__*)get_esp_c());  printf("\n");    
+    printf("*ebp_c: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_c());  printf("\n");
+    printf("*esp_s: 0x");  dumpWord(heap, *(__WORD__*)get_esp_s());  printf("\n");    
     printf("*ebp_s: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_s());  printf("\n");
-
+    
     __asm__ __volatile__ (
              /* save c-stack esp & ebp */
-             "pushl   %esp           \n\t"
-             "pushl   %ebp           \n\t"
-             "call    _get_ebp_c     \n\t"
-             "popl    (%eax)         \n\t"
-             "call    _get_esp_c     \n\t"
-             "popl    (%eax)         \n\t"
+             "movl    %ebp, _ebp_c   \n\t"
+             "movl    %esp, _esp_c   \n\t"
 
-             
+             /* restore scm-stack esp & ebp */
+             "pushl   %ebp           \n\t"
+             "addl    $16, (%esp)    \n\t"
+             "movl    (%esp), %ebp         \n\t"
+             /* "movl    _ebp_s, %ebp     \n\t" */
+             /* "movl    _esp_s, %esp     \n\t" */
+             /* "movl    _ebp_c, %ebp     \n\t" */
+             /* "movl    _esp_c, %esp     \n\t" */
              );
 
+    return 0;
+    f(4);
+    
     printf("\n");
-    printf("&esp_c: 0x");  dumpWord(heap, (__WORD__)get_esp_c());  printf("\n");
-    printf("*esp_c: 0x");  dumpWord(heap, *(__WORD__*)get_esp_c());  printf("\n");
-    printf("&ebp_c: 0x");  dumpWord(heap, (__WORD__)get_ebp_c());  printf("\n");
+    printf("*esp_c: 0x");  dumpWord(heap, *(__WORD__*)get_esp_c());  printf("\n");    
     printf("*ebp_c: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_c());  printf("\n");
-    printf("&esp_s: 0x");  dumpWord(heap, (__WORD__)get_esp_s());  printf("\n");
     printf("*esp_s: 0x");  dumpWord(heap, *(__WORD__*)get_esp_s());  printf("\n");    
-    printf("&ebp_s: 0x");  dumpWord(heap, (__WORD__)get_ebp_s());  printf("\n");
     printf("*ebp_s: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_s());  printf("\n");
     
     
     printf("esp/ebp done\n");
+    __asm__ __volatile__ (
+             /* save c-stack esp & ebp */
+             "movl    _ebp_s, %ebp     \n\t"
+             "movl    _esp_s, %esp     \n\t"
+             );
+
+    __asm__ __volatile__ (
+             /* save c-stack esp & ebp */
+             "movl    _ebp_c, %ebp     \n\t"
+             "movl    _esp_c, %esp     \n\t"
+             "movl    %ebp, _ebp_s     \n\t"
+             "movl    %esp, _esp_s     \n\t"
+             );
+
+    printf("\n");
+    printf("*esp_c: 0x");  dumpWord(heap, *(__WORD__*)get_esp_c());  printf("\n");    
+    printf("*ebp_c: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_c());  printf("\n");
+    printf("*esp_s: 0x");  dumpWord(heap, *(__WORD__*)get_esp_s());  printf("\n");    
+    printf("*ebp_s: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_s());  printf("\n");
+
     
-    __VAR__ p1;
     p1 = allocVar();
 
     printf(line);
@@ -66,27 +93,11 @@ int main(void)
     printf(line);
 
 
-    __asm__ __volatile__ (
-             /* restore scm-stack esp & ebp */
-             "call    _get_esp_c     \n\t"
-             "pushl   (%eax)         \n\t"
-             "call    _get_ebp_c     \n\t"
-             "pushl   (%eax)         \n\t"
-             "movl    0(%esp), %ebp  \n\t"
-             "movl    4(%esp), %esp  \n\t"
-             );
-
-    printf("\n");
-    printf("&esp_c: 0x");  dumpWord(heap, (__WORD__)get_esp_c());  printf("\n");
-    printf("*esp_c: 0x");  dumpWord(heap, *(__WORD__*)get_esp_c());  printf("\n");
-    printf("&ebp_c: 0x");  dumpWord(heap, (__WORD__)get_ebp_c());  printf("\n");
-    printf("*ebp_c: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_c());  printf("\n");
-    printf("&esp_s: 0x");  dumpWord(heap, (__WORD__)get_esp_s());  printf("\n");
-    printf("*esp_s: 0x");  dumpWord(heap, *(__WORD__*)get_esp_s());  printf("\n");    
-    printf("&ebp_s: 0x");  dumpWord(heap, (__WORD__)get_ebp_s());  printf("\n");
-    printf("*ebp_s: 0x");  dumpWord(heap, *(__WORD__*)get_ebp_s());  printf("\n");
-
-    
+    /* __asm__ __volatile__ ( */
+    /*          /\* restore c-stack esp & ebp *\/ */
+    /*          "movl    _ebp_c, %ebp     \n\t" */
+    /*          "movl    _esp_c, %esp     \n\t" */
+    /*          ); */
 
     
     /* __asm__ ( */
