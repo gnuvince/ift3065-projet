@@ -276,7 +276,29 @@
 
 
 (define (gen-string str env)
-  3)
+  (list
+   (gen-number (string-length str))
+   "pushl %eax\n"
+   "pushl $4\n"
+   "pushl $2\n"
+   "call __makeString\n"
+   "addl $12, %esp\n"
+   "pushl %eax\n"
+
+   (let loop ((i 0) (chars (string->list str)))
+     (if (null? chars)
+         '()
+         (cons (list (gen-char (car chars))
+                     "pushl %eax\n"
+                     (gen-number i)
+                     "pushl %eax\n"
+                     "pushl 8(%esp)\n"
+                     "pushl $12\n"
+                     "pushl $2\n"
+                     "call __stringSet\n"
+                     "addl $20, %esp\n")
+               (loop (+ i 1) (cdr chars)))))
+   "popl %eax\n"))
 
 
 ;; Accessing a local variable is done through the stack.

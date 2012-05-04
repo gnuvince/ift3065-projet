@@ -282,6 +282,24 @@ __BWORD__ __createString ( char *s ) {
 }
 
 
+__BWORD__ __makeString(_S_, __BWORD__ len) {
+   __string__ *newstring = NULL;
+   __WORD__ slen = (__WORD__)__unboxint(_A_(1), len);
+
+    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
+
+    if (newstring == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
+        memset(newstring + sizeof(__string__), 0, slen+1);
+        return __boxptd(_A_(1), (__WORD__)newstring);
+    }
+}
+
+
 __BWORD__ __stringLength ( _S_, __BWORD__ s ) {
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
