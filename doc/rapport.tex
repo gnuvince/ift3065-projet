@@ -64,37 +64,6 @@ qu'il est plus lent à l'exécution qu'un compilateur qui fusionne
 plusieurs phases en une.  Dans le cadre d'un projet éducationnel,
 nous jugeons que cette contrainte est acceptable.
 
-\section{Milestone du 12 mars 2012}
-
-En date du 12 mars 2012,  les nouvelles fonctionnalités suivantes sont
-implantées:
-\begin{itemize}
-\item Le parseur traite toutes les formes de notre sous-ensemble de Scheme
-\item Le parseur retourne un arbre de syntaxe abstraite
-%\item * Expansion de macro
-\item Le langage Scheme d'entrée est simplifié à un langage Scheme
-  utilisant moins de constructions
-\item Plus d'une centaine de tests exercent les différents modules de \sins{}
-\item Un makefile permet d'exécuter automatiquement la suite de tests
-\end{itemize}
-
-
-\section{Milestone du 13 février 2012}
-
-En date du 13 février 2012, les fonctionnalités suivantes sont
-implantées:
-
-\begin{itemize}
-\item L'analyse lexicale
-\item Une suite de tests unitaires pour l'analyse lexicale
-\item Le lecteur
-\item La vérification syntaxique des formes spéciales
-\end{itemize}
-
-Notre code se trouve sur le site GitHub, et le code en date du 13
-février 2012 peut être visionné à l'adresse suivante:
-\url{https://github.com/gnuvince/ift3065-projet/tags}.
-
 
 \chapter{Analyse lexicale}
 
@@ -351,10 +320,12 @@ code claquée sur les productions de la grammaire ce qui donne un programme
 facile à valider et à maintenir.
 
 
+\chapter{Conversion}
+
 \section{Simplification}
 
 Afin de diminuer l'effort de génération de code, nous avons implanté
-un module de simplification ({\tt src/ir/simplification.scm}). Ce
+un module de simplification ({\tt src/frontend/conversion.scm}). Ce
 module prend l'AST du programme d'entrée et retourne un AST dans
 lequel nous avons substitué des formes à des formes plus simples. La
 procédure de simplification est appliquée récursivement jusqu'à ce
@@ -379,15 +350,6 @@ série de {\tt let} imbriqués.
 uniques.)
 
 \subsection{\tt let}
-
-La forme {\tt let} sans étiquette est transformée en une expression
-lambda.
-
-\begin{verbatim}
-(let () e1) => e1
-(let ((a x)) e1) => ((lambda (a) e1) x)
-(let ((a x) (b y)) e1) => ((lambda (a b) e1) x y)
-\end{verbatim}
 
 La forme {\tt let} avec étiquette est transformée en une forme {\tt
   letrec} (nous verrons que plus tard, {\tt letrec} est transformée
@@ -492,6 +454,33 @@ La forme {\tt and} est transformée en une imbrication de {\tt if}.
 \end{verbatim}
 
 
+\section{Alpha conversion}
+
+Afin de faciliter la traduction de Scheme vers assembleur et d'éviter
+les conflits de nom, l'AST du programme est passée dans une fonction
+qui renomme tous les identificateurs à des noms uniques.  Le programme
+résultat est équivalent, mais chaque symbole a un usage unique.
+
+
+\section{Mutability conversion}
+
+Toutes les variables qui sont mutables sont remplacées par une paire
+et les appels à {\tt set!} sont remplacés par des appels à {\tt
+  set-car!}.
+
+\section{Closure conversion}
+
+Toutes les fonctions du programme sont modifiées de telle sorte
+qu'elles prennent 2 paramètres supplémentaires:
+
+\begin{itemize}
+\item La fermeture lexicale qui contient toute les variables libres
+\item Le nombre de paramètres actuels qui ont été passés à la fonction
+  (nécessaire pour les paramètres reste)
+\end{itemize}
+
+
+
 
 \chapter{Environnement}
 
@@ -504,33 +493,39 @@ faite dans le module {\it backend/env.scm}.
 
 L'environnement est représentée par une liste deux éléments. Le
 premier élément contient la distance en octets entre le prochain
-symbole local et le début du frame.  Le second élément est une liste
+symbole local et le début de la trame. Le second élément est une liste
 de tuples contenant 3 informations:
 
 
 \begin{verbatim}
-(<symbole> <portée> <offset>)
+(<symbole> <portée> <décalage>)
 \end{verbatim}
 
 Dans le cas d'une variable locale ou d'un paramètre de fonction, la
-portée est représentée par le symbole {\it local} et l'offset est la
-distance entre le début du frame et la valeur du symbole.
+portée est représentée par le symbole {\it local} et le décalage est la
+distance entre le début de la trame et l'emplacement en mémoire de la
+valeur associée au symbole.
+
+Dans le cas d'une variable globale, la portée est représentée par le
+symbole {\it global} et au lieu d'un décallage, le troisième élément
+du tuple est l'étiquette globale où se trouve la valeur associée au
+symbole.
 
 Le module d'environnement fournit plusieurs fonctions pour manipuler
 un environnement.
 
 \begin{itemize}
 \item {\bf make-env}: crée et retourne un environnement vide.
-\item {\bf env-fs}: retourne la valeur du frame size (premier élément
-  de l'environnement).
+\item {\bf env-fs}: retourne la taille de la trame (premier élément de
+  l'environnement).
 \item {\bf env-symbols}: retourne la liste des symboles (second
   élément de l'environnement).
-\item {\bf env-fs++}: augmente d'un mot la valeur du frame size et
+\item {\bf env-fs++}: augmente d'un mot la taille de la trame et
   retourne le nouvel environnement modifié.
-\item {\bf env-fs+}: augmente d'un nombre spécifique de mots la valeur
-  du frame size et retourne le nouvel environnement modifié.
+\item {\bf env-fs+}: augmente d'un nombre spécifique de mots la taille
+  de la trame et retourne le nouvel environnement modifié.
 \item {\bf env-add-symbol}: ajoute un symbole à la liste de symbole,
-  incrémente la valeur du frame size, et retourne le nouvel
+  incrémente la taille de la trame, et retourne le nouvel
   environnement modifié.
 \item {\bf env-lookup}: tente de retourner le tuple d'un symbole. Si
   aucun tuple local est trouvé, on retourne le tuple d'une variable
@@ -538,6 +533,206 @@ un environnement.
 \item {\bf env-update}: fonction utilitaire qui ajoute une liste de
   symboles locaux dans l'environnement.
 \end{itemize}
+
+
+
+
+
+\chapter{Génération de code}
+
+La génération de code est sans doute la partie la plus complexe de
+\sins{}.  À partir d'un arbre de syntaxe abstraite et d'un
+environnement (voir les chapîtres précédents pour plus de détails),
+\sins{} génère le code assembleur x86 32-bits qui est sémantiquement
+équivalent au programme Scheme.
+
+\section{Constantes}
+
+Dans le fichier {\emph sins_const.h}, les valeurs des symboles \#t,
+\#f et () sont définis; afin de simplifier l'utilisation de ces
+valeurs dans la génération de code, nous les avons copié.  Ainsi, ces
+trois symboles ont les valeurs 5, 1, et 2, respectivement.
+
+\section{Variables}
+
+Le module de génération de code possède une queue appelée {\tt
+  delayed-functions}; à chaque fois qu'une expression lambda est
+recontrée, on l'ajoute dans cette queue, et lorsque la génération de
+code pour la fonction actuelle est terminée, on fait la génération de
+code de la prochaine fonction dans la queue jusqu'à ce qu'elle soit
+vide.
+
+Le tableau {\tt primitive-funcs} sert à associer des symboles Scheme
+avec les fonctions primitives écrites en C.  Le nombre d'argument
+requis est également dans cette table.  Les appels de primitives sont
+gérés différement des appels de fonctions.
+
+La variable {\tt global-env} est passée de fonction en fonction et
+contient les symboles locaux qui ont été définis.  Le chapître sur
+l'environnement possède plus de détails à leurs sujets.
+
+
+
+\section{Fonctions}
+
+\subsection{gen-global-vars}
+
+Cette fonction trouve toutes les variables globales (qui sont les
+variables libres de l'expression {\tt begin} de plus haut niveau) et
+crée des étiquettes où leurs valeurs seront sauvées.
+
+\subsection{compile}
+
+La fonction {\tt compile} est le chef d'orchestre du module de
+génération de code; elle crée la fonction {\tt main}, initialise la
+mémoire, insère les instructions assembleur des instructions de la
+fonction principale, génère le code de toutes les autres fonctions et
+insère le code pour les étiquettes des variables globales.
+
+
+\subsection{compile-delayed-lambdas}
+
+Cette fonction prend les expressions lambda de la queue {\tt
+  delayed-functions} une-à-une et les compile.  Elle s'arrête lorsque
+la queue est vide.
+
+
+\subsection{compile-expr}
+
+Étant donnée une expression et un environnement, la fonction {\tt
+  compile-expr} examine la forme de l'expression pour déterminer
+comment la compiler.
+
+\subsection{compile-lambda}
+
+Étant donné un symbole pour l'étiquette, une expression lambda et un
+environnement, {\tt compile-lambda} mets à jour l'environnement avec
+les paramètres de la fonction, pousse le registre {\tt ebp} sur la
+pile et compile le corps de la fonction.
+
+Dans le cas d'une fonction avec un paramètre reste, {\tt
+  compile-lambda} va regrouper en une liste tous les paramètres qui ne
+sont pas associés à des paramètres formels fixes.
+
+\subsection{delay-lambda}
+
+Cette fonction crée un symbole unique pour la lambda (qui sera utilisé
+par {\tt compile-function} comme étiquette), et ajoute la fonction à
+la queue {\tt delayed-functions}.  L'adresse de l'étiquette est mise
+dans le registre {\tt eax} afin de pouvoir manipuler la lambda dans le
+corps où elle a été créée.
+
+\subsection{compile-let}
+
+Cette fonction pousse sur la pile le résultat de la compilation des
+expressions dans ses définitions, met l'environnement à jour et
+exécute le corps de l'expression {\tt let} avec ce nouvel
+environnement.  À la sortie du corps, les éléments qui ont été poussés
+sur la pile sont dépilés.
+
+\subsection{compile-if}
+
+Cette fonction fait la compilation d'une expression {\tt if}. Les
+trois expressions (condition, conséquent, alternative) sont compilées
+et le résultat de la condition est comparé avec la valeur \#f. Si la
+comparaison est vraie (donc que la condition est fausse), on fait un
+saut à l'étiquette {\it else}. Si la comparaison est fausse (donc que
+la condition est vraie), on fait l'exécution du code du conséquent
+suivit d'un saut qui nous amène à la fin des instructions du {\tt if}.
+
+\subsection{gen-number}
+
+Cette fonction prend en paramètre un nombre, l'emboîte et la met dans.
+Afin d'améliorer légèrement la performance du code généré,
+l'emboîtement est fait manuellement, à la compilation par une
+multiplication par 4 plutôt que d'appeler la fonction primitive C
+d'emboîtement à l'exécution.
+
+\subsection{gen-bool}
+
+Cette fonction assigne la valeur numérique associée à \#f ou \#t dans
+le registre {\tt eax}.
+
+\subsection{gen-char}
+
+Cette fonction pousse le code ASCII d'un charactère sur la pile et
+fait un appel à la primitive {\tt __integerToChar} afin d'emboîter le
+caractère.
+
+\subsection{gen-bool}
+
+Cette fonction assigne la valeur numérique associée à () dans le
+registre {\tt eax}.
+
+\subsection{gen-variable-access}
+
+Étant donné un symbole et un environnement, cette fonction effectue
+une recherche dans l'environnement du symbole.
+
+Si le symbole trouvé est local, l'instruction faisant un déplacement
+entre une valeur sur la pile et le registre {\tt eax} est générée.
+
+Si le symbole trouvé est global, l'instruction faisant un déplacement
+entre une étiquette et le registre {\tt eax} est générée.
+
+\subsection{push-args}
+
+Cette fonction est utilisée par {\tt gen-fun-call} et {\tt
+  gen-prim-call}.  Elle pousse, de droite à gauche, les arguments d'un
+appel de fonction.
+
+\subsection{gen-fun-call}
+
+Cette fonction génère un appel de fonction Scheme; les arguments sont
+poussés sur la pile (via {\tt push-args}), l'expression fonctionnelle
+est compilée et appelée.
+
+\subsection{gen-prim-call}
+
+Cette fonction génère un appel d'une primitive (fonction dont le nom
+commence par \%).  Les arguments sont poussés sur la pile (via {\tt
+  push-args}), puis -- afin de respecter le protocole d'appel -- le
+nombre de paramètres est poussé, suivit de () (car les primitives
+n'ont pas de fermeture).  Finalement, l'appel de l'étiquette de la
+primitive est généré.
+
+\subsection{compile-set!}
+
+Les définitions sont remplacées par des assignations; pour se faire,
+on compile le corps de la définition et on assigne le résultat à
+l'adresse de l'étiquette globale du symbole.
+
+\subsection{gen-make-closure}
+
+Un ``appel'' à la fonction {\tt make-closure} est traité spécialement
+dans le compilateur.  Il existe 5 primitives en C pour la gestion des
+lambda:
+
+\begin{itemize}
+\item {\bf __createLambda:} crée un objet lambda capable de stocker le
+  pointeur de fonction et toutes la variables libres.
+\item {\bf __lambdaSet:} assigne une valeur à une des cellules pour
+  les variables libres.
+\item {\bf __lambdaSetCode:} assigne l'adresse du code de la fonction.
+\item {\bf __lambdaRef:} accéde à une variable libre.
+\item {\bf __lambdaGetCode:} accède à l'adresse du code de la fonction.
+\end{itemize}
+
+Lors d'un appel de {\tt make-closure}, on crée un nouvel objet lambda,
+et on assigne aux différentes cellules l'adresse du code et les
+variables libres.
+
+
+\subsection{gen-closure-code}
+
+Cette fonction transfère dans le registre {\tt eax} l'adresse du code
+d'une fermeture.
+
+
+\subsection{gen-closure-ref}
+
+Cette fonction transfère dans le registre {\tt eax} la valeur d'une
+variable libre.
 
 
 
@@ -578,9 +773,9 @@ Afin de régler ce problème, nous avons procédé en 2 étapes:
   pour la valeur fausse de {\tt (boolean . \#f)} à {\tt ('boolean .
     false)} où {\tt false} est un symbole unique généré par le
   compilateur.
-\item Dans la phase d'analyse syntaxique, lorsque l'arbre est généré,
-  nous le parcourons et transformons toutes les feuilles {\tt false}
-  par \#f.
+\item Dans la phase d'analyse syntaxique, après que l'arbre est
+  généré, nous le parcourons et transformons toutes les feuilles {\tt
+    false} par \#f.
 \end{enumerate}
 
 \section{Génération de code}

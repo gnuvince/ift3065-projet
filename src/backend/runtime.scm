@@ -147,23 +147,23 @@
     (%display str)))
 
 
-(define make-string
-  (lambda (len)
-    (%make-string len)))
+;; (define make-string
+;;   (lambda (len)
+;;     (%make-string len)))
 
-(define string
-  (lambda chars
-    (let ((s (%make-string (length chars))))
-      (let loop ((i 0) (chars chars))
-        (if (null? chars)
-            s
-            (begin
-              (%string-set! s i (car chars))
-              (loop (+ i 1) (cdr chars))))))))
+;; (define string
+;;   (lambda chars
+;;     (let ((s (%make-string (length chars))))
+;;       (let loop ((i 0) (chars chars))
+;;         (if (null? chars)
+;;             s
+;;             (begin
+;;               (%string-set! s i (car chars))
+;;               (loop (+ i 1) (cdr chars))))))))
 
-(define string-set!
-  (lambda (s i c)
-    (%string-set! s i c)))
+;; (define string-set!
+;;   (lambda (s i c)
+;;     (%string-set! s i c)))
 
 ;; (define string->list
 ;;   (lambda (str)

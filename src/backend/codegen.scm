@@ -234,18 +234,15 @@
 
 ;; Generate a number.
 (define (gen-number n)
-;; Boxed version
+  ;; Boxed version
   ;; (list
   ;;  "movl $" n ", %eax\n"
   ;;  "pushl %eax\n"
   ;;  "call __boxint\n"
   ;;  "addl $4, %esp            # end_number\n"
   ;;  ))
-;; More efficient version if we don't use the __box primitive.
   (list
-   "movl $" n ", %eax\n"
-   "imull  $4, %eax\n"))
-
+   "movl $" (* 4 n) ", %eax\n"))
 
 ;; Generate a boolean.
 (define (gen-bool b)
