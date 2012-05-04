@@ -63,6 +63,20 @@ int main() {
     popFrame();
     dumpFrameStack();
     dumpRootStack();
-    
+
+    pushFrame();
+    dumpFrameStack();
+    pushRoot(&v11);
+    popRoot();
+    pushRoot(&v12);
+    pushRoot(&v13);
+    pushRoot(&v14);
+    dumpRootStack();
+    dumpFrameStack();
+
+    popFrame();
+    dumpFrameStack();
+    dumpRootStack();
+
     return __SUCCESS__;
 }

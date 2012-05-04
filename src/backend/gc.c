@@ -9,8 +9,8 @@
 #include "bytefield_utils.h"
 #include "box.h"
 
-rootNodePtr  rootStack  = NULL;
-frameNodePtr frameStack = NULL;
+static rootNodePtr  rootStack  = NULL;
+static frameNodePtr frameStack = NULL;
 
 void dumpRootStack ( ) {
     rootNodePtr rootNode = rootStack;
@@ -113,17 +113,60 @@ void popRoot ( ) {
 }
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
-    __BWORD__ obj;
+    int         num;
+    __BWORD__   obj;
+    __WORD__    *globals;
+    rootNodePtr roots = rootStack;
+    __rootNode__ *croots;
     
     allocByteField(to, __PAIRSIZE__);
 
-    for (__VAR__ i = 0; i < getVarNext(); ++i) {
-        obj = getVar(i);
-        
+    /* Process scheme roots */
+    while (roots != NULL) {
+        obj = *(root->node);
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
-            setVar(i, gc_copyObject(obj, from, to));
+            *(root->node) = gc_copyObject(obj, from, to);
+        }
+        roots = roots->next;
+    }
+
+    /* Process global vars */
+    __asm__ __volatile__ ("movl    $_TOTAL_VARIABLES_, %1    \n\t" 
+              :
+              :"m"(globals)         /* input */
+              :
+              );
+
+    num = (int)*globals;
+
+    for (int i = 0; i < num; i++) {
+        obj = *((__BWORD__*)globals + i + 1);
+        if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
+            *((__BWORD__*)globals + i + 1) = gc_copyObject(obj, from, to);
         }
     }
+
+    
+    
+    /* Process C roots */
+    croots = getCStack();
+    while (croots->node != NULL) {
+        obj = *(croots->node);
+        if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
+            *(croots->node) = gc_copyObject(obj, from, to);
+        }
+        croots = (__rootNode__*)croots->next;
+    }
+    
+    /* while (roots != NULL) { */
+    /*     obj = *(root->node); */
+    /*     if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
+    /*         *(root->node) = gc_copyObject(obj, from, to); */
+    /*     } */
+    /*     roots = roots->next; */
+    /* } */
+
+
 
     /* Uncomment to see the results */
     /* printf("Dest heap:\n"); */
@@ -134,6 +177,29 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     swapHeap();
     freeByteField(from);
 }
+
+/* void gc_run ( __bytefield__ *from, __bytefield__ *to ) { */
+/*     __BWORD__ obj; */
+    
+/*     allocByteField(to, __PAIRSIZE__); */
+
+/*     for (__VAR__ i = 0; i < getVarNext(); ++i) { */
+/*         obj = getVar(i); */
+        
+/*         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
+/*             setVar(i, gc_copyObject(obj, from, to)); */
+/*         } */
+/*     } */
+
+/*     /\* Uncomment to see the results *\/ */
+/*     /\* printf("Dest heap:\n"); *\/ */
+/*     /\* dumpByteField(to); *\/ */
+/*     /\* printf("From heap:\n"); *\/ */
+/*     /\* dumpByteField(from); *\/ */
+    
+/*     swapHeap(); */
+/*     freeByteField(from); */
+/* } */
 
 __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to ) {
     __WORD__ objsize = __boxsize(_A_(1), obj);
