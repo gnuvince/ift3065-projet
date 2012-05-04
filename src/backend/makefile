@@ -43,6 +43,10 @@ test_stack: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -fPIE -Wl,-pie -o test_stack.exe test_stack.c
 	chmod +x $(CWD)/test_stack.exe
 
+test_reg: $(OBJFILES)
+	$(CC) $(CFLAGS) $(OBJFILES) -o test_reg.exe test_reg.c
+	chmod +x $(CWD)/test_reg.exe
+
 test_stack.s: $(OBJFILES)
 	$(CC) $(CFLAGS) $(OBJFILES) -fPIE -Wl,-pie -S -o test_stack.S test_stack.c
 
