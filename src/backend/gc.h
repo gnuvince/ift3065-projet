@@ -8,21 +8,19 @@
 #define __GC_ALIVE__ 0
 #define __GC_MOVED__ 1
 
-typedef struct __rootNode__* rootNodePtr;
 typedef struct __rootNode__ {
-    __BWORD__    *node;
-    rootNodePtr  next;
-} __rootNode__;
+    __BWORD__            *node;
+    struct __rootNode__  *next;
+} __rootNode_t__;
 
-#define __ROOTNODESIZE__ (sizeof(__rootNode__))
+#define __ROOTNODESIZE__ (sizeof(__rootNode_t__))
 
-typedef struct __frameNode__* frameNodePtr;
 typedef struct __frameNode__ {
-    rootNodePtr  first;
-    frameNodePtr next;
-} __frameNode__;
+    struct __rootNode__  *first;
+    struct __frameNode__ *next;
+} __frameNode_t__;
 
-#define __FRAMENODESIZE__ (sizeof(__frameNode__))
+#define __FRAMENODESIZE__ (sizeof(__frameNode_t__))
 
 void dumpRootStack ( );
 

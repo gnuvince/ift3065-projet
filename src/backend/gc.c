@@ -9,11 +9,14 @@
 #include "bytefield_utils.h"
 #include "box.h"
 
-static rootNodePtr  rootStack  = NULL;
-static frameNodePtr frameStack = NULL;
+/* static __rootNode_t__*  rootStack  = NULL; */
+/* static frameNodePtr frameStack = NULL; */
+static __rootNode_t__   *rootStack  = NULL;
+static __frameNode_t__  *frameStack = NULL;
 
 void dumpRootStack ( ) {
-    rootNodePtr rootNode = rootStack;
+    /* __rootNode_t__* rootNode = rootStack; */
+    __rootNode_t__ *rootNode = rootStack;
 
     printf("===============================\n");
     printf("Root Stack\n");
@@ -29,7 +32,7 @@ void dumpRootStack ( ) {
 }
 
 void dumpFrameStack ( ) {
-    frameNodePtr frameNode = frameStack;
+    __frameNode_t__* frameNode = frameStack;
 
     printf("===============================\n");
     printf("Frame Stack\n");
@@ -45,7 +48,7 @@ void dumpFrameStack ( ) {
 }
 
 void pushFrame ( ) {
-    frameNodePtr newframe = (frameNodePtr)calloc(1, __FRAMENODESIZE__);
+    __frameNode_t__ *newframe = (__frameNode_t__*)calloc(1, __FRAMENODESIZE__);
 
     if (newframe == NULL) {
         printf("Out of memory\n");
@@ -53,16 +56,16 @@ void pushFrame ( ) {
     }
 
     newframe->first = NULL;
-    newframe->next  = (frameNodePtr)frameStack;
+    newframe->next  = (__frameNode_t__*)frameStack;
     frameStack = newframe;
 }
 
 void popFrame ( ) {
     printf("popFrame\n");
-    frameNodePtr frame = frameStack;
-    rootNodePtr firstroot  = rootStack;
-    rootNodePtr nextroot;
-    rootNodePtr nextfirstroot;
+    __frameNode_t__ *frame = frameStack;
+    __rootNode_t__ *firstroot  = rootStack;
+    __rootNode_t__ *nextroot;
+    __rootNode_t__ *nextfirstroot;
 
     if (frameStack == NULL) {
         printf("No frame to pop\n");
@@ -91,7 +94,8 @@ void popFrame ( ) {
 }
 
 void pushRoot ( __BWORD__ *root ) {
-    rootNodePtr newroot = (rootNodePtr)calloc(1, __ROOTNODESIZE__);
+    /* __rootNode_t__* newroot = (__rootNode_t__*)calloc(1, __ROOTNODESIZE__); */
+    __rootNode_t__ *newroot = (__rootNode_t__*)calloc(1, __ROOTNODESIZE__);
 
     if (newroot == NULL) {
         printf("Out of memory\n");
@@ -105,7 +109,8 @@ void pushRoot ( __BWORD__ *root ) {
 }
 
 void popRoot ( ) {
-    rootNodePtr root = rootStack;
+    /* __rootNode_t__* root = rootStack; */
+    __rootNode_t__ *root = rootStack;
     
     frameStack->first = root->next;
     rootStack = root->next;
@@ -113,12 +118,13 @@ void popRoot ( ) {
 }
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
-    int         num;
-    __BWORD__   obj;
-    __WORD__    *globals;
-    rootNodePtr roots = rootStack;
-    __rootNode__ *croots;
-    
+    int            num;
+    __BWORD__      obj;
+    __WORD__       *globals;
+    __rootNode_t__ *roots = rootStack;
+    __rootNode_t__ *croots;
+
+#ifdef KJSLKSJDLDFJK    
     allocByteField(to, __PAIRSIZE__);
 
     /* Process scheme roots */
@@ -176,6 +182,7 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     
     swapHeap();
     freeByteField(from);
+#endif    
 }
 
 /* void gc_run ( __bytefield__ *from, __bytefield__ *to ) { */

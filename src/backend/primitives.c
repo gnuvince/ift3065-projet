@@ -13,9 +13,9 @@
 #include "stack.h"
 
 // C Stack roots
-static __rootNode__ cstack = { NULL, NULL };
+static struct __rootNode__ cstack = { NULL, NULL };
 
-#define GCPROT( node, local_name ) __rootNode__ local_name; local_name.node = &node; local_name.next = (rootNodePtr)&cstack; cstack = &local_name;
+#define GCPROT( bword, local_name ) struct __rootNode__ local_name; local_name.node = &bword; local_name.next = &cstack; cstack = local_name;
 #define UNGCPROT(local_name) ( cstack = *(local_name.next) )
 
 /*                */
@@ -693,6 +693,6 @@ void __dumpHeap ( _S_ ) {
     dumpByteField(getHeap());
 }
 
-__rootNode__* getCStack ( ) {
-    return cstack;
+struct __rootNode__* getCStack ( ) {
+    return &cstack;
 }
