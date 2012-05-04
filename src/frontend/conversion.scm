@@ -250,12 +250,10 @@
          (boolean? x)
          (char? x)))))
 
-;; (define primitives '(+ - * / eq? = < > <= >= let
-;;                      null? pair? cons car cdr set-car! set-cdr! display))
-
 (define primitives '(%* %+ %- %< %<= %= %> %>= %car %cdr %cons %eq?
                         %null? %number? %pair? %quotient %remainder
-                        %set-car! %set-cdr! %string? %write-char))
+                        %set-car! %set-cdr! %string? %write-char
+                        %display %make-string %string-set!))
 
 (define (primitive? op)
   (and (symbol? op)

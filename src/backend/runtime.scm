@@ -142,9 +142,28 @@
   (lambda (x y)
     (%remainder x y)))
 
-;; (define string
-;;   (lambda chars
-;;     (%list->string chars)))
+(define display
+  (lambda (str)
+    (%display str)))
+
+
+(define make-string
+  (lambda (len)
+    (%make-string len)))
+
+(define string
+  (lambda chars
+    (let ((s (%make-string (length chars))))
+      (let loop ((i 0) (chars chars))
+        (if (null? chars)
+            s
+            (begin
+              (%string-set! s i (car chars))
+              (loop (+ i 1) (cdr chars))))))))
+
+(define string-set!
+  (lambda (s i c)
+    (%string-set! s i c)))
 
 ;; (define string->list
 ;;   (lambda (str)
@@ -181,20 +200,20 @@
 ;;         (%cons (%car lst) (%substring-aux2 (%cdr lst) (%- n 1)))
 ;;         '())))
 
-;; (define map
-;;   (lambda (f lst)
-;;     (if (%pair? lst)
-;;         (%cons (f (%car lst))
-;;                (map f (%cdr lst)))
-;;         '())))
+(define map
+  (lambda (f lst)
+    (if (%pair? lst)
+        (%cons (f (%car lst))
+               (map f (%cdr lst)))
+        (list))))
 
-;; (define for-each
-;;   (lambda (f lst)
-;;     (if (%pair? lst)
-;;         (begin
-;;           (f (%car lst))
-;;           (for-each f (%cdr lst)))
-;;         #f)))
+(define for-each
+  (lambda (f lst)
+    (if (%pair? lst)
+        (begin
+          (f (%car lst))
+          (for-each f (%cdr lst)))
+        #f)))
 
 ;; (define write
 ;;   (lambda (x)

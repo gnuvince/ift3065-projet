@@ -29,6 +29,7 @@
                           (%cons               4 "__cons")
                           (%eq?                4 "__equal")
                           (%null?              3 "__null_p")
+                          (%display            3 "__display")
                           (%number?            3 "__number_p")
                           (%pair?              3 "__pair_p")
                           (%quotient           4 "__quotient")
@@ -89,7 +90,9 @@
   (match expr
     (,n when (number? n) (gen-number n))
     (,b when (boolean? b) (gen-bool b))
+    (,c when (char? c) (gen-char c))
     (,s when (symbol? s) (gen-variable-access s env))
+    (,s when (string? s) (gen-string s env))
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
@@ -250,10 +253,26 @@
         (if b *true* *false*)
         " ,%eax\n"))
 
+(define (gen-char c)
+  (list
+   (gen-number (char->integer c))
+   "pushl %eax\n"
+   (gen-number 1)
+   "pushl %eax\n"
+   (gen-null)
+   "pushl %eax\n"
+   "call __integerToChar\n"
+   "addl $12, %esp\n"))
+
 
 ;; Generate null.
 (define (gen-null)
   (list "movl $" *null* ", %eax\n"))
+
+
+(define (gen-string str env)
+  (let ((chars (string->list str)))
+    (compile-expr `(string ,chars) env)))
 
 
 ;; Accessing a local variable is done through the stack.
