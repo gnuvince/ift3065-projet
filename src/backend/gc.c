@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "gc.h"
 #include "sins_const.h"
@@ -8,7 +9,108 @@
 #include "bytefield_utils.h"
 #include "box.h"
 
-/* void *globEBP; */
+rootNodePtr  rootStack  = NULL;
+frameNodePtr frameStack = NULL;
+
+void dumpRootStack ( ) {
+    rootNodePtr rootNode = rootStack;
+
+    printf("===============================\n");
+    printf("Root Stack\n");
+    while (rootNode != NULL) {
+        printf("-------------------------------\n");
+        printf("Root node at   : 0x%08lx\n", (__WORD__)rootNode);
+        printf("Object at      : 0x%08lx\n", (__WORD__)rootNode->node);
+        printf("Value          : 0x%08lx\n", (__WORD__)*(rootNode->node));
+        printf("Next at        : 0x%08lx\n", (__WORD__)rootNode->next);
+        rootNode = rootNode->next;
+    }
+    printf("===============================\n");
+}
+
+void dumpFrameStack ( ) {
+    frameNodePtr frameNode = frameStack;
+
+    printf("===============================\n");
+    printf("Frame Stack\n");
+    while (frameNode != NULL) {
+        printf("-------------------------------\n");
+        printf("Frame node at  : 0x%08lx\n", (__WORD__)frameNode);
+        printf("Top root at    : 0x%08lx\n", (__WORD__)(frameNode->first));
+        printf("Next at        : 0x%08lx\n", (__WORD__)frameNode->next);
+        frameNode = frameNode->next;
+    }
+    printf("===============================\n");
+    
+}
+
+void pushFrame ( ) {
+    frameNodePtr newframe = (frameNodePtr)calloc(1, __FRAMENODESIZE__);
+
+    if (newframe == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+
+    newframe->first = NULL;
+    newframe->next  = (frameNodePtr)frameStack;
+    frameStack = newframe;
+}
+
+void popFrame ( ) {
+    printf("popFrame\n");
+    frameNodePtr frame = frameStack;
+    rootNodePtr firstroot  = rootStack;
+    rootNodePtr nextroot;
+    rootNodePtr nextfirstroot;
+
+    if (frameStack == NULL) {
+        printf("No frame to pop\n");
+        exit(__FAIL__);
+    }
+
+    nextroot = firstroot->next;
+    if (frame->next == NULL)
+        nextfirstroot = NULL;
+    else
+        nextfirstroot = (frame->next)->first;
+    
+    while ((firstroot != nextfirstroot) && (firstroot != NULL)) {
+        printf("free(firstroot)\n");
+        free(firstroot);
+        rootStack = nextroot;
+        firstroot = nextroot;
+        if (firstroot != NULL)
+            nextroot = firstroot->next;
+        else
+            nextroot = NULL;
+    }
+    printf("free(frame)\n");
+    frameStack = frameStack->next;
+    free(frame);
+}
+
+void pushRoot ( __BWORD__ *root ) {
+    rootNodePtr newroot = (rootNodePtr)calloc(1, __ROOTNODESIZE__);
+
+    if (newroot == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+
+    newroot->node = root;
+    newroot->next = rootStack;
+    rootStack = newroot;
+    frameStack->first = newroot;
+}
+
+void popRoot ( ) {
+    rootNodePtr root = rootStack;
+    
+    frameStack->first = root->next;
+    rootStack = root->next;
+    free(root);
+}
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     __BWORD__ obj;
@@ -109,3 +211,5 @@ int gc_isAlive ( __BWORD__ obj ) {
 int gc_isMoved ( __BWORD__ obj ) {
     return (((__ptd_hdr__*)(__unbox(_A_(1), obj)))->state != 0);
 }
+
+

@@ -8,6 +8,34 @@
 #define __GC_ALIVE__ 0
 #define __GC_MOVED__ 1
 
+typedef struct __rootNode__* rootNodePtr;
+typedef struct __rootNode__ {
+    __BWORD__    *node;
+    rootNodePtr  next;
+} __rootNode__;
+
+#define __ROOTNODESIZE__ (sizeof(__rootNode__))
+
+typedef struct __frameNode__* frameNodePtr;
+typedef struct __frameNode__ {
+    rootNodePtr  first;
+    frameNodePtr next;
+} __frameNode__;
+
+#define __FRAMENODESIZE__ (sizeof(__frameNode__))
+
+void dumpRootStack ( );
+
+void dumpFrameStack ( );
+
+void pushFrame ( );
+
+void popFrame ( );
+
+void pushRoot ( __BWORD__ *root );
+
+void popRoot ( );
+
 void gc_run ( __bytefield__ *from, __bytefield__ *to );
 
 __BWORD__ gc_copyObject ( __BWORD__ root, __bytefield__ *from, __bytefield__ *to );
