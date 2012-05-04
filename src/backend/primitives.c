@@ -339,8 +339,6 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
     __BWORD__ ch;
     int slen;
 
-    printf("Entering stringToList\n");
-    
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -358,10 +356,8 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
     __setCdr(_A_(2), __boxpair(_A_(1), (__WORD__)newpair), __NULL__);
     
     for (int i = 0; i < slen; i++) {
-        printf(". ");
         head = (__pair__*)allocBlock(getHeap(), sizeof(__pair__));
         head->hdr = __PAIR_TYPE__;
-        dumpWord(getHeap(), (__WORD__)head); printf("\n");
         
         if (head == NULL) {
             printf("Out of memory\n");
@@ -374,16 +370,40 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
     
     bpair = __boxpair(_A_(1), (__WORD__)newpair);
     for (int i = 0; i < slen; i++) {
-        printf(". ");
         ch = __stringRef(_A_(2), s, __boxint(_A_(1), (__WORD__)i));
-        dumpWord(getHeap(), (__WORD__)ch); printf("\n");
         
         __setCar(_A_(2), bpair, ch);
         bpair = __getCdr(_A_(1), bpair);
     }
-    printf("\n");
 
     return __boxpair(_A_(1), (__WORD__)newpair);
+}
+
+void __stringSet ( _S_, __BWORD__ s, __BWORD__ ref, __BWORD__ ch ) {
+    if (__string_p(_A_(1), s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    if (__number_p(_A_(1), ref) == __FALSE__) {
+        printf("NUMBER expected\n");
+        exit(__FAIL__);
+    }
+
+    __WORD__ uref = __unboxint(_A_(1), ref);
+    if ((uref < 0) || (uref >= __stringLength(_A_(1), s))) {
+        printf("Error: Invalid string index\n");
+        exit(__FAIL__);
+    }
+
+    if (__char_p(_A_(1), ch) == __FALSE__) {
+        printf("CHAR expected\n");
+        exit(__FAIL__);
+    }
+
+    __WORD__ bsize = __boxsize(_A_(1), s);
+    char chint = (char)__unboxint(_A_(1), __charToInteger(_A_(1), ch));
+    *((char*)(__unboxptd(_A_(1), s) + sizeof(__string__) + uref)) = chint;
 }
 
 /*                 */

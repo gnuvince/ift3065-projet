@@ -98,6 +98,8 @@ __BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 );
 
 __BWORD__ __stringToList ( _S_, __BWORD__ s );
 
+void __stringSet ( _S_, __BWORD__ s, __BWORD__ ref, __BWORD__ ch );
+
 void __display ( _S_, __BWORD__ s );
 
 void __newline ( _S_ );

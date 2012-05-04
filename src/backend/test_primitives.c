@@ -56,7 +56,12 @@ int main(void)
     s = __createString("stringToList");
     __display(_A_(1), s); __newline(_A_(0));
 
+    __BWORD__ ch = __integerToChar(_A_(1), __boxint(_A_(1), __CH_P__));
+
+    __stringSet(_A_(3), s, __boxint(_A_(1), 8), ch);
+    
     lst = __stringToList(_A_(1), s);
+
     dumpByteField(getHeap());
         
     freeByteField(getHeap());
