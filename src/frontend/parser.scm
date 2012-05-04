@@ -15,15 +15,19 @@
 (include "reader.scm")
 
 
-(define (harmonize-false ast)
+(define (harmonize ast)
   (map (lambda (x)
          (cond ((eq? x false) #f)
-               ((pair? x) (harmonize-false x))
+               ((eq? x quote-prefix-symbol) 'quote)
+               ((eq? x unquote-prefix-symbol) 'unquote)
+               ((eq? x quasiquote-prefix-symbol) 'quasiquote)
+               ((eq? x unquote-splicing-prefix-symbol) 'unquote-splicing)
+               ((pair? x) (harmonize x))
                (else x)))
        ast))
 
 (define (parse token-list)
-  (harmonize-false (cons 'begin (<program> (sins-read token-list)))))
+  (harmonize (cons 'begin (<program> (sins-read token-list)))))
 
 (define (<program> ast)
   (cond ((null? ast)

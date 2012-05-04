@@ -105,6 +105,7 @@
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
+    ((quote ,x) (gen-quote x))
     ((if ,condition ,then) (compile-if (append expr '(#f)) env))
     ((if ,condition ,then ,else) (compile-if expr env))
     ((set! ,var ,expr) (compile-set! env var expr))
@@ -301,6 +302,22 @@
                      "addl $20, %esp\n")
                (loop (+ i 1) (cdr chars)))))
    "popl %eax\n"))
+
+
+(define (gen-symbol s)
+  "")
+
+
+
+(define (gen-quote x)
+  (match x
+    (() (gen-null))
+    (,b when (boolean? b) (gen-bool b))
+    (,n when (number? n) (gen-number n))
+    (,c when (char? c) (gen-char c))
+    (,s when (string? s) (gen-string s))
+
+    (,s when (symbol? s) (gen-symbol s))))
 
 
 ;; Accessing a local variable is done through the stack.

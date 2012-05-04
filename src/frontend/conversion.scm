@@ -120,6 +120,9 @@
     ((quote ,x)
      `(quote ,x))
 
+    ((apply ,f ,args)
+     (expand `(,f ,@args)))
+
     ((set! ,v ,E1)
      `(set! ,v ,(expand E1)))
     ((set! . ,rest)

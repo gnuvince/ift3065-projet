@@ -4,6 +4,10 @@
   (lambda (x)
     (%number? x)))
 
+;; (define +
+;;   (lambda (x y)
+;;     (%+ x y)))
+
 (define +
   (lambda (x y)
     (%+ x y)))
