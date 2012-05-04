@@ -27,7 +27,7 @@ OBJFILES := bytefield.o bytefield_utils.o box.o gc.o primitives.o primitives_uti
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test .c .o
 
-all: test_prim test_gc
+all: $(OBJFILES)
 
 test_prim: test_primitives
 

@@ -3,10 +3,10 @@
 .SUFFIXES:
 .SUFFIXES: .scm .s .exe .test
 
-all: compile check
+all: compile
 
 compile:
-	@cd src/backend; make ARCH32=1 test_prim
+	@cd src/backend; make
 
 check:
 	@cd src/frontend; make check
