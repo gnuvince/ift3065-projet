@@ -38,6 +38,8 @@
                           (%set-cdr!           4 "__setCdr")
                           (%string?            3 "__string_p")
                           (%write-char         3 "__writeChar")
+                          (%make-string        3 "__makeString")
+                          (%string-set!        4 "__stringSet")
                           ))
 
 
@@ -274,8 +276,7 @@
 
 (define (gen-string str env)
   (let ((chars (string->list str)))
-    (compile-expr `(string ,chars) env)))
-
+    (compile-expr (conv `(string ,@chars)) env)))
 
 ;; Accessing a local variable is done through the stack.
 ;; Accessing a global variable is done with its label in the .data section.

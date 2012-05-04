@@ -281,6 +281,25 @@ __BWORD__ __createString ( char *s ) {
     }
 }
 
+
+__BWORD__ __makeString(_S_, __BWORD__ len) {
+   __string__ *newstring = NULL;
+   __WORD__ slen = (__WORD__)__unboxint(_A_(1), len);
+
+    newstring = (__string__*)allocBlock(getHeap(), sizeof(__string__) + slen + 1);
+
+    if (newstring == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    else {
+        newstring->hdr = (slen << __STR_LEN_SHFT__) + __STR_TYPE__;
+        memset(newstring + sizeof(__string__), 0, slen+1);
+        return __boxptd(_A_(1), (__WORD__)newstring);
+    }
+}
+
+
 __BWORD__ __stringLength ( _S_, __BWORD__ s ) {
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
@@ -292,7 +311,7 @@ __BWORD__ __stringLength ( _S_, __BWORD__ s ) {
 
 __BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref) {
     __char__ *newchar = NULL;
-    
+
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -354,11 +373,11 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
 
     slen = __unboxint(_A_(1), __stringLength(_A_(1), s));
     __setCdr(_A_(2), __boxpair(_A_(1), (__WORD__)newpair), __NULL__);
-    
+
     for (int i = 0; i < slen; i++) {
         head = (__pair__*)allocBlock(getHeap(), sizeof(__pair__));
         head->hdr = __PAIR_TYPE__;
-        
+
         if (head == NULL) {
             printf("Out of memory\n");
             exit(__FAIL__);
@@ -367,11 +386,11 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
         __setCdr(_A_(2), __boxpair(_A_(1), (__WORD__)head), __boxpair(_A_(1), (__WORD__)newpair));
         newpair = head;
     }
-    
+
     bpair = __boxpair(_A_(1), (__WORD__)newpair);
     for (int i = 0; i < slen; i++) {
         ch = __stringRef(_A_(2), s, __boxint(_A_(1), (__WORD__)i));
-        
+
         __setCar(_A_(2), bpair, ch);
         bpair = __getCdr(_A_(1), bpair);
     }

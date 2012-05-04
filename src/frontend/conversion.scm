@@ -382,7 +382,7 @@
        `(lambda ,@params2
           ,(if (null? mut-params)
                (ac E)
-               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) '())))
+               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) (list))))
                            mut-params)
                    ,(ac E))))))
 
@@ -403,7 +403,7 @@
                      (proper->improper params2))
           ,(if (null? mut-params)
                (ac E)
-               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) '())))
+               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) (list))))
                            mut-params)
                    ,(ac E))))))
 
@@ -424,7 +424,7 @@
                    bindings)
           ,(if (null? mut-vars)
                (ac E)
-               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) '())))
+               `(let ,(map (lambda (x) `(,(car x) (cons ,(cdr x) (list))))
                            mut-vars)
                    ,(ac E))))))
 

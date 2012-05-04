@@ -1,2 +1,2 @@
-(display "hello\n")
+"hello"
 1

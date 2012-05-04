@@ -31,7 +31,7 @@ __BWORD__ __symbolLength ( _S_, __BWORD__ sym );
 __BWORD__ __symbolToString ( _S_, __BWORD__ sym );
 
 void  __lambdaSet ( _S_, __BWORD__ p, __BWORD__ ref, __BWORD__ val );
-        
+
 __BWORD__ __lambdaRef ( _S_, __BWORD__ v, __BWORD__ ref );
 
 void __lambdaSetCode ( _S_, __BWORD__ p, __WORD__ code );
@@ -87,6 +87,8 @@ __BWORD__ __equal ( _S_, __BWORD__ b1, __BWORD__ b2 );
 __BWORD__ __eq ( _S_, __BWORD__ b1, __BWORD__ b2 );
 
 __BWORD__ __createString ( char *s );
+
+__BWORD__ __makeString(_S_, __BWORD__ len);
 
 __BWORD__ __string_p ( _S_, __BWORD__ s );
 
