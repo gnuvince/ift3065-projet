@@ -291,6 +291,8 @@ __BWORD__ __stringLength ( _S_, __BWORD__ s ) {
 }
 
 __BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref) {
+    __char__ *newchar = NULL;
+    
     if (__string_p(_A_(1), s) == __FALSE__) {
         printf("STRING expected\n");
         exit(__FAIL__);
@@ -302,7 +304,7 @@ __BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref) {
         exit(__FAIL__);
     }
 
-    return *((char*)__unboxptd(_A_(1), s) + uref + sizeof(__char__));
+    return __integerToChar(_A_(1), __boxint(_A_(1), *((char*)__unboxptd(_A_(1), s) + uref + sizeof(__char__))));
 }
 
 __BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
@@ -328,6 +330,80 @@ __BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
 
     return __TRUE__;
 
+}
+
+__BWORD__ __stringToList ( _S_, __BWORD__ s ) {
+    __pair__ *newpair = NULL;
+    __pair__ *head = NULL;
+    __BWORD__ bpair;
+    __BWORD__ ch;
+    int slen;
+
+    if (__string_p(_A_(1), s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    newpair = (__pair__*)allocBlock(getHeap(), sizeof(__pair__));
+    newpair->hdr = __PAIR_TYPE__;
+
+    if (newpair == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+
+    slen = __unboxint(_A_(1), __stringLength(_A_(1), s));
+    __setCdr(_A_(2), __boxpair(_A_(1), (__WORD__)newpair), __NULL__);
+    
+    for (int i = 0; i < slen; i++) {
+        head = (__pair__*)allocBlock(getHeap(), sizeof(__pair__));
+        head->hdr = __PAIR_TYPE__;
+        
+        if (head == NULL) {
+            printf("Out of memory\n");
+            exit(__FAIL__);
+        }
+
+        __setCdr(_A_(2), __boxpair(_A_(1), (__WORD__)head), __boxpair(_A_(1), (__WORD__)newpair));
+        newpair = head;
+    }
+    
+    bpair = __boxpair(_A_(1), (__WORD__)newpair);
+    for (int i = 0; i < slen; i++) {
+        ch = __stringRef(_A_(2), s, __boxint(_A_(1), (__WORD__)i));
+        
+        __setCar(_A_(2), bpair, ch);
+        bpair = __getCdr(_A_(1), bpair);
+    }
+
+    return __boxpair(_A_(1), (__WORD__)newpair);
+}
+
+void __stringSet ( _S_, __BWORD__ s, __BWORD__ ref, __BWORD__ ch ) {
+    if (__string_p(_A_(1), s) == __FALSE__) {
+        printf("STRING expected\n");
+        exit(__FAIL__);
+    }
+
+    if (__number_p(_A_(1), ref) == __FALSE__) {
+        printf("NUMBER expected\n");
+        exit(__FAIL__);
+    }
+
+    __WORD__ uref = __unboxint(_A_(1), ref);
+    if ((uref < 0) || (uref >= __stringLength(_A_(1), s))) {
+        printf("Error: Invalid string index\n");
+        exit(__FAIL__);
+    }
+
+    if (__char_p(_A_(1), ch) == __FALSE__) {
+        printf("CHAR expected\n");
+        exit(__FAIL__);
+    }
+
+    __WORD__ bsize = __boxsize(_A_(1), s);
+    char chint = (char)__unboxint(_A_(1), __charToInteger(_A_(1), ch));
+    *((char*)(__unboxptd(_A_(1), s) + sizeof(__string__) + uref)) = chint;
 }
 
 /*                 */
