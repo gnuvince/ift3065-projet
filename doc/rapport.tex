@@ -40,15 +40,15 @@ solutions mises en place pour résoudre ces problèmes.
 \sins{} (Scheme IN Scheme) est un petit compilateur Scheme écrit
 dans le cadre d'un cours de compilation de 15 semaines.  Comme son nom
 l'indique, il s'agit d'un compilateur pour Scheme écrit en Scheme.
-\sins génère du code assembleur x86.
+\sins{} génère du code assembleur x86.
 
-\sins{} est un véhicule permettant à ses auteurs de faire un
-survol des différents aspects de la compilation.  La philosophie de
-base est qu'étant donné le choix d'implanter une fonctionnalité en
+\sins{} est un véhicule permettant à ses auteurs de faire un survol
+des différents aspects de la compilation. Notre philosophie de base
+est qu'étant donné le choix d'implanter une fonctionnalité en
 profondeur ou d'en implanter deux avec des techniques moins
-sophistiquées, on choisira la deuxième option à tout coup.  Nous
+sophistiquées, nous choisirons la deuxième option à tout coup. Nous
 sommes d'avis que cette approche nous donnera une vision plus globale
-d'un compilateur.  Les détails d'implantation plus avancés pourront
+d'un compilateur. Les détails d'implantation plus avancés pourront
 être appris, implantés et maîtrisés dans le cadre de stages, de
 projets personnels, de recherches et d'emplois.
 
@@ -57,12 +57,12 @@ projets personnels, de recherches et d'emplois.
 
 \sins{} suit un modèle en pipeline où chaque étape de la compilation a
 son propre module et où chaque module a comme entrée la sortie du
-module précédent.  Chaque module effectue (si possible) une seule
-transformation afin de garder la complexité du module la plus basse
-possible.  Cela implique que \sins{} fait plus de passes sur le code et
+module précédent. Chaque module effectue (si possible) une seule
+transformation afin de garder la complexité du module la plus minimale
+possible. Cela implique que \sins{} fait plus de passes sur le code et
 qu'il est plus lent à l'exécution qu'un compilateur qui fusionne
-plusieurs phases en une.  Dans le cadre d'un projet éducationnel,
-nous jugeons que cette contrainte est acceptable.
+plusieurs phases en une. Dans le cadre d'un projet éducationnel, nous
+jugeons que cette contrainte est acceptable.
 
 
 \chapter{Analyse lexicale}
@@ -87,7 +87,7 @@ dans la section \ref{grammar-tokens}.
 \section{Structures de données}
 
 Afin de faire l'analyse lexicale d'un programme source, deux
-structures de données principales ont été nécessaires: un type flux
+structures de données principales sont nécessaires: un type flux
 (\emph{stream}), et un type lexème (\emph{token}).
 
 \subsection{Stream}
@@ -113,7 +113,7 @@ données possédant les 4 opérations suivantes:
 Un lexème est représenté par une liste ayant la forme suivante:
 
 \begin{verbatim}
-(token <(type . valeur)> <ligne> <colonne>)
+(token (<type> . <valeur>) <ligne> <colonne>)
 \end{verbatim}
 
 Le premier élément est une étiquette qui permet de distinguer un
@@ -161,8 +161,8 @@ est un des terminaux suivants du langage, on retourne un lexème
 représentant ce symbole: \texttt{(}, \texttt{)}, \texttt{,},
 \texttt{,@}, \texttt{'}, \texttt{`}, et le caractère nul.
 
-Dans le cas où le caractère est une guillemet, on accumule les
-caractères du flux jusqu'à ce qu'on consomme la guillemet fermante (en
+Dans le cas où le caractère est un guillemet, on accumule les
+caractères du flux jusqu'à ce qu'on consomme le guillemet fermant (en
 faisant attention aux séquences d'échappement).
 
 Dans le cas où le caractère est un dièse, on essaye de lire, en ordre,
@@ -273,14 +273,9 @@ données.  Les opérations suivantes sont supportées:
   Si le flux est vide, la liste vide est retournée.
 \item {\bf advance}: consomme le lexème actuel et déplace le flux au
   prochain lexème.  Aucune donnée n'est retournée.
-\item {\bf pop}: consomme le lexème actuelle et déplace le flux au
+\item {\bf pop}: consomme le lexème actuel et déplace le flux au
   prochain lexème.  Le lexème consommé est retourné.
 \end{itemize}
-
-\section{L'expansion de macros}
-
-Le code d'expansion de macro fourni en classe n'a pas encore été complétement
-intégré à \sins{}.
 
 \section{Vérification de l'AST}
 
@@ -301,7 +296,6 @@ décidé de ne pas inclure les informations relatives aux lignes et
 colonnes dans l'AST. Cette décision donnera des messages d'erreur
 moins précis, mais nous jugeons que la simplicité gagnée par ce
 compromis est plus importante dans le cadre d'un projet pédagogique.
-Si le temps le permet, nous pourrons considérer revoir cette décision.
 
 \subsection{Algorithmes}
 
@@ -315,8 +309,8 @@ vérifier et teste séquentiellement les alternatives de cette production en
 relation avec l'AST. Si l'une des production unifie l'AST, la fonction retourne
 l'AST. Sinon elle retourne faux.
 
-Cette forme déclarative pour le parseur permet d'exprimer une structure de
-code claquée sur les productions de la grammaire ce qui donne un programme
+Cette forme déclarative pour le parseur donne au code une structure
+claquée sur les productions de la grammaire; cela rend le programme
 facile à valider et à maintenir.
 
 
@@ -327,12 +321,9 @@ facile à valider et à maintenir.
 Afin de diminuer l'effort de génération de code, nous avons implanté
 un module de simplification ({\tt src/frontend/conversion.scm}). Ce
 module prend l'AST du programme d'entrée et retourne un AST dans
-lequel nous avons substitué des formes à des formes plus simples. La
-procédure de simplification est appliquée récursivement jusqu'à ce
-qu'il ne reste que des formes simplifiées.
-
-Voici les différentes simplifications qui sont faites en date de la
-remise du 12 mars 2012.
+lequel nous avons substitué certaines formes à des formes plus
+simples. La procédure de simplification est appliquée récursivement
+jusqu'à ce qu'il ne reste que des formes simplifiées.
 
 \subsection{\tt begin}
 
@@ -352,7 +343,7 @@ uniques.)
 \subsection{\tt let}
 
 La forme {\tt let} avec étiquette est transformée en une forme {\tt
-  letrec} (nous verrons que plus tard, {\tt letrec} est transformée
+  letrec} (nous verrons plus tard que {\tt letrec} est transformée
 en {\tt let} sans étiquette).
 
 \begin{verbatim}
@@ -411,8 +402,8 @@ La forme {\tt cond} est transformée en une imbrication de {\tt if}.
 
 La forme {\tt case} est transformée en une imbrication de {\tt if} et
 de {\tt memv}. L'expression sur laquelle on fait le test est évaluée
-une seule fois et son résultat est sauvegardé.  Cela évite de faire
-des opérations avec effets plusieurs fois.
+une seule fois et son résultat est sauvegardé, donc si une expression
+a des effets de bords, ceux-ci sont exécutés une seule fois.
 
 
 \begin{verbatim}
@@ -461,12 +452,19 @@ les conflits de nom, l'AST du programme est passée dans une fonction
 qui renomme tous les identificateurs à des noms uniques.  Le programme
 résultat est équivalent, mais chaque symbole a un usage unique.
 
+Nous avons trouvé un bogue important dans le module d'alpha
+conversion: il plantait pour les lambdas avec un paramètre reste.  En
+effet, la fonction {\tt map} ne permet pas d'appliquer une fonction à
+une liste impropre.  Nous avons réglé le problème en créant des
+fonctions qui permettent de passer d'une liste impropre à une liste
+propre et vice versa.
 
 \section{Mutability conversion}
 
 Toutes les variables qui sont mutables sont remplacées par une paire
-et les appels à {\tt set!} sont remplacés par des appels à {\tt
-  set-car!}.
+dont le car contient la valeur, les accès sont remplacés par des
+appels à {\tt car}, et les appels à {\tt set!} sont remplacés par des
+appels à {\tt set-car!}.
 
 \section{Closure conversion}
 
@@ -485,16 +483,17 @@ qu'elles prennent 2 paramètres supplémentaires:
 \chapter{Environnement}
 
 Dans un compilateur, il est nécessaire de faire la gestion de
-l'environnement, des symboles qui sont accessibles ainsi que la façon
-de les trouver.  Dans \sins{}, la gestion de l'environnement est
-faite dans le module {\it backend/env.scm}.
+l'environnement, un structure qui permet de garder la trace des
+symboles qui sont accessibles ainsi que la façon d'y accéder. Dans
+\sins{}, la gestion de l'environnement est faite dans le module {\it
+  backend/env.scm}.
 
 \section{Structures de données}
 
 L'environnement est représentée par une liste deux éléments. Le
 premier élément contient la distance en octets entre le prochain
-symbole local et le début de la trame. Le second élément est une liste
-de tuples contenant 3 informations:
+symbole local qui sera ajouté et le début de la trame. Le second
+élément est une liste de tuples contenant 3 informations:
 
 
 \begin{verbatim}
@@ -511,15 +510,12 @@ symbole {\it global} et au lieu d'un décallage, le troisième élément
 du tuple est l'étiquette globale où se trouve la valeur associée au
 symbole.
 
-Le module d'environnement fournit plusieurs fonctions pour manipuler
-un environnement.
+Voici les fonctions pour manipuler un environnement.
 
 \begin{itemize}
 \item {\bf make-env}: crée et retourne un environnement vide.
-\item {\bf env-fs}: retourne la taille de la trame (premier élément de
-  l'environnement).
-\item {\bf env-symbols}: retourne la liste des symboles (second
-  élément de l'environnement).
+\item {\bf env-fs}: retourne la taille de la trame.
+\item {\bf env-symbols}: retourne la liste des symboles.
 \item {\bf env-fs++}: augmente d'un mot la taille de la trame et
   retourne le nouvel environnement modifié.
 \item {\bf env-fs+}: augmente d'un nombre spécifique de mots la taille
@@ -548,7 +544,7 @@ environnement (voir les chapîtres précédents pour plus de détails),
 
 \section{Constantes}
 
-Dans le fichier {\emph sins_const.h}, les valeurs des symboles \#t,
+Dans le fichier {\it sins_const.h}, les valeurs des symboles \#t,
 \#f et () sont définis; afin de simplifier l'utilisation de ces
 valeurs dans la génération de code, nous les avons copié.  Ainsi, ces
 trois symboles ont les valeurs 5, 1, et 2, respectivement.
@@ -564,8 +560,8 @@ vide.
 
 Le tableau {\tt primitive-funcs} sert à associer des symboles Scheme
 avec les fonctions primitives écrites en C.  Le nombre d'argument
-requis est également dans cette table.  Les appels de primitives sont
-gérés différement des appels de fonctions.
+requis est également dans cette table.  L' appel des primitives est
+géré différement de l'appel des fonctions.
 
 La variable {\tt global-env} est passée de fonction en fonction et
 contient les symboles locaux qui ont été définis.  Le chapître sur
@@ -642,9 +638,9 @@ suivit d'un saut qui nous amène à la fin des instructions du {\tt if}.
 
 \subsection{gen-number}
 
-Cette fonction prend en paramètre un nombre, l'emboîte et la met dans.
-Afin d'améliorer légèrement la performance du code généré,
-l'emboîtement est fait manuellement, à la compilation par une
+Cette fonction prend en paramètre un nombre, l'emboîte et la tranfère
+dans {\tt eax}. Afin d'améliorer légèrement la performance du code
+généré, l'emboîtement est fait manuellement, à la compilation par une
 multiplication par 4 plutôt que d'appeler la fonction primitive C
 d'emboîtement à l'exécution.
 

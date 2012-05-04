@@ -48,9 +48,9 @@ TESTS = [
 def main():
     print "\nCODE GENERATION TESTS"
     for filename, exp_result in TESTS:
-        subprocess.call("gsi ../sins.scm -e '(compile-file \"tests/%s\" \"/tmp/compilation_test.s\")'" %
+        subprocess.call("gsi ../../sins.scm -e '(compile-file \"tests/%s\" \"/tmp/compilation_test\" #f)'" %
                         filename, shell=True)
-        subprocess.call("gcc -m32 -O1 -mpreferred-stack-boundary=2 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
+        #subprocess.call("gcc -m32 -O1 -mpreferred-stack-boundary=2 -g -o /tmp/compilation_test *.o /tmp/compilation_test.s", shell=True)
         result = subprocess.call("/tmp/compilation_test")
         if result == exp_result:
             print "%s: OK" % (filename)
