@@ -9,12 +9,17 @@
 
 (include "src/utils/utilities.scm")
 
-(define sins-path "/Users/eric/H12/IFT3065/projet/ift3065-projet/")
-(define backend-dir (string-append sins-path "src/backend/"))
+(define sins-path #f)
 
 
 (define (compile-file src dest keep-asm?)
-  (let* ((runtime-tokenization (lex-from-file (string-append
+  (if (not sins-path)
+      (begin
+        (display "Vous devez définir la variable sins-path dans sins.scm\n")
+        (exit 1)))
+
+  (let* ((backend-dir (string-append sins-path "src/backend/"))
+         (runtime-tokenization (lex-from-file (string-append
                                                backend-dir "runtime.scm")))
          (program-tokenization (lex-from-file src))
          (asm-tree (-> (append runtime-tokenization program-tokenization)
