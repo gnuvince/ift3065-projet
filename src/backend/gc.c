@@ -12,10 +12,26 @@
 /* static __rootNode_t__*  rootStack  = NULL; */
 /* static frameNodePtr frameStack = NULL; */
 static __rootNode_t__   *rootStack  = NULL;
+static __rootNode_t__   *cRootStack  = NULL;
 static __frameNode_t__  *frameStack = NULL;
 
+void dumpCStack ( ) {
+    struct __rootNode__ *rootNode = getCStack();
+
+    printf("===============================\n");
+    printf("C Stack\n");
+    while (rootNode != NULL) {
+        printf("-------------------------------\n");
+        printf("Node at        : 0x%08lx\n", (__WORD__)rootNode);
+        printf("Object at      : 0x%08lx\n", (__WORD__)rootNode->node);
+        printf("Value          : 0x%08lx\n", (__WORD__)*(rootNode->node));
+        printf("Next at        : 0x%08lx\n", (__WORD__)rootNode->next);
+        rootNode = rootNode->next;
+    }
+    printf("===============================\n");
+}
+
 void dumpRootStack ( ) {
-    /* __rootNode_t__* rootNode = rootStack; */
     __rootNode_t__ *rootNode = rootStack;
 
     printf("===============================\n");
@@ -102,6 +118,10 @@ void pushRoot ( __BWORD__ *root ) {
         exit(__FAIL__);
     }
 
+    if (rootStack == NULL)
+        newroot->count = 1;
+    else
+        newroot->count = rootStack->count + 1;
     newroot->node = root;
     newroot->next = rootStack;
     rootStack = newroot;
@@ -117,53 +137,107 @@ void popRoot ( ) {
     free(root);
 }
 
+void pushCRoot ( __BWORD__ *root ) {
+    __rootNode_t__ *newroot = (__rootNode_t__*)calloc(1, __ROOTNODESIZE__);
+
+    if (newroot == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
+    if (cRootStack == NULL)
+        newroot->count = 1;
+    else
+        newroot->count = cRootStack->count + 1;
+    newroot->node = root;
+    newroot->next = cRootStack;
+    cRootStack = newroot;
+}
+
+void popCRoot ( ) {
+    __rootNode_t__ *root = cRootStack;
+    
+    cRootStack = root->next;
+    free(root);
+}
+
 void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     int            num;
     __BWORD__      obj;
     __WORD__       *globals;
     __rootNode_t__ *roots = rootStack;
-    __rootNode_t__ *croots;
+    __rootNode_t__ *croots = cRootStack;
 
-#ifdef KJSLKSJDLDFJK    
     allocByteField(to, __PAIRSIZE__);
 
+    printf("gc_run scheme roots\n");
     /* Process scheme roots */
     while (roots != NULL) {
-        obj = *(root->node);
+        printf("scheme root...\n");
+        obj = *(roots->node);
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
-            *(root->node) = gc_copyObject(obj, from, to);
+            *(roots->node) = gc_copyObject(obj, from, to);
         }
         roots = roots->next;
     }
 
+    printf("gc_run C roots\n");
+    /* Process C roots */
+    while (croots != NULL) {
+        printf("c root...\n");
+        obj = *(croots->node);
+        if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
+            *(croots->node) = gc_copyObject(obj, from, to);
+        }
+        croots = croots->next;
+    }
+
+    printf("gc_run global vars\n");
     /* Process global vars */
-    __asm__ __volatile__ ("movl    $_TOTAL_VARIABLES_, %1    \n\t" 
+    __asm__ __volatile__ ("movl    $__TOTAL_VARIABLES_, %0    \n\t" 
               :
               :"m"(globals)         /* input */
               :
               );
 
     num = (int)*globals;
-
     for (int i = 0; i < num; i++) {
+        printf("global root...\n");
         obj = *((__BWORD__*)globals + i + 1);
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
             *((__BWORD__*)globals + i + 1) = gc_copyObject(obj, from, to);
         }
     }
 
-    
-    
-    /* Process C roots */
-    croots = getCStack();
-    while (croots->node != NULL) {
-        obj = *(croots->node);
+    printf("gc_run dummy vars\n");
+    /* Process dummy vars */
+    for (__VAR__ i = 0; i < getVarNext(); ++i) {
+        printf("dummy root...\n");
+        obj = getVar(i);
+        
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
-            *(croots->node) = gc_copyObject(obj, from, to);
+            setVar(i, gc_copyObject(obj, from, to));
         }
-        croots = (__rootNode__*)croots->next;
     }
+
     
+    /* printf("gc_run C roots\n");     */
+    /* /\* Process C roots *\/ */
+    /* dumpCStack(); */
+    /* croots = getCStack(); */
+    /* printf("****\n"); */
+    /* while (croots != NULL) { */
+    /*     printf("**\n"); */
+    /*     obj = *(croots->node); */
+    /*     printf("**\n"); */
+    /*     if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
+    /*         printf("**\n"); */
+    /*         *(croots->node) = gc_copyObject(obj, from, to); */
+    /*     } */
+    /*     printf("**\n"); */
+    /*     croots = croots->next; */
+    /* } */
+
+
     /* while (roots != NULL) { */
     /*     obj = *(root->node); */
     /*     if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
@@ -182,6 +256,7 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     
     swapHeap();
     freeByteField(from);
+#ifdef KJSLKSJDLDFJK
 #endif    
 }
 
@@ -190,13 +265,6 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     
 /*     allocByteField(to, __PAIRSIZE__); */
 
-/*     for (__VAR__ i = 0; i < getVarNext(); ++i) { */
-/*         obj = getVar(i); */
-        
-/*         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
-/*             setVar(i, gc_copyObject(obj, from, to)); */
-/*         } */
-/*     } */
 
 /*     /\* Uncomment to see the results *\/ */
 /*     /\* printf("Dest heap:\n"); *\/ */

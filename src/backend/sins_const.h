@@ -13,6 +13,8 @@
 /*   lambda      last 2 bits 11                     */
 /*                                                  */
 /****************************************************/
+/* Simulation of global vars */
+static __WORD__ _TOTAL_VARIABLES_ = 0;
 
 #define __FAIL__           1
 #define __SUCCESS__        0

@@ -117,6 +117,6 @@ void __gc ( _S_ );
 
 void __dumpHeap ( _S_ );
 
-__rootNode_t__* getCStack ( );
+struct __rootNode__* getCStack ( );
 
 #endif

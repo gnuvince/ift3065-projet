@@ -9,6 +9,7 @@
 #define __GC_MOVED__ 1
 
 typedef struct __rootNode__ {
+    int                  count;
     __BWORD__            *node;
     struct __rootNode__  *next;
 } __rootNode_t__;
@@ -22,6 +23,8 @@ typedef struct __frameNode__ {
 
 #define __FRAMENODESIZE__ (sizeof(__frameNode_t__))
 
+void dumpCStack ( );
+    
 void dumpRootStack ( );
 
 void dumpFrameStack ( );
@@ -33,6 +36,10 @@ void popFrame ( );
 void pushRoot ( __BWORD__ *root );
 
 void popRoot ( );
+
+void pushCRoot ( __BWORD__ *root );
+
+void popCRoot ( );
 
 void gc_run ( __bytefield__ *from, __bytefield__ *to );
 
