@@ -9,8 +9,6 @@
 #include "bytefield_utils.h"
 #include "box.h"
 
-/* static __rootNode_t__*  rootStack  = NULL; */
-/* static frameNodePtr frameStack = NULL; */
 static __rootNode_t__   *rootStack  = NULL;
 static __rootNode_t__   *cRootStack  = NULL;
 static __frameNode_t__  *frameStack = NULL;
@@ -88,7 +86,11 @@ void popFrame ( ) {
         exit(__FAIL__);
     }
 
-    nextroot = firstroot->next;
+    if (firstroot == NULL)
+        nextroot = NULL;
+    else
+        nextroot = firstroot->next;
+    
     if (frame->next == NULL)
         nextfirstroot = NULL;
     else
@@ -110,7 +112,6 @@ void popFrame ( ) {
 }
 
 void pushRoot ( __BWORD__ *root ) {
-    /* __rootNode_t__* newroot = (__rootNode_t__*)calloc(1, __ROOTNODESIZE__); */
     __rootNode_t__ *newroot = (__rootNode_t__*)calloc(1, __ROOTNODESIZE__);
 
     if (newroot == NULL) {
@@ -129,8 +130,12 @@ void pushRoot ( __BWORD__ *root ) {
 }
 
 void popRoot ( ) {
-    /* __rootNode_t__* root = rootStack; */
     __rootNode_t__ *root = rootStack;
+
+    if (root == NULL) {
+        printf("Out of memory\n");
+        exit(__FAIL__);
+    }
 
     frameStack->first = root->next;
     rootStack = root->next;
@@ -191,8 +196,9 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
         croots = croots->next;
     }
 
+#ifdef KJSLKSJDLDFJK    
     printf("gc_run global vars\n");
-    /* Process global vars */
+    /* Process global vars */    
     __asm__ __volatile__ ("movl    $_TOTAL_VARIABLES_, %0    \n\t"
               :
               :"m"(globals)         /* input */
@@ -208,7 +214,6 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
         }
     }
 
-#ifdef KJSLKSJDLDFJK
 
     printf("gc_run dummy vars\n");
     /* Process dummy vars */

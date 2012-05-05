@@ -9,7 +9,7 @@
 
 (include "src/utils/utilities.scm")
 
-(define sins-path "/home/vince/universite/H12/ift3065/ift3065-projet/")
+(define sins-path "/Users/eric/H12/IFT3065/projet/ift3065-projet/")
 (define backend-dir (string-append sins-path "src/backend/"))
 
 
@@ -30,6 +30,7 @@
         (display asm-code p)))
     (shell-command (string-append "gcc -m32 -O1 "
                                   "-mpreferred-stack-boundary=2 "
+                                  "-fleading-underscore "
                                   "-g -o " dest " "
                                   backend-dir "*.o "
                                   (string-append src ".s")))
