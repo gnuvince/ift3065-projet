@@ -75,7 +75,7 @@ void pushFrame ( ) {
 }
 
 void popFrame ( ) {
-    printf("popFrame\n");
+    /* printf("popFrame\n"); */
     __frameNode_t__ *frame = frameStack;
     __rootNode_t__ *firstroot  = rootStack;
     __rootNode_t__ *nextroot;
@@ -90,14 +90,14 @@ void popFrame ( ) {
         nextroot = NULL;
     else
         nextroot = firstroot->next;
-    
+
     if (frame->next == NULL)
         nextfirstroot = NULL;
     else
         nextfirstroot = (frame->next)->first;
 
     while ((firstroot != nextfirstroot) && (firstroot != NULL)) {
-        printf("free(firstroot)\n");
+        /* printf("free(firstroot)\n"); */
         free(firstroot);
         rootStack = nextroot;
         firstroot = nextroot;
@@ -106,7 +106,7 @@ void popFrame ( ) {
         else
             nextroot = NULL;
     }
-    printf("free(frame)\n");
+    /* printf("free(frame)\n"); */
     frameStack = frameStack->next;
     free(frame);
 }
@@ -132,14 +132,11 @@ void pushRoot ( __BWORD__ *root ) {
 void popRoot ( ) {
     __rootNode_t__ *root = rootStack;
 
-    if (root == NULL) {
-        printf("Out of memory\n");
-        exit(__FAIL__);
+    if (frameStack != NULL && root != NULL) {
+        frameStack->first = root->next;
+        rootStack = root->next;
+        free(root);
     }
-
-    frameStack->first = root->next;
-    rootStack = root->next;
-    free(root);
 }
 
 void pushCRoot ( __BWORD__ *root ) {
@@ -174,10 +171,10 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
 
     allocByteField(to, __PAIRSIZE__);
 
-    printf("gc_run scheme roots\n");
+    /* printf("gc_run scheme roots\n"); */
     /* Process scheme roots */
     while (roots != NULL) {
-        printf("scheme root...\n");
+        /* printf("scheme root...\n"); */
         obj = *(roots->node);
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
             *(roots->node) = gc_copyObject(obj, from, to);
@@ -185,10 +182,10 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
         roots = roots->next;
     }
 
-    printf("gc_run C roots\n");
+    /* printf("gc_run C roots\n"); */
     /* Process C roots */
     while (croots != NULL) {
-        printf("c root...\n");
+        /* printf("c root...\n"); */
         obj = *(croots->node);
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
             *(croots->node) = gc_copyObject(obj, from, to);
@@ -196,9 +193,9 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
         croots = croots->next;
     }
 
-#ifdef KJSLKSJDLDFJK    
-    printf("gc_run global vars\n");
-    /* Process global vars */    
+#ifdef KJSLKSJDLDFJK
+    /* printf("gc_run global vars\n"); */
+    /* Process global vars */
     __asm__ __volatile__ ("movl    $_TOTAL_VARIABLES_, %0    \n\t"
               :
               :"m"(globals)         /* input */
@@ -207,7 +204,7 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
 
     num = (int)*globals;
     for (int i = 0; i < num; i++) {
-        printf("global root...\n");
+        /* printf("global root...\n"); */
         obj = *((__BWORD__*)globals + i + 1);
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
             *((__BWORD__*)globals + i + 1) = gc_copyObject(obj, from, to);
@@ -215,10 +212,10 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     }
 
 
-    printf("gc_run dummy vars\n");
+    /* printf("gc_run dummy vars\n"); */
     /* Process dummy vars */
     for (__VAR__ i = 0; i < getVarNext(); ++i) {
-        printf("dummy root...\n");
+        /* printf("dummy root...\n"); */
         obj = getVar(i);
 
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {

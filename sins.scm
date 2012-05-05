@@ -9,7 +9,13 @@
 
 (include "src/utils/utilities.scm")
 
-(define sins-path "/Users/eric/H12/IFT3065/projet/ift3065-projet/")
+(define sins-path #f)
+
+(if (not sins-path)
+    (begin
+      (display "Vous devez définir la variable sins-path dans sins.scm\n")
+      (exit 1)))
+
 (define backend-dir (string-append sins-path "src/backend/"))
 
 
