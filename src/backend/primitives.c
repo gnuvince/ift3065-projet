@@ -12,6 +12,13 @@
 #include "gc.h"
 #include "stack.h"
 
+// C Stack roots
+static struct __rootNode__ *cstack = NULL;
+
+
+/* #define GCPROT( bword, local_name ) struct __rootNode__ local_name; local_name.next = cstack; local_name.node = &bword; cstack = &local_name; printf("gcprot\n"); dumpCStack(); */
+/* #define UNGCPROT(local_name) cstack = local_name.next; printf("ungcprot\n"); dumpCStack(); */
+
 /*                */
 /* Pair procedure */
 /*                */
@@ -57,7 +64,12 @@ __BWORD__  __cons ( _S_, __BWORD__ car, __BWORD__ cdr ) {
     __pair__ *newpair = NULL;
     __BWORD__ bpair;
 
+    pushCRoot(&car);
+    pushCRoot(&cdr);
     newpair = (__pair__*)allocBlock(getHeap(), __PAIRSIZE__);
+    popCRoot();
+    popCRoot();
+
     newpair->hdr = __PAIR_TYPE__;
 
     if (newpair == NULL) {
@@ -87,7 +99,9 @@ __BWORD__ __stringToSymbol ( _S_, __BWORD__ s ) {
         exit(__FAIL__);
     }
 
+    pushCRoot(&s);
     newsymbol = (__symbol__*)allocBlock(getHeap(), sizeof(__symbol__) + slen + 1);
+    popCRoot();
 
     if (newsymbol == NULL) {
         printf("Out of memory\n");
@@ -366,7 +380,10 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
         exit(__FAIL__);
     }
 
+    pushCRoot(&s);
     newpair = (__pair__*)allocBlock(getHeap(), sizeof(__pair__));
+    popCRoot();
+    
     newpair->hdr = __PAIR_TYPE__;
 
     if (newpair == NULL) {
@@ -716,4 +733,8 @@ void __gc ( _S_ ) {
 
 void __dumpHeap ( _S_ ) {
     dumpByteField(getHeap());
+}
+
+struct __rootNode__* getCStack ( ) {
+    return cstack;
 }

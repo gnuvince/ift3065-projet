@@ -14,12 +14,6 @@ char *line = "==================================================================
 int main(void)
 {
     __initHeap(_A_(0));
-    /* allocByteField(getHeap(), __PAIRSIZE__); */
-    /* dumpWord(getHeap(), (__WORD__)__TRUE__); printf("\n"); */
-    /* dumpWord(getHeap(), (__WORD__)__FALSE__); printf("\n"); */
-    /* dumpWord(getHeap(), (__WORD__)__NULL__); printf("\n"); */
-
-    dumpWord(getHeap(), __add(_A_(2), __boxint(_A_(1), 3), __boxint(_A_(1), 4))); printf("\n");
     
     __VAR__ p1;
     p1 = allocVar();

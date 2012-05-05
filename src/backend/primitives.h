@@ -7,6 +7,7 @@
 #include "primitives_utils.h"
 #include "box.h"
 #include "bytefield.h"
+#include "gc.h"
 
 void __initStack( _S_ );
 
@@ -121,5 +122,7 @@ void __writeChar ( _S_, __BWORD__ c );
 void __gc ( _S_ );
 
 void __dumpHeap ( _S_ );
+
+struct __rootNode__* getCStack ( );
 
 #endif
