@@ -375,37 +375,37 @@
                                   "pushl %eax\n"
                                   (push-root))))))))
 
-;; Uncomment these to deactivate all the GC routine calls.
-(define (push-root) "")
-(define (pop-root) "")
-(define (push-frame) "")
-(define (pop-frame) "")
+;; ;; Uncomment these to deactivate all the GC routine calls.
+;; (define (push-root) "")
+;; (define (pop-root) "")
+;; (define (push-frame) "")
+;; (define (pop-frame) "")
 
-;; (define (push-root)
-;;   (list
-;;    "pushl %eax\n"
-;;    "pushl %esp\n"
-;;    "call pushRoot\n"
-;;    "addl $4, %esp\n"
-;;    "popl %eax\n"))
+(define (push-root)
+  (list
+   "pushl %eax\n"
+   "pushl %esp\n"
+   "call pushRoot\n"
+   "addl $4, %esp\n"
+   "popl %eax\n"))
 
-;; (define (pop-root)
-;;   (list
-;;    "pushl %eax\n"
-;;    "call popRoot\n"
-;;    "popl %eax\n"))
+(define (pop-root)
+  (list
+   "pushl %eax\n"
+   "call popRoot\n"
+   "popl %eax\n"))
 
-;; (define (push-frame)
-;;   (list
-;;    "pushl %eax\n"
-;;    "call pushFrame\n"
-;;    "popl %eax\n"))
+(define (push-frame)
+  (list
+   "pushl %eax\n"
+   "call pushFrame\n"
+   "popl %eax\n"))
 
-;; (define (pop-frame)
-;;   (list
-;;    "pushl %eax\n"
-;;    "call popFrame\n"
-;;    "popl %eax\n"))
+(define (pop-frame)
+  (list
+   "pushl %eax\n"
+   "call popFrame\n"
+   "popl %eax\n"))
 
 
 ;; Generate a call to a Scheme function.

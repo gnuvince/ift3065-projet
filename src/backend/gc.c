@@ -60,7 +60,7 @@ void dumpFrameStack ( ) {
         frameNode = frameNode->next;
     }
     printf("===============================\n");
-    
+
 }
 
 void pushFrame ( ) {
@@ -93,7 +93,7 @@ void popFrame ( ) {
         nextfirstroot = NULL;
     else
         nextfirstroot = (frame->next)->first;
-    
+
     while ((firstroot != nextfirstroot) && (firstroot != NULL)) {
         printf("free(firstroot)\n");
         free(firstroot);
@@ -131,7 +131,7 @@ void pushRoot ( __BWORD__ *root ) {
 void popRoot ( ) {
     /* __rootNode_t__* root = rootStack; */
     __rootNode_t__ *root = rootStack;
-    
+
     frameStack->first = root->next;
     rootStack = root->next;
     free(root);
@@ -155,7 +155,7 @@ void pushCRoot ( __BWORD__ *root ) {
 
 void popCRoot ( ) {
     __rootNode_t__ *root = cRootStack;
-    
+
     cRootStack = root->next;
     free(root);
 }
@@ -193,7 +193,7 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
 
     printf("gc_run global vars\n");
     /* Process global vars */
-    __asm__ __volatile__ ("movl    $__TOTAL_VARIABLES_, %0    \n\t" 
+    __asm__ __volatile__ ("movl    $_TOTAL_VARIABLES_, %0    \n\t"
               :
               :"m"(globals)         /* input */
               :
@@ -215,14 +215,14 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
     for (__VAR__ i = 0; i < getVarNext(); ++i) {
         printf("dummy root...\n");
         obj = getVar(i);
-        
+
         if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) {
             setVar(i, gc_copyObject(obj, from, to));
         }
     }
 
-#endif    
-    
+#endif
+
     swapHeap();
     freeByteField(from);
 }
@@ -234,16 +234,16 @@ __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to 
     void *loc;
 
     if ((obj != __NULL__) && (objtype != __INT_TYPE__)) {
-        
+
         if (gc_isMoved(obj)) {
 
             /* point to new obj location */
             return gc_getState(obj);
-            
-        }  else  {            
+
+        }  else  {
 
             /* Reserve space in new heap */
-            loc = allocBlock(to, objsize);        
+            loc = allocBlock(to, objsize);
             if (loc == NULL) {
                 printf("Out of memory");
                 exit(__FAIL__);
@@ -251,7 +251,7 @@ __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to 
 
             /* Create new obj */
             newobj = __box(_A_(2), (__WORD__)loc, objtype);
-        
+
             /* Copy the object */
             memcpy(loc, (void*)__unbox(_A_(1), obj), (size_t)objsize);
 
@@ -260,22 +260,22 @@ __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to 
                 __setCar(_A_(2), newobj, gc_copyObject(__getCar(_A_(1), obj), from, to));
                 __setCdr(_A_(2), newobj, gc_copyObject(__getCdr(_A_(1), obj), from, to));
             }
-        
+
             /* Copy vector sub-objects */
             else if ((objtype == __PTD_TYPE__) && (__boxsubtype(_A_(1), obj) == __VEC_TYPE__)) {
                 for (__WORD__ i = 0; i < __unboxint(_A_(1), __vectorLength(_A_(1), obj)); ++i)
                     __vectorSet(_A_(2), newobj, __boxint(_A_(1), i), gc_copyObject(__vectorRef(_A_(2), obj, __boxint(_A_(1), i)), from, to));
             }
-            
+
             /* Tag object as moved */
             gc_setMoved(obj, newobj);
             return newobj;
-            
+
         }
-        
+
     }  else  {
         /* null or int returned as is */
-        return obj;        
+        return obj;
     }
 }
 
@@ -303,5 +303,3 @@ int gc_isAlive ( __BWORD__ obj ) {
 int gc_isMoved ( __BWORD__ obj ) {
     return (((__ptd_hdr__*)(__unbox(_A_(1), obj)))->state != 0);
 }
-
-
