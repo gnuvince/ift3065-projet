@@ -208,6 +208,8 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
         }
     }
 
+#ifdef KJSLKSJDLDFJK
+
     printf("gc_run dummy vars\n");
     /* Process dummy vars */
     for (__VAR__ i = 0; i < getVarNext(); ++i) {
@@ -219,62 +221,11 @@ void gc_run ( __bytefield__ *from, __bytefield__ *to ) {
         }
     }
 
-    
-    /* printf("gc_run C roots\n");     */
-    /* /\* Process C roots *\/ */
-    /* dumpCStack(); */
-    /* croots = getCStack(); */
-    /* printf("****\n"); */
-    /* while (croots != NULL) { */
-    /*     printf("**\n"); */
-    /*     obj = *(croots->node); */
-    /*     printf("**\n"); */
-    /*     if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
-    /*         printf("**\n"); */
-    /*         *(croots->node) = gc_copyObject(obj, from, to); */
-    /*     } */
-    /*     printf("**\n"); */
-    /*     croots = croots->next; */
-    /* } */
-
-
-    /* while (roots != NULL) { */
-    /*     obj = *(root->node); */
-    /*     if ((obj != __NULL__) && (__boxtype(_A_(1), obj) != __INT_TYPE__)) { */
-    /*         *(root->node) = gc_copyObject(obj, from, to); */
-    /*     } */
-    /*     roots = roots->next; */
-    /* } */
-
-
-
-    /* Uncomment to see the results */
-    /* printf("Dest heap:\n"); */
-    /* dumpByteField(to); */
-    /* printf("From heap:\n"); */
-    /* dumpByteField(from); */
+#endif    
     
     swapHeap();
     freeByteField(from);
-#ifdef KJSLKSJDLDFJK
-#endif    
 }
-
-/* void gc_run ( __bytefield__ *from, __bytefield__ *to ) { */
-/*     __BWORD__ obj; */
-    
-/*     allocByteField(to, __PAIRSIZE__); */
-
-
-/*     /\* Uncomment to see the results *\/ */
-/*     /\* printf("Dest heap:\n"); *\/ */
-/*     /\* dumpByteField(to); *\/ */
-/*     /\* printf("From heap:\n"); *\/ */
-/*     /\* dumpByteField(from); *\/ */
-    
-/*     swapHeap(); */
-/*     freeByteField(from); */
-/* } */
 
 __BWORD__ gc_copyObject ( __BWORD__ obj, __bytefield__ *from, __bytefield__ *to ) {
     __WORD__ objsize = __boxsize(_A_(1), obj);
