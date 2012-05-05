@@ -260,7 +260,8 @@
                         %null? %number? %pair? %quotient %remainder
                         %set-car! %set-cdr! %string? %write-char
                         %display %make-string %string-set! %string-ref
-                        %string->list %string-length))
+                        %string->list %string-length %string->symbol %string=?
+                        %symbol? %char=?))
 
 (define (primitive? op)
   (and (symbol? op)

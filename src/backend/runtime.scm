@@ -4,10 +4,6 @@
   (lambda (x)
     (%number? x)))
 
-;; (define +
-;;   (lambda (x y)
-;;     (%+ x y)))
-
 (define +
   (lambda (x y)
     (%+ x y)))
@@ -274,3 +270,24 @@
 ;;     (begin
 ;;       (write x)
 ;;       (%write-char #\newline))))
+
+
+(define sym-table (list))
+
+(define string->symbol
+  (lambda (str)
+    (let ((x (let loop ((t sym-table))
+               (if (%null? t)
+                     #f
+                   (if (%string=? (%car (%car t)) str)
+                       (car t)
+                       (loop (cdr t)))))))
+      (if x
+          x
+          (let ((sym (%string->symbol str)))
+            (set! sym-table (cons (cons str sym) sym-table))
+            sym)))))
+
+(define symbol?
+  (lambda (sym)
+    (%symbol? sym)))

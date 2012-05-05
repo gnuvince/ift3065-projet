@@ -43,6 +43,10 @@
                           (%string-set!        4 "__stringSet")
                           (%string->list       3 "__stringToList")
                           (%string-length      3 "__stringLength")
+                          (%string->symbol     3 "__stringToSymbol")
+                          (%string=?           4 "__stringEqual")
+                          (%symbol?            3 "__symbol_p")
+                          (%char=?             4 "__charEqual")
                           ))
 
 
@@ -101,7 +105,8 @@
     (,b when (boolean? b) (gen-bool b))
     (,c when (char? c) (gen-char c))
     (,s when (symbol? s) (gen-variable-access s env))
-    (,s when (string? s) (gen-string s env))
+    (,s when (string? s) (gen-string s))
+
     ((let ,args ,body) (compile-let expr env))
     ((begin . ,args) (map (lambda (a) (compile-expr a env)) args))
     ((lambda ,args ,body) (delay-lambda expr env))
@@ -278,7 +283,7 @@
   (list "movl $" *null* ", %eax\n"))
 
 
-(define (gen-string str env)
+(define (gen-string str)
   (list
    (gen-number (string-length str))
    "pushl %eax\n"
@@ -305,9 +310,18 @@
 
 
 (define (gen-symbol s)
-  "")
-
-
+  (list
+   (gen-string (symbol->string s))
+   "pushl %eax\n"
+   "pushl $4\n"
+   "pushl glob_stringminusgtsymbol\n"
+   "pushl glob_stringminusgtsymbol\n"
+   "pushl $4\n"
+   "pushl $2\n"
+   "call __lambdaGetCode\n"
+   "addl $12, %esp\n"
+   "call *%eax\n"
+   "addl $12, %esp\n"))
 
 (define (gen-quote x)
   (match x

@@ -62,7 +62,7 @@ run_prim:
 run_stack:
 	$(CWD)/test_stack.exe
 
-check:
+check: $(OBJFILES)
 	python run_backend_tests.py
 
 clean:

@@ -343,7 +343,10 @@ __BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 ) {
         return __FALSE__;
 
     for (__WORD__ i = 0; i < s1Len; ++i) {
-        if (__stringRef(_A_(2), s1, __boxint(_A_(1), i)) != __stringRef(_A_(2), s2, __boxint(_A_(1), i)))
+        if (__equal(_A_(2),
+                    __unboxchar(_A_(1), __stringRef(_A_(2), s1, __boxint(_A_(1), i))),
+                    __unboxchar(_A_(1), __stringRef(_A_(2), s2, __boxint(_A_(1), i))))
+            == __FALSE__)
             return __FALSE__;
     }
 
@@ -374,7 +377,7 @@ __BWORD__ __stringToList ( _S_, __BWORD__ s ) {
     slen = __unboxint(_A_(1), __stringLength(_A_(1), s));
     __setCdr(_A_(2), __boxpair(_A_(1), (__WORD__)newpair), __NULL__);
 
-    for (int i = 0; i < slen; i++) {
+    for (int i = 0; i < slen-1; i++) {
         head = (__pair__*)allocBlock(getHeap(), sizeof(__pair__));
         head->hdr = __PAIR_TYPE__;
 
@@ -447,6 +450,13 @@ __BWORD__ __integerToChar ( _S_, __BWORD__ i ) {
         newchar->hdr = ((__BWORD__)__unboxint(_A_(1), i) << __CHAR_VAL_SHFT__) + __CHAR_TYPE__;
         return __boxptd(_A_(1), (__WORD__)newchar);
     }
+}
+
+__BWORD__ __charEqual( _S_, __BWORD__ c1, __BWORD__ c2) {
+    if (__unboxchar(_A_(1), c1) == __unboxchar(_A_(1), c2))
+        return __TRUE__;
+    else
+        return __FALSE__;
 }
 
 /*                       */
@@ -547,6 +557,13 @@ __BWORD__ __list_p ( _S_, __BWORD__ p ) {
 
 __BWORD__ __string_p ( _S_, __BWORD__ s ) {
     if ((__boxtype(_A_(1), s) == __PTD_TYPE__) && (__boxsubtype(_A_(1), s) == __STR_TYPE__))
+        return __TRUE__;
+    else
+        return __FALSE__;
+}
+
+__BWORD__ __symbol_p ( _S_, __BWORD__ s ) {
+    if ((__boxtype(_A_(1), s) == __PTD_TYPE__) && (__boxsubtype(_A_(1), s) == __SYM_TYPE__))
         return __TRUE__;
     else
         return __FALSE__;

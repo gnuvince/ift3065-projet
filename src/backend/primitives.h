@@ -92,11 +92,15 @@ __BWORD__ __makeString(_S_, __BWORD__ len);
 
 __BWORD__ __string_p ( _S_, __BWORD__ s );
 
+__BWORD__ __symbol_p ( _S_, __BWORD__ s );
+
 __BWORD__ __stringLength ( _S_, __BWORD__ s );
 
 __BWORD__ __stringRef ( _S_, __BWORD__ s, __BWORD__ ref);
 
 __BWORD__ __stringEqual ( _S_, __BWORD__ s1, __BWORD__ s2 );
+
+__BWORD__ __charEqual ( _S_, __BWORD__ s1, __BWORD__ s2 );
 
 __BWORD__ __stringToList ( _S_, __BWORD__ s );
 
