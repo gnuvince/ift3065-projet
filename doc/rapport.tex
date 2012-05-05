@@ -65,6 +65,81 @@ plusieurs phases en une. Dans le cadre d'un projet éducationnel, nous
 jugeons que cette contrainte est acceptable.
 
 
+\section{Atteinte des objectifs}
+
+Dans cette section, nous faisons un retour sur les tâches que nous
+avions prises au début de la session.
+
+\subsection{Grammaire, parseur et messages d'erreur}
+
+Cette tâche a été accomplie. Nous avons un module d'analyse lexicale
+et un d'analyse syntaxique et ils ont été écrits manuellement en
+Scheme. Les deux modules capturent les erreurs potentielles; dans
+l'analyse lexicale, les lexèmes mal formés sont refusés et on peut
+informer l'utilisateur de l'endroit où l'erreur s'est produite. Dans
+le cas du parseur, les erreurs sont également détectées et des
+messages sont donnés à l'utilisateur quant à la nature des erreurs.
+Comme il sera expliqué dans la section sur l'analyse syntaxique, les
+lignes et colonnes ne sont pas dans ces messages d'erreur; cette
+décision a permis de grandement simplifier l'arbre de syntaxe
+abstraite.
+
+
+\subsection{Fermetures}
+
+Comme Scheme est le langage qui a introduit les fermetures lexicales
+au monde informatique, il était important pour nous de les implanter.
+Nous sommes fiers de rapporter que nous c'est chose faite!  À l'aide
+de notre module d'environnement et de la conversion des fermetures,
+nous sommes en mesure de compiler correctement les fermetures.  Nous
+avons plusieurs tests dans le dossier {\it src/backend/tests/} qui
+font usage des fermetures, et ils passent tous.
+
+\subsection{Récupérateur de mémoire automatique}
+
+Nous avons implanté un GC de type {\it stop-and-copy} dans notre
+compilateur, ainsi que toute la mécanique nécessaire pour qu'il
+fonctionne. Plus de détails sur son implantation sont disponibles dans
+le chapître dédié à cette fonctionnalité.
+
+Malgré qu'il passe tous ses tests unitaires, l'intégration du GC et du
+compilateur a été plus difficile que prévue; environ 10\% des tests
+échouaient après l'insertion des instructions nécessaires à sont
+fonctionnement.  Nous avons donc désactivé ces instructions.
+
+\subsection{Types}
+
+Les types primitifs en C possèdent tous une information de type.  Pour
+certains, comme les entiers, les pairs, et les lambdas, cette
+information se trouve dans un {\it bit tag}.  Pour les autres qui sont
+définis comme des structures en C, un champ indique leur type.  Les
+fonctions primitives qui manipulent ces données possèdent une
+vérification de type pour s'assurer que les arguments passés soient
+valides (ex.: la fonction {\tt __stringEqual} s'assure que les deux
+arguments soient bien des chaînes de caractères).
+
+\subsection{Vivacité des variables}
+
+Nous n'avons pas implanté cette fonctionnalité.
+
+\subsection{Propagation des constantes}
+
+Nous n'avons pas implanté cette fonctionnalité.
+
+\subsection{Génération simple avec optimisations}
+
+Le fichier {\it src/backend/codegen.scm} s'occupe de produire du code
+assembleur sémantiquement équivalent au code Scheme en entrée. Le
+fichiers {\it sins.scm} concatène ensemble le code source du support
+d'exécution ({\it src/backend/runtime.scm}) et le fichier source d
+l'utilisateur.
+
+Comme le temps nous a manqué, le nombre d'optimisations est
+relativement petit. Par exemple, pour les entiers litéraux, nous
+faisons la multiplication par 4 (pour avoir le bon {\it bit tag})
+directement durant la compilation plutôt que de le faire à
+l'exécution.
+
 \chapter{Analyse lexicale}
 
 La première phase habituelle d'un compilateur est de transformer un
@@ -659,6 +734,26 @@ caractère.
 
 Cette fonction assigne la valeur numérique associée à () dans le
 registre {\tt eax}.
+
+\subsection{gen-string}
+
+Cette fonction génère le code qui donne une chaîne de caractère.  Elle
+alloue un objet de type {\it string} avec suffisament d'espace pour
+tous les caractères.  Ensuite, à l'aide la fonction {\it string-set!},
+on insère chaque caractère dans la chaîne.
+
+\subsection{gen-symbol}
+
+Cette fonction génère le code qui donne un symbole.  On génère la
+chaîne de caractères du symbole, et on appelle la fonction {\tt
+  string->symbol} pour créer l'objet symbole et l'insérer dans la
+table de symboles.
+
+\subsection{gen-quote}
+
+Cette fonction génère le code pour une expression échappée. Les atomes
+de base sont générés tels quels. Pour les expressions composites,
+seule les listes propres sont supportées présentement.
 
 \subsection{gen-variable-access}
 

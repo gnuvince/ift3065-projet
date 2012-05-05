@@ -27,7 +27,7 @@
                           (%car                3 "__getCar")
                           (%cdr                3 "__getCdr")
                           (%cons               4 "__cons")
-                          (%eq?                4 "__equal")
+                          (%eq?                4 "__eq")
                           (%null?              3 "__null_p")
                           (%display            3 "__display")
                           (%number?            3 "__number_p")
@@ -308,7 +308,8 @@
                (loop (+ i 1) (cdr chars)))))
    "popl %eax\n"))
 
-
+;; Generate a symbol by converting it to a string and calling the
+;; string->symbol function.
 (define (gen-symbol s)
   (list
    (gen-string (symbol->string s))
@@ -323,6 +324,7 @@
    "call *%eax\n"
    "addl $12, %esp\n"))
 
+;; Generate quoted expression.
 (define (gen-quote x)
   (match x
     (() (gen-null))
@@ -331,8 +333,27 @@
     (,c when (char? c) (gen-char c))
     (,s when (string? s) (gen-string s))
 
-    (,s when (symbol? s) (gen-symbol s))))
-
+    (,s when (symbol? s) (gen-symbol s))
+    (,s when (list? s)
+        (list
+         (map (lambda (v)
+                (list (gen-quote v)
+                      "pushl %eax\n"))
+              (reverse s))
+         (gen-number (length s))
+         "pushl %eax\n"
+         "pushl glob_list\n"
+         "pushl glob_list\n"
+         (gen-number 1)
+         "pushl %eax\n"
+         "pushl $2\n"
+         "call __lambdaGetCode\n"
+         "addl $12, %esp\n"
+         "call *%eax\n"
+         "movl %eax, %ebx\n"
+         (gen-number (+ 2 (length s)))
+         "addl %eax, %esp\n"
+         "movl %ebx, %eax\n"))))
 
 ;; Accessing a local variable is done through the stack.
 ;; Accessing a global variable is done with its label in the .data section.

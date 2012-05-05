@@ -1,0 +1,5 @@
+(let ((x 3))
+  (let ((l (map (lambda (y) (+ x y)) (list 1 2 3))))
+    (+ (car l)
+       (+ (car (cdr l))
+          (car (cdr (cdr l)))))))

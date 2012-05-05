@@ -278,9 +278,9 @@
   (lambda (str)
     (let ((x (let loop ((t sym-table))
                (if (%null? t)
-                     #f
+                   #f
                    (if (%string=? (%car (%car t)) str)
-                       (car t)
+                       (cdr (car t))
                        (loop (cdr t)))))))
       (if x
           x
