@@ -12,13 +12,6 @@
 #include "gc.h"
 #include "stack.h"
 
-// C Stack roots
-static struct __rootNode__ *cstack = NULL;
-
-
-/* #define GCPROT( bword, local_name ) struct __rootNode__ local_name; local_name.next = cstack; local_name.node = &bword; cstack = &local_name; printf("gcprot\n"); dumpCStack(); */
-/* #define UNGCPROT(local_name) cstack = local_name.next; printf("ungcprot\n"); dumpCStack(); */
-
 /*                */
 /* Pair procedure */
 /*                */

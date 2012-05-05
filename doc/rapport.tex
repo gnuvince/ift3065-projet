@@ -1,4 +1,4 @@
-\documentclass[11pt]{report}
+\documentclass[10pt]{report}
 
 \usepackage{times}
 \usepackage[utf8]{inputenc}
@@ -103,9 +103,10 @@ fonctionne. Plus de détails sur son implantation sont disponibles dans
 le chapître dédié à cette fonctionnalité.
 
 Malgré qu'il passe tous ses tests unitaires, l'intégration du GC et du
-compilateur a été plus difficile que prévue; environ 10\% des tests
-échouaient après l'insertion des instructions nécessaires à sont
-fonctionnement.  Nous avons donc désactivé ces instructions.
+compilateur a été plus difficile que prévue; initiallement, environ 10\% des
+tests échouaient après l'insertion des instructions nécessaires à sont
+fonctionnement. Avec un peu plus de travail, nous avons réussi à passer tous
+nos tests.
 
 \subsection{Types}
 
@@ -913,8 +914,82 @@ Bien que la stratégie soit simple, la gestion des différents détails
 d'implantation a fait en sorte que la complétion de cette
 fonctionnalité a pris environ 5 heures.
 
+\chapter{Objets Scheme}
 
+\section{Représentation des objets}
+Nous avons fait le choix d'abstraire le type des mots mémoire en définissant
+les types \emph{__WORD__} et \emph{__BWORD__}. Cela a l'avantage d'abstraire
+la taille d'un mot mémoire (32 ou 64 bits) et ainsi faciliter la compilation
+sur plusieurs plateforme.
 
+Nous avons choisi de représenter les objets scheme de base (\emph{entier},
+\emph{caractère}, \emph{chaîne de caractères}, \emph{paire}, \emph{tableau},
+\emph{symbole}, \emph{lambda}) en utilisant la méthode d'encapsulation
+(\emph{boxage}). Nous avons organisé les objets en utilisant les deux bits les
+moins significatifs d'un mot mémoire, les autres bits étant utilisés comme
+pointeur vers la structure représentant ces objets. Nous avons assigné les
+valeurs 0, 2 et 3 respectivement aux types de base entier, paire et
+lambda. L'étiquette de valeur 1 est réservée pour les sous-types
+(\emph{caractère}, \emph{chaîne de caractères}, \emph{tableau},
+\emph{symbole}). 
+
+Pour implanter les types d'objets de base, nous avons défini les types C suivants:
+
+\begin{verbatim}
+typedef struct {
+    __WORD__ hdr;
+    __WORD__ state;
+} __ptd_hdr__;
+
+typedef __ptd_hdr__ __vector__;
+typedef __ptd_hdr__ __string__;
+typedef __ptd_hdr__ __char__;
+typedef __ptd_hdr__ __symbol__;
+
+typedef struct {
+    __WORD__  hdr;
+    __BWORD__ state;
+    __BWORD__ car;
+    __BWORD__ cdr;
+} __pair__;
+\end{verbatim}
+
+Tous les objets ont les champs \emph{hdr} et \emph{state} en commun. Un objet
+\emph{paire} possède en plus les champs \emph{car} et \emph{cdr}. Les
+caractères sont encodés dans le champ \emph{hdr} tandis que le contenu des
+symboles, des tableaux et des chaînes est stocké à la suite de la
+structure. Dans ces cas, la taille (nombre de cellules d'un tableau et
+longueur de chaîne) est encodé dans le champ \emph{hdr}. Nous utilisons le
+champ \emph{state} au moment du ramassage de miettes pour indiquer la nouvelle
+adresse d'un objet ayant été copié.
+
+Les fonctions primitives fournissent les outils de création, d'accès et de
+modifications de ces objets.
+
+\section{Tas}
+
+Pour gérer l'allocation dynamique des objets, nous avons créé un objet
+\emph{byteField} et la procédure \emph{allocBlock}. Cette procédure permet de
+réserver un bloc de mémoire dans le tas initiallement alloué
+(\emph{calloc}). Puisque nous ne faisons l'allocation de mémoire que dans
+cette procédure, c'est aussi le seul endroit où le ramasse-miette peut être
+déclanché.
+
+\section{Ramasse-miette}
+
+Nous avons implanté un ramasse-miette de type \emph{stop-and-copy}. Le
+parcours des racines est fait en trois temps: les variables globales, les
+variables scheme sur la pile et les variables C sur la pile. Les variables
+globales sont stockées à un endroit connu en mémoire est sont parcourues
+séquentiellement par le ramasse-miette. Les variables scheme et C sont gardées
+dans deux listes chaînées. Les objets stockés sur la pile pouvant faire
+l'objet d'une visite du ramasse-miette sont ajoutées à la tête d'une des deux
+listes chaînées, préservant ainsi les références aux objets copiés par le
+ramasse-miette.
+
+Nous avons fait des tests hors-compilateur du ramasse-miette et de la gestion
+des listes chaînées mais nous n'avons pas complété leur intégration dans le
+compilateur.
 
 \appendix
 \chapter{Grammaire}
